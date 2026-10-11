@@ -3,8 +3,10 @@
 !.env.example
 **/build/
 **/.gradle/
+**/bin/
 .verification/
 .worktrees/
 .idea/
 *.iml
 *.log
+.vscode/

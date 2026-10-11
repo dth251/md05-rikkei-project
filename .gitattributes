@@ -5,3 +5,4 @@ gradlew text eol=lf
 *.java text eol=lf
 *.bat text eol=crlf
 *.jar binary
+*.md whitespace=-blank-at-eol
