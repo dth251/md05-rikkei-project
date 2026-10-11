@@ -17,7 +17,10 @@ public class InventoryServiceImpl implements InventoryService {
     private final StockRepository stockRepository;
     private final ProductCatalog productCatalog;
 
-    public InventoryServiceImpl(StockRepository stockRepository, ProductCatalog productCatalog) {
+    public InventoryServiceImpl(
+        StockRepository stockRepository,
+        ProductCatalog productCatalog
+    ) {
         this.stockRepository = stockRepository;
         this.productCatalog = productCatalog;
     }

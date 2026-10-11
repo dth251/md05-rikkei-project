@@ -13,3 +13,14 @@ Kế hoạch hiện hành: [kế hoạch 6 ứng dụng có Gateway](../Ke_hoach
 - Trạng thái ở mốc API local: chưa có Payment/Notification hoặc event publisher; VPS vẫn giữ release ngày 1. Không coi local healthy là bằng chứng deploy.
 
 Reports XML/HTML nằm trong `order-service/build/test-results/` và `build/reports/tests/`, không commit build output. SHA, thời gian CI và rollout thực tế được cập nhật theo PR và nhật ký triển khai.
+
+## Order Outbox: local 2026-10-11 khoảng 19:54–19:59 +07:00
+
+- Mốc API `24-order-service`: SHA `fb3b6fb14d1624446a4e7f1a65991edf0d763415`, commit 19:52:52 +07:00. Push feature đã thực hiện; chưa merge/deploy VPS tại thời điểm này.
+- `order.created` được ghi vào `order_db.outbox_events` trong transaction tạo đơn/giữ kho. Relay gửi JSON persistent, mandatory routing, chờ correlated publisher confirm và kiểm tra returned message; chỉ sau ACK và không bị return mới ghi `published_at`.
+- 5 Java live tests đạt, bao gồm 100 request race, replay, giới hạn nhập kho và recovery. Tắt RabbitMQ local, tạo đơn vẫn 201/giữ kho đúng; Outbox còn pending. Khởi động lại broker healthy, event được confirm và đánh dấu published, đơn vẫn đọc được.
+- Recovery test chỉ chạy khi `ORDER_OUTBOX_FAILURE_TEST=true`; CI bật rõ ràng cho môi trường Docker runner. Không chạy test tắt container local như bằng chứng failure trên VPS.
+- Unit tests kiểm tra ACK, NACK và unroutable return; replay chỉ tạo một event. Health Order không phụ thuộc RabbitMQ để broker gián đoạn không chặn tạo đơn có Outbox.
+- Cú pháp Bash, actionlint và production Compose đạt. Delivery là at-least-once; crash sau ACK trước DB update có thể gửi lại, consumer cần deduplicate `eventId`.
+
+Tham chiếu hành vi publisher: [Spring AMQP 3.2 confirms/returns](https://docs.spring.io/spring-amqp/reference/3.2/amqp/template.html). Payment/Notification và consumer compensation chưa có ở mốc này; không ghi nhận E2E Saga đã hoàn tất.

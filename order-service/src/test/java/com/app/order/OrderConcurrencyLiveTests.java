@@ -22,8 +22,10 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
+import java.nio.file.Path;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 
 @Tag("live")
 class OrderConcurrencyLiveTests {
@@ -121,19 +123,82 @@ class OrderConcurrencyLiveTests {
         assertStock(product, 2147483646, 1);
     }
 
-    private void receive(long product, int quantity) throws Exception {
+    @Test
+    @EnabledIfEnvironmentVariable(named = "ORDER_OUTBOX_FAILURE_TEST", matches = "true")
+    void brokerOutageKeepsOrderAndOutboxThenRecovers() throws Exception {
+        long product = product();
+        receive(product, 1);
+        Long orderId = null;
+        try {
+            docker("stop", "rabbitmq");
+            var response = create(gateway, product, "outbox-" + UUID.randomUUID(), "WEB");
+            assertEquals(201, response.statusCode());
+            orderId = json.readTree(response.body()).path("data").path("id").asLong();
+            assertEquals(1, eventCount(orderId, false));
+            assertStock(product, 0, 1);
+        } finally {
+            docker("up", "-d", "--no-deps", "--wait", "--wait-timeout", "120", "rabbitmq");
+        }
+        Instant deadline = Instant.now().plusSeconds(45);
+        while (Instant.now().isBefore(deadline) && eventCount(orderId, true) != 1) {
+            Thread.sleep(500);
+        }
+        assertEquals(1, eventCount(orderId, true), "Pending outbox must publish after broker recovery");
+        assertEquals(200, send(gateway, "GET", "/api/orders/" + orderId, null, token(900001, "USER")).statusCode());
+    }
+
+    private int eventCount(
+        long orderId,
+        boolean published
+    ) throws Exception {
+        try (var connection = database(); var statement = connection.prepareStatement(
+                "SELECT count(*) FROM outbox_events WHERE payload LIKE ? AND published_at IS "
+                        + (published ? "NOT NULL" : "NULL"))) {
+            statement.setString(1, "%\"orderId\":" + orderId + ",%");
+            try (var result = statement.executeQuery()) {
+                assertTrue(result.next());
+                return result.getInt(1);
+            }
+        }
+    }
+
+    private void docker(String... arguments) throws Exception {
+        List<String> command = new ArrayList<>(List.of("docker", "compose"));
+        command.addAll(List.of(arguments));
+        var process = new ProcessBuilder(command).directory(Path.of("..").toFile())
+                .redirectErrorStream(true).redirectOutput(ProcessBuilder.Redirect.DISCARD).start();
+        if (!process.waitFor(150, java.util.concurrent.TimeUnit.SECONDS)) {
+            process.destroyForcibly();
+            throw new AssertionError("Docker operation timed out");
+        }
+        assertEquals(0, process.exitValue(), "Docker infrastructure operation failed");
+    }
+
+    private void receive(
+        long product,
+        int quantity
+    ) throws Exception {
         assertEquals(403, send(gateway, "POST", "/api/inventory/stocks",
                 Map.of("productId", product, "quantity", quantity), token(900001, "USER")).statusCode());
         assertEquals(200, send(gateway, "POST", "/api/inventory/stocks",
                 Map.of("productId", product, "quantity", quantity), token(900001, "ADMIN")).statusCode());
     }
 
-    private HttpResponse<String> create(String base, long product, String requestKey, String channel) throws Exception {
+    private HttpResponse<String> create(
+        String base,
+        long product,
+        String requestKey,
+        String channel
+    ) throws Exception {
         return send(base, "POST", "/api/orders", Map.of("channel", channel, "idempotencyKey", requestKey,
                 "items", List.of(Map.of("productId", product, "quantity", 1))), token(900001, "USER"));
     }
 
-    private void assertStock(long product, int available, int reserved) throws Exception {
+    private void assertStock(
+        long product,
+        int available,
+        int reserved
+    ) throws Exception {
         var response = send(gateway, "GET", "/api/inventory/" + product, null, token(900001, "USER"));
         assertEquals(200, response.statusCode());
         JsonNode data = json.readTree(response.body()).path("data");
@@ -146,14 +211,23 @@ class OrderConcurrencyLiveTests {
                 "jdbc:postgresql://localhost:15432/order_db"), "order_user", System.getenv("ORDER_LIVE_DB_PASSWORD"));
     }
 
-    private String token(long userId, String role) {
+    private String token(
+        long userId,
+        String role
+    ) {
         var key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(System.getenv("JWT_SECRET")));
         return Jwts.builder().subject(Long.toString(userId)).issuer("omnichannel-auth")
                 .issuedAt(new Date()).expiration(Date.from(Instant.now().plusSeconds(600)))
                 .claim("roles", List.of(role)).signWith(key, Jwts.SIG.HS256).compact();
     }
 
-    private HttpResponse<String> send(String base, String method, String path, Object body, String token) throws Exception {
+    private HttpResponse<String> send(
+        String base,
+        String method,
+        String path,
+        Object body,
+        String token
+    ) throws Exception {
         var request = HttpRequest.newBuilder(URI.create(base + path)).timeout(Duration.ofSeconds(60));
         if (token != null) {
             request.header("Authorization", "Bearer " + token);

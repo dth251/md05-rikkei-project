@@ -22,13 +22,19 @@ public class OrderServiceImpl implements OrderService {
     private final OrderTransactions orderTransactions;
     private final ProductCatalog productCatalog;
 
-    public OrderServiceImpl(OrderTransactions orderTransactions, ProductCatalog productCatalog) {
+    public OrderServiceImpl(
+        OrderTransactions orderTransactions,
+        ProductCatalog productCatalog
+    ) {
         this.orderTransactions = orderTransactions;
         this.productCatalog = productCatalog;
     }
 
     @Override
-    public OrderCreationResult create(Long userId, CreateOrderRequest request) {
+    public OrderCreationResult create(
+        Long userId,
+        CreateOrderRequest request
+    ) {
         if (request.items().stream().map(item -> item.productId()).distinct().count() != request.items().size()) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "Duplicate product in order");
         }
@@ -48,7 +54,11 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public OrderResponse get(Long orderId, Long userId, boolean administrator) {
+    public OrderResponse get(
+        Long orderId,
+        Long userId,
+        boolean administrator
+    ) {
         return orderTransactions.get(orderId, userId, administrator);
     }
 

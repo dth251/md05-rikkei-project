@@ -9,3 +9,6 @@ spring:
       ddl-auto: create-drop
 jwt:
   secret: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+commerce:
+  outbox:
+    enabled: false

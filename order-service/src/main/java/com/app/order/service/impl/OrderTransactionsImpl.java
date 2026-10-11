@@ -2,6 +2,7 @@ package com.app.order.service.impl;
 
 import com.app.order.config.exception.ApiException;
 import com.app.order.dto.request.CreateOrderRequest;
+import com.app.order.dto.event.CommerceEvent;
 import com.app.order.dto.response.OrderResponse;
 import com.app.order.dto.response.ProductSnapshot;
 import com.app.order.entity.PurchaseOrder;
@@ -9,6 +10,9 @@ import com.app.order.mapper.OrderMapper;
 import com.app.order.repository.OrderRepository;
 import com.app.order.repository.StockRepository;
 import com.app.order.service.OrderTransactions;
+import com.app.order.service.OutboxService;
+import java.time.Instant;
+import java.util.UUID;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -23,15 +27,26 @@ public class OrderTransactionsImpl implements OrderTransactions {
     private final OrderRepository orderRepository;
     private final StockRepository stockRepository;
     private final OrderMapper orderMapper;
+    private final OutboxService outboxService;
 
-    public OrderTransactionsImpl(OrderRepository orderRepository, StockRepository stockRepository, OrderMapper orderMapper) {
+    public OrderTransactionsImpl(
+        OrderRepository orderRepository,
+        StockRepository stockRepository,
+        OrderMapper orderMapper,
+        OutboxService outboxService
+    ) {
         this.orderRepository = orderRepository;
         this.stockRepository = stockRepository;
         this.orderMapper = orderMapper;
+        this.outboxService = outboxService;
     }
 
     @Override
-    public Optional<OrderResponse> replay(Long userId, CreateOrderRequest request, String fingerprint) {
+    public Optional<OrderResponse> replay(
+        Long userId,
+        CreateOrderRequest request,
+        String fingerprint
+    ) {
         return orderRepository.findByUserIdAndIdempotencyKey(userId, request.idempotencyKey()).map(order -> {
             if (!fingerprint.equals(order.getRequestFingerprint())) {
                 throw new ApiException(HttpStatus.CONFLICT, "Idempotency key already used with another request");
@@ -42,7 +57,12 @@ public class OrderTransactionsImpl implements OrderTransactions {
 
     @Override
     @Transactional
-    public OrderResponse create(Long userId, CreateOrderRequest request, String fingerprint, List<ProductSnapshot> products) {
+    public OrderResponse create(
+        Long userId,
+        CreateOrderRequest request,
+        String fingerprint,
+        List<ProductSnapshot> products
+    ) {
         PurchaseOrder order = new PurchaseOrder(userId, request.idempotencyKey(), request.channel());
         order.setRequestFingerprint(fingerprint);
         for (int index = 0; index < request.items().size(); index++) {
@@ -59,11 +79,17 @@ public class OrderTransactionsImpl implements OrderTransactions {
                 throw new ApiException(HttpStatus.CONFLICT, "Insufficient stock");
             }
         }
+        outboxService.append(new CommerceEvent(UUID.randomUUID().toString(), "order.created", order.getId(),
+                order.getUserId(), order.getTotalAmount(), null, Instant.now()));
         return orderMapper.toResponse(order);
     }
 
     @Override
-    public OrderResponse get(Long orderId, Long userId, boolean administrator) {
+    public OrderResponse get(
+        Long orderId,
+        Long userId,
+        boolean administrator
+    ) {
         PurchaseOrder order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Order not found"));
         if (!administrator && !userId.equals(order.getUserId())) {

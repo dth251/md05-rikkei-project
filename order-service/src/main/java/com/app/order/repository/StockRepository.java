@@ -14,20 +14,30 @@ public class StockRepository {
         this.jdbc = jdbc;
     }
 
-    public int reserve(Long productId, int quantity) {
+    public int reserve(
+        Long productId,
+        int quantity
+    ) {
         return jdbc.update("UPDATE inventory SET available = available - ?, reserved = reserved + ?, "
                 + "version = version + 1 WHERE product_id = ? AND available >= ? AND reserved <= 2147483647 - ?",
                 quantity, quantity, productId, quantity, quantity);
     }
 
-    public int receive(Long productId, int quantity) {
+    public int receive(
+        Long productId,
+        int quantity
+    ) {
         return jdbc.update("INSERT INTO inventory (product_id, available, reserved, version) VALUES (?, ?, 0, 0) "
                 + "ON CONFLICT (product_id) DO UPDATE SET available = inventory.available + EXCLUDED.available, "
                 + "version = inventory.version + 1 WHERE inventory.available <= 2147483647 - inventory.reserved - EXCLUDED.available",
                 productId, quantity);
     }
 
-    public int finalizeReservation(Long productId, int quantity, boolean successful) {
+    public int finalizeReservation(
+        Long productId,
+        int quantity,
+        boolean successful
+    ) {
         return jdbc.update("UPDATE inventory SET reserved = reserved - ?, available = available + ?, "
                 + "version = version + 1 WHERE product_id = ? AND reserved >= ? AND available <= 2147483647 - ?",
                 quantity, successful ? 0 : quantity, productId, quantity, successful ? 0 : quantity);

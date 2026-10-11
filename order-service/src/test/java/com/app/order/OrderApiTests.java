@@ -79,6 +79,8 @@ class OrderApiTests {
                 .andExpect(status().isConflict());
         assertEquals(1, jdbc.queryForObject("SELECT available FROM inventory WHERE product_id=?", Integer.class, product));
         assertEquals(2, jdbc.queryForObject("SELECT reserved FROM inventory WHERE product_id=?", Integer.class, product));
+        assertEquals(1, jdbc.queryForObject("SELECT count(*) FROM outbox_events WHERE payload LIKE ?",
+                Integer.class, "%\"orderId\":" + id + ",%"));
     }
 
     @Test
@@ -138,12 +140,20 @@ class OrderApiTests {
         return id;
     }
 
-    private String body(String channel, String requestKey, long productId, int quantity) throws Exception {
+    private String body(
+        String channel,
+        String requestKey,
+        long productId,
+        int quantity
+    ) throws Exception {
         return json.writeValueAsString(Map.of("channel", channel, "idempotencyKey", requestKey,
                 "items", List.of(Map.of("productId", productId, "quantity", quantity))));
     }
 
-    private String token(long userId, String role) {
+    private String token(
+        long userId,
+        String role
+    ) {
         return "Bearer " + Jwts.builder().subject(Long.toString(userId)).issuer("omnichannel-auth")
                 .issuedAt(new Date()).expiration(Date.from(Instant.now().plusSeconds(120)))
                 .claim("roles", List.of(role)).signWith(key, Jwts.SIG.HS256).compact();
