@@ -798,12 +798,14 @@ flowchart LR
 
 ### Ngày 1: Gateway → Product → Order skeleton
 
-- [ ] Kiểm tra `git log`: lịch sử `00`–`08` có sẵn; không rebase số commit cũ.
-- [ ] `09`: Tạo `api-gateway` Gradle Groovy + routes + health; push/pull/deploy đúng Gateway.
-- [ ] `10`: JWT verify + Redis limiter + test 401/429; push/pull/deploy Gateway.
-- [ ] `11`: Chuyển Nginx proxy từ Auth trực tiếp sang Gateway, xác nhận domain.
-- [ ] `12–13`: Product skeleton + CRUD/Admin; push/deploy riêng hai mốc.
-- [ ] `14`: Order skeleton + order_db; push/deploy health.
+- [x] Kiểm tra `git log`: giữ nguyên lịch sử `00–10` đã có; cấp số mới theo Git, không giới hạn số lần commit.
+- [x] `11`: API Gateway Gradle Groovy/WebFlux, routes, health và Wrapper riêng.
+- [x] `12`, `20`: JWT verify, Redis limiter, kiểm thử 401/429 và Redis lỗi 503; triển khai bằng CI/CD sau PR.
+- [x] `13–15`: CI/CD từng service, sửa lỗi integration PostgreSQL; chuyển Nginx HTTPS sang Gateway và kiểm chứng domain thật.
+- [x] `16–17`: Product skeleton và CRUD/Admin, soft-delete; Java unit/live tests và CI/CD VPS.
+- [x] `18–19`: Order skeleton, order_db, Order/OrderItem/Inventory; Java unit/live tests và CI/CD VPS đạt, image SHA/health đã đối chiếu.
+
+Bằng chứng SHA, UTC, CI và deploy thực tế: [nhật ký](docs/commits-and-deployments.md), [kết quả kiểm thử](docs/test-results.md). Bảng mốc gốc phía trên vẫn dùng số tham khảo; checklist này dùng lịch sử triển khai thực tế.
 
 ### Ngày 2: Order → Payment → Notification
 

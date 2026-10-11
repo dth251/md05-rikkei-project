@@ -1,22 +1,26 @@
-# Auth CI/CD
+# Services CI/CD
 
-Workflow: `.github/workflows/ci.yml` — `Auth CI/CD`.
+Workflow: [.github/workflows/ci.yml](../.github/workflows/ci.yml), tên `Services CI/CD`. Bốn ứng dụng hiện có: Auth, Gateway, Product và Order skeleton. Mỗi ứng dụng Java 21/Spring Boot 3.5.6 có Gradle Wrapper riêng.
 
 ## Quy tắc push và ghi chú
 
-- Commit giữ format `NN-ten-service: noi dung thay doi`, theo số tăng dần. CI/CD thuộc `devops`; tài liệu thuộc `docs`. Ví dụ: `03-devops: add auth ci and selective vps deployment`.
-- Phạm vi ngày 1 đã được điều chỉnh theo yêu cầu: hạ tầng, Auth và CI/CD. Mốc CI/CD của kế hoạch gốc được làm sớm; số commit hiện tại chạy liên tiếp từ `00`, không ghi các service chưa triển khai là hoàn thành.
-- Build, kiểm thử và health local đạt trước khi commit/push. Feature branch được tích hợp vào `main` bằng PR sau khi CI đạt; không force-push.
-- Tên run của push lấy từ commit; tiêu đề PR cũng giữ format trên. Job Summary ghi mốc, SHA thực sự kiểm thử, thời gian UTC, kết quả từng bước và image digest. Deploy chỉ ghi thành công sau health/smoke đạt.
-- Nhật ký tại [commits-and-deployments.md](commits-and-deployments.md) ghi riêng commit/push, CI/publish và VPS, kèm SHA, thời gian và liên kết log. `skipped` hoặc chưa có SSH không được ghi `deployed`.
-- Không đưa mật khẩu, token JWT, private key hoặc `.env` vào commit, PR, summary và log.
+- Commit và tiêu đề PR giữ format `NN-ten-service: noi dung thay doi`, số tăng dần từ lịch sử Git. CI/CD thuộc `devops`, tài liệu thuộc `docs`. Không giới hạn số lần commit: hoàn thành và kiểm thử phần công việc thì commit.
+- Phát triển trên `feature/...`, tích hợp bằng PR sau khi checks của head cuối đạt; không force-push. Số mốc trong kế hoạch là tham khảo, không đổi số commit đã có.
+- Run title và Job Summary theo mốc push/PR, ghi SHA thực sự kiểm thử, thời gian UTC, kết quả và image digest. PR chỉ kiểm thử, không publish/deploy.
+- [Nhật ký](commits-and-deployments.md) ghi rõ trạng thái tại từng mốc. `skipped`, queued hoặc file workflow có sẵn không phải bằng chứng deployed.
+- Không đưa mật khẩu, JWT, private key hoặc `.env` vào Git, PR, summary hay log.
 
-1. Build Java 21, chạy 11 bài kiểm thử Auth với H2 và tạo `app.jar`.
-2. Khởi chạy PostgreSQL/RabbitMQ, kiểm tra 5 database/user và durable topology.
-3. Đóng gói Auth container từ artifact đã build, chạy bài kiểm thử Java với PostgreSQL thực: API, RBAC, email trùng đồng thời, BCrypt và restart.
-4. Upload Java test reports/artifact. Chỉ push hoặc manual run mới publish image GHCR; Pull Request chỉ kiểm thử.
-5. Image gắn SHA commit: `ghcr.io/dth251/md05-rikkei-project/auth-service:<40-character-SHA>`.
-6. Push vào `main` deploy Auth nếu `DEPLOY_ENABLED=true`. Các service tương lai không bị build/deploy trong ngày 1.
+## Kiểm thử và publish
+
+1. Build tất cả module hiện có bằng `clean test bootJar`: 39 Java unit tests (Auth 11, Gateway 15, Product 8, Order 5).
+2. Kiểm tra cú pháp Bash; provision PostgreSQL/RabbitMQ và xác minh 5 database/user đúng owner, đủ 20 hướng CONNECT bị từ chối giữa các DB, 3 durable queues và 5 bindings chính xác.
+3. Build Docker từ JAR đã kiểm thử. Chạy Redis và các app; override PostgreSQL loopback chỉ dành cho live tests trên runner. App startup dùng `--no-deps` để giữ port PostgreSQL của override.
+4. Chạy 4 Java live tests: Auth/PostgreSQL/restart, Gateway/JWT/Redis quota, Product CRUD/RBAC/SKU race, Order schema/constraint/JWT routing.
+5. Upload `java-test-reports` và `tested-jars`. Chỉ publish sau verify đạt, bằng `Dockerfile.runtime` và artifact đã kiểm thử.
+
+Image: `ghcr.io/dth251/md05-rikkei-project/<service>:<40-character-SHA>`, không dùng `latest`. Thay đổi một module chỉ publish/deploy module đó. Thay đổi Compose, hạ tầng hoặc workflow chọn tất cả module hiện có; docs không kích hoạt push workflow. PR docs vẫn chạy verify.
+
+## Cấu hình GitHub Actions
 
 | Loại | Tên | Nội dung |
 |---|---|---|
@@ -24,20 +28,22 @@ Workflow: `.github/workflows/ci.yml` — `Auth CI/CD`.
 | Variable | VPS_USER | deploy |
 | Variable | DEPLOY_PATH | /opt/omnichannel-ecommerce |
 | Variable | DOMAIN | md05-rikkei-project.duckdns.org |
-| Variable | DEPLOY_ENABLED | Chỉ bật `true` sau khi user deploy SSH được và VPS đã có `.env` |
-| Secret | VPS_SSH_KEY | SSH key riêng cho CI, không dùng mật khẩu root |
-| Secret | VPS_KNOWN_HOSTS | Khóa nhận diện VPS đã được kiểm tra |
+| Variable | DEPLOY_ENABLED | `true` sau khi xác minh SSH và `.env` VPS |
+| Secret | VPS_SSH_KEY | Khóa SSH riêng cho CI |
+| Secret | VPS_KNOWN_HOSTS | Host key VPS đã kiểm chứng |
 
-Publish/pull image sử dụng `GITHUB_TOKEN`, không yêu cầu PAT registry riêng. Cấu hình Docker login trên VPS dùng thư mục credential tạm, được dọn sau khi job kết thúc.
+Publish/pull dùng `GITHUB_TOKEN`. Docker login trên VPS dùng credential directory tạm, dọn khi job kết thúc. SSH kiểm tra host key nghiêm ngặt. `.env` VPS nằm ngoài release, owner `deploy`, mode 600; chứa secret riêng của môi trường VPS.
 
-Deploy chuyển cấu hình vào `/opt/omnichannel-ecommerce/releases/<SHA>`, dùng `.env` riêng bên ngoài release. Bind mount hạ tầng nằm ở đường dẫn cố định để deployment Auth không làm đổi cấu hình container PostgreSQL/RabbitMQ chỉ vì tên thư mục release mới.
+## Deploy và rollback
 
-Chỉ Auth được recreate với `--no-deps --no-build`. Script khóa deploy bằng `flock`, pull image trước, đợi health rồi smoke test. Nếu thất bại và đã có bản thành công trước, script quay về image SHA cũ và vẫn báo job thất bại.
+Chỉ `main` được deploy khi bật `DEPLOY_ENABLED`. CI chuyển cấu hình vào `/opt/omnichannel-ecommerce/releases/<SHA>` rồi gọi `deploy.sh` lần lượt cho service được chọn. Bind mount hạ tầng dùng đường dẫn cố định; project Compose giữ tên hiện có để giữ volume.
 
-Không xóa volume hoặc chạy `docker compose down -v` trên VPS. Init SQL chỉ tạo database/user khi volume PostgreSQL còn mới. Hibernate `ddl-auto=update` là lựa chọn demo; rollback image không tự rollback schema.
+`.image-tags` lưu riêng `AUTH_IMAGE_TAG`, `GATEWAY_IMAGE_TAG`, `PRODUCT_IMAGE_TAG`, `ORDER_IMAGE_TAG`. Rollout khóa bằng `flock`, pull target image, xác minh hạ tầng, recreate target bằng `--no-deps --no-build`, đợi health và smoke phù hợp. Chỉ khi thành công mới cập nhật SHA và symlink `current`. Deploy thất bại phục hồi image trước của target nếu có; vẫn báo CI thất bại. Rollback image chưa được thử bằng lỗi cưỡng bức trên VPS và không tự rollback schema Hibernate.
 
-## Trạng thái triển khai đã kiểm chứng
+Không xóa volume hoặc dùng `down -v`. PostgreSQL init chỉ provision khi volume mới; mỗi business service sở hữu DB riêng. Gateway không truy cập PostgreSQL/RabbitMQ. Redis chỉ phục vụ rate limit, có AOF. Gateway/Product/Order có giới hạn bộ nhớ để chạy trên VPS khoảng 1 GB RAM và 2 GB swap; chưa kiểm thử tải sản xuất.
 
-`DEPLOY_ENABLED=true` sau khi xác minh khóa SSH của user `deploy` và `.env` VPS. [Run triển khai thực tế](https://github.com/dth251/md05-rikkei-project/actions/runs/38132486801), SHA `5f441d2c5c85de10d0d68dcbf02a38952937c6d7`: verify, publish và deploy đều success, kết thúc 2026-10-11 10:43:21 UTC.
+## HTTPS và bằng chứng triển khai
 
-Nginx/Certbot đã được cấu hình bằng quyền root sau khi rollout Auth đạt. [Domain HTTPS](https://md05-rikkei-project.duckdns.org/) trả health UP; HTTP redirect sang HTTPS. Chứng chỉ hết hạn 2027-01-09 và `certbot.timer` active. Các lần deploy Auth tiếp theo dùng image đã kiểm thử, giữ cấu hình TLS và dữ liệu PostgreSQL/RabbitMQ.
+Nginx dùng chứng chỉ hiện có và proxy `/api/` tới Gateway loopback 8080. Root redirect `/gateway-status`; `/actuator/**` không công khai. Service và DB/MQ/Redis không bind cổng Internet. `switch-gateway-domain.sh` kiểm tra Gateway và smoke trước/sau chuyển, giữ khả năng phục hồi site cũ khi lỗi.
+
+Kết quả từng rollout, SHA riêng của service, UTC timestamp và kiểm thử domain được ghi trong [nhật ký triển khai](commits-and-deployments.md) và [kết quả kiểm thử](test-results.md). Order hiện chỉ là skeleton; publish/consume RabbitMQ, Payment và Notification chưa nằm trong release ngày 1.

@@ -1,6 +1,6 @@
 # Nhật ký commit, CI/CD và deploy
 
-Phạm vi theo yêu cầu hiện tại: hạ tầng + Auth + CI/CD. Format mốc: `NN-ten-service: noi dung thay doi`; số tăng dần theo thứ tự thực hiện. CI/CD được chuyển lên ngày 1 theo yêu cầu, nên thứ tự các mốc sau Auth được điều chỉnh so với kế hoạch 3 ngày gốc.
+Phạm vi hiện tại theo kế hoạch mới: hạ tầng, Auth, Gateway, Product CRUD và Order skeleton, kèm kiểm thử/CI/CD/VPS. Format mốc: `NN-ten-service: noi dung thay doi`, số tăng dần theo lịch sử thực tế. Không giới hạn số lần commit; hoàn thành và kiểm thử phần công việc thì commit. Các phần bên dưới ghi trạng thái tại thời điểm từng mốc, không thay thế trạng thái hiện tại ở cuối tài liệu.
 
 ## Các mốc đã push
 
@@ -29,7 +29,7 @@ Trạng thái VPS ở mỗi hàng là trạng thái tại thời điểm mốc �
 - Job `publish`: chỉ sau verify đạt; image dùng SHA đầy đủ, không dùng `latest`.
 - Job `deploy`: chỉ chạy trên `main` khi `DEPLOY_ENABLED=true`; health/smoke thành công mới ghi deployed. Nhật ký Job Summary chứa SHA, thời gian UTC và kết quả thực tế.
 
-## Trạng thái VPS
+## Trạng thái VPS tại mốc Auth ban đầu
 
 Vướng mắc SSH đã được giải quyết lúc 2026-10-11 10:29:27 UTC: public key máy vận hành được thêm vào `root` và xác minh đăng nhập bằng khóa thành công. Khóa CI riêng được cài cho user `deploy`; đã xác minh SSH và quyền sử dụng Docker. Không ghi private key/mật khẩu vào Git hoặc logs.
 
@@ -46,3 +46,56 @@ VPS Ubuntu 22.04, khoảng 1 GB RAM. Đã cài Docker Engine 29.9.0, Docker Comp
 - Kiểm tra HTTPS từ máy vận hành lúc 2026-10-11 10:44:29 UTC: [trang gốc](https://md05-rikkei-project.duckdns.org/) chuyển tới `/actuator/health`, trả `{"status":"UP"}`. HTTP redirect sang HTTPS.
 - Smoke HTTPS: health/register/login/me đạt, missing token 401, USER gọi admin 403, duplicate email 409. Không ghi password/JWT vào log.
 - Tệp kiểm chứng tạm đã được chuyển ra ngoài dự án. Khóa truy cập và bản dự phòng mật khẩu root được lưu riêng với quyền truy cập hạn chế; không commit `.env`, private key hoặc bản dự phòng mật khẩu root.
+
+## Các mốc kế hoạch mới có Gateway
+
+Thời gian commit theo Asia/Bangkok (+07:00); SHA lấy từ Git thực tế. Trạng thái trong bảng là tại mốc đó.
+
+| Mốc | SHA | Thời gian 2026-10-11 | Kiểm chứng / deploy |
+|---|---|---|---|
+| `09-docs: record vps ssh ci and https deployment evidence` | `e733376eef9c70e6153a9d793e625b19824456c2` | 17:49:05 | Đối chiếu Auth CI/VPS/domain; không thay image |
+| `10-docs: integrate verified vps and https deployment record` | `9aa11c4d9ed0212ab0d63d58b40052070b472105` | 17:51:06 | Merge PR tài liệu; Auth vẫn SHA 08 |
+| `11-api-gateway: initialize gradle webflux routes and health` | `eb33bcd13f4121263b23db451a6014907e633133` | 18:11:22 | Gradle/context/routes đạt; chưa VPS Gateway |
+| `12-api-gateway: verify auth jwt and enforce redis rate limits` | `0d2222a945c25c4cc9434e808dc3cc5c45d42e22` | 18:20:04 | 13 Java unit + 1 live test Docker; Redis down trả 503 |
+| `13-devops: deploy services independently and prepare gateway https routing` | `422f89b6ff203806fe99a115d812ebd67521dd98` | 18:22:27 | actionlint/Bash/Compose đạt; PR live test ban đầu lỗi PostgreSQL port |
+| `14-devops: preserve postgres loopback port during live integration tests` | `facfbf32d1668b4f161162cb504f771241247439` | 18:28:19 | Sửa khởi chạy app không recreate PostgreSQL; PR CI đạt |
+| `15-api-gateway: integrate jwt routing redis limits and selective deployment` | `6a9752c4bc6a157717661cc261a2c3ff060f9b44` | 18:32:06 | Merge PR #3; CI deploy Auth/Gateway + Redis đạt |
+| `16-product-service: implement catalog crud admin roles and postgres tests` | `a0ba05dac8f22f03ff052190776730da21a90cad` | 18:32:31 | 8 Java unit + 1 live; 6 request SKU trùng: 1 thành công/5 conflict |
+| `17-product-service: integrate catalog crud admin security and database ownership` | `4f97c29fae14edda496dfabc388e4d1ca16927aa` | 18:37:24 | Merge PR #4; CI deploy Product/Auth/Gateway đạt |
+| `18-order-service: add order inventory schema and isolated postgres tests` | `22ca35c3307471ce383b2e9b19b7a39f2e2a941d` | 18:38:49 | 5 Java unit + 1 live: DB riêng, constraint, JWT route skeleton |
+| `19-order-service: integrate order inventory skeleton and java live checks` | `63dd5be22f455d77af1f673fda41cb116ea2e3a3` | 18:46:33 | Merge PR #5 sau CI đạt; rollout được đối chiếu ở phần trạng thái cuối |
+| `20-api-gateway: reject redis limiter fallback and standardize gateway errors` | `fb9fff578e8c9395bf41367f6b45a97227b8053a` | 18:46:54 | 15 Java unit + 1 live; hai test mới cho Redis Lua failure/quota |
+| `21-api-gateway: reject redis limiter fallback and standardize gateway errors` | `867e87b010698c77dad07ef4ea1e745384ec24c2` | 18:51:12 | Merge PR #6 sau CI đạt; chỉ Gateway được chọn publish/deploy |
+
+## CI kế hoạch mới đã đối chiếu
+
+| Run | SHA / mốc | UTC 2026-10-11 | Kết quả thực tế |
+|---|---|---|---|
+| [PR Gateway ban đầu](https://github.com/dth251/md05-rikkei-project/actions/runs/38135335805) | `422f89b`, 13 | 11:22:47–11:24:51 | Failure: Compose bỏ port PostgreSQL local; không deploy |
+| [PR Gateway sau sửa](https://github.com/dth251/md05-rikkei-project/actions/runs/38135683515) | `facfbf3`, 14 | 11:28:26–11:31:12 | Verify success; publish/deploy skipped đúng chế độ PR |
+| [Gateway main](https://github.com/dth251/md05-rikkei-project/actions/runs/38135918524) | `6a9752c`, 15 | 11:32:08–11:38:33 | Verify/publish/deploy success |
+| [PR Product](https://github.com/dth251/md05-rikkei-project/actions/runs/38135948621) | `a0ba05d`, 16 | 11:32:38–11:35:53 | Verify success; publish/deploy skipped |
+| [Product main](https://github.com/dth251/md05-rikkei-project/actions/runs/38136242187) | `4f97c29`, 17 | 11:37:27–11:46:23 | Verify/publish/deploy success |
+| [PR Order](https://github.com/dth251/md05-rikkei-project/actions/runs/38136328782) | `22ca35c`, 18 | 11:38:57–11:42:43 | Verify success; publish/deploy skipped |
+| [Order main](https://github.com/dth251/md05-rikkei-project/actions/runs/38136798372) | `63dd5be`, 19 | 11:46:35–11:55:40 | Verify/publish/deploy success; Auth/Gateway/Product/Order được chọn do thay đổi cấu hình dùng chung |
+| [PR Gateway hardening](https://github.com/dth251/md05-rikkei-project/actions/runs/38136824938) | `fb9fff5`, 20 | 11:47:01–11:49:45 | Verify success; publish/deploy skipped |
+| [Gateway hardening main](https://github.com/dth251/md05-rikkei-project/actions/runs/38137082597) | `867e87b`, 21 | 11:51:15–12:01:47 | Verify/publish/deploy success; chỉ Gateway được chọn |
+
+Product Java live test qua HTTPS thật đạt sau rollout 17: ADMIN CRUD, USER 403, anonymous 401, validation 400, SKU trùng 409, 6 request cùng SKU đúng 1 response 201 và 5 response 409, soft-delete GET 404. Token Product live là fixture ký bằng secret của môi trường VPS, giữ trong process kiểm thử; Gateway live dùng token thật do Auth phát. Không ghi secret/token vào logs.
+
+## Trạng thái VPS cuối ngày 1
+
+Đối chiếu trực tiếp bằng SSH lúc 2026-10-11 12:33:55–12:34:07 UTC; cả `.image-tags` và image container xác nhận:
+
+| Service | Image SHA thực tế | Trạng thái |
+|---|---|---|
+| Auth | `63dd5be22f455d77af1f673fda41cb116ea2e3a3` | Healthy, loopback 8081, health UP |
+| Gateway | `867e87b010698c77dad07ef4ea1e745384ec24c2` | Healthy, loopback 8080, health UP |
+| Product | `63dd5be22f455d77af1f673fda41cb116ea2e3a3` | Healthy, loopback 8082, health UP |
+| Order skeleton | `63dd5be22f455d77af1f673fda41cb116ea2e3a3` | Healthy, loopback 8083, health UP |
+
+`current` trỏ tới release Gateway SHA `867e87b010698c77dad07ef4ea1e745384ec24c2`; mỗi service vẫn giữ SHA riêng. PostgreSQL/RabbitMQ/Redis healthy và không publish port; `.env` mode 600, owner deploy. Chạy lại verifier trên VPS đạt: 5 database/user độc lập, durable topology và private ports.
+
+HTTPS kiểm tra lúc 12:33:57 UTC: `/` tới `/gateway-status` trả UP và header `X-Gateway: api-gateway`; catalog 200, Order thiếu token 401, `/actuator/health` 404. Java `GatewayLiveTests` chạy lại qua domain trên image Gateway cuối đạt: register/login/me, JWT, 401/403, quota 429 và header IP giả không vượt giới hạn. Order là skeleton; không ghi nhận API đặt hàng hoặc Saga đã hoàn thành.
+
+Tài liệu hoàn tất ngày 1 được chuẩn bị trên `feature/day1-completion-docs`; mốc tài liệu không thay đổi image đang chạy. SHA commit và kết quả PR được ghi trong mô tả PR sau khi commit thực tế tồn tại.
