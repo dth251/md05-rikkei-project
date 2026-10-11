@@ -32,7 +32,8 @@ public class RateLimitAvailabilityFilter implements WebFilter {
             WebFilterChain chain
     ) {
         String path = exchange.getRequest().getPath().value();
-        boolean limited = ("/api/auth/login".equals(path)
+        boolean limited = (("/api/auth/login".equals(path) || "/api/auth/refresh".equals(path)
+                || "/api/auth/logout".equals(path))
                 && exchange.getRequest().getMethod() == HttpMethod.POST)
                 || path.equals("/api/orders") || path.startsWith("/api/orders/");
         if (!limited) {

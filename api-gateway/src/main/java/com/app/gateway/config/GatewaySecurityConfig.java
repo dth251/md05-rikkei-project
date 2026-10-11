@@ -24,7 +24,8 @@ public class GatewaySecurityConfig {
                 .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
                 .authorizeExchange(exchange -> exchange
                         .pathMatchers(HttpMethod.GET, "/actuator/health", "/actuator/prometheus").permitAll()
-                        .pathMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login").permitAll()
+                        .pathMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login",
+                                "/api/auth/refresh", "/api/auth/logout").permitAll()
                         .pathMatchers(HttpMethod.GET, "/api/products", "/api/products/**").permitAll()
                         .anyExchange().authenticated()
                 )

@@ -30,6 +30,17 @@ spring:
                     key-resolver: '#{@clientIpKeyResolver}'
                     redis-rate-limiter.replenishRate: 2
                     redis-rate-limiter.burstCapacity: 5
+            - id: auth-session
+              uri: ${AUTH_URI:http://auth-service:8081}
+              predicates:
+                - Path=/api/auth/refresh,/api/auth/logout
+                - Method=POST
+              filters:
+                - name: RequestRateLimiter
+                  args:
+                    key-resolver: '#{@clientIpKeyResolver}'
+                    redis-rate-limiter.replenishRate: 2
+                    redis-rate-limiter.burstCapacity: 5
             - id: auth-service
               uri: ${AUTH_URI:http://auth-service:8081}
               predicates:

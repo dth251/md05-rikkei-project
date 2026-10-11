@@ -86,6 +86,23 @@ class GatewaySecurityTests {
     }
 
     @Test
+    void refreshAndLogoutReachAuthWithoutAccessJwtWhileAddressesRemainPrivate() {
+        when(redis.hasKey(anyString())).thenReturn(Mono.just(false));
+        when(limiter.isAllowed(anyString(), anyString()))
+                .thenReturn(Mono.just(new RateLimiter.Response(true, java.util.Map.of())));
+        client.post().uri("/api/auth/refresh").exchange().expectStatus().isOk();
+        client.post().uri("/api/auth/logout").exchange().expectStatus().isOk();
+        client.get().uri("/api/auth/addresses").exchange().expectStatus().isUnauthorized();
+    }
+
+    @Test
+    void sessionEndpointsFailClosedWhenRedisIsUnavailable() {
+        when(redis.hasKey(anyString())).thenReturn(Mono.error(new IllegalStateException("unavailable")));
+        client.post().uri("/api/auth/refresh").exchange().expectStatus().isEqualTo(503);
+        client.post().uri("/api/auth/logout").exchange().expectStatus().isEqualTo(503);
+    }
+
+    @Test
     void protectedRouteRequiresJwt() {
         client.get().uri("/api/auth/me").exchange().expectStatus().isUnauthorized();
     }
