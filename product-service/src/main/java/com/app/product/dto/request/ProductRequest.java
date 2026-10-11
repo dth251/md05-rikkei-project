@@ -1,6 +1,7 @@
 package com.app.product.dto.request;
 
 import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -22,6 +23,7 @@ public record ProductRequest(
 
         @NotNull
         @DecimalMin("0.01")
+        @DecimalMax("999999999999.99")
         @Digits(integer = 12, fraction = 2)
         BigDecimal unitPrice,
 

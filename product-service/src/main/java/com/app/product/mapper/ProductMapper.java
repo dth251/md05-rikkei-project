@@ -34,7 +34,9 @@ public class ProductMapper {
                 product.getBrand(),
                 product.isActive(),
                 product.getCreatedAt(),
-                product.getUpdatedAt()
+                product.getUpdatedAt(),
+                product.getParentId(),
+                product.getAttributes()
         );
     }
 

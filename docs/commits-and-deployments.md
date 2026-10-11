@@ -242,3 +242,38 @@ CI sau commit được ghi trong PR #20; chưa có deploy mới tại checkpoint
 | 73-infrastructure | `b7e8570099f9eeef1bf035c794ca61de721a0b11` | 02:50:37 | Worktree di chuyển ra ngoài thư mục IDE, settings watcher và JSON/diff kiểm tra đạt, sáu project thật và zero error markers; PR #21 CI đang chờ, không cần deploy app |
 
 Phần Auth refresh/logout/địa chỉ tiếp theo: [auth-sessions-and-addresses.md](auth-sessions-and-addresses.md).
+
+Rollout main 72: CI 38169090727 verify/publish/deploy success; SSH
+2026-10-11 20:02:57 UTC xác nhận sáu image 72 healthy. PR #21 CI
+38169782416 toàn bộ Java/live/recovery success; sửa IDE được tích hợp bằng
+merge 76. Kiểm tra lại sau main 77: IDE biên dịch class Auth mới lúc
+03:03:01–03:03:02, sáu project thật và zero Java error markers.
+
+## Refresh/logout, địa chỉ và Gateway
+
+| Mốc | SHA | Thời gian +07:00, 2026-10-12 | Kiểm chứng / deploy thực tế |
+|---|---|---|---|
+| 74-auth-service | `481950a694826f9d2a8e471ceb5404226c520744` | 02:51:36 | 20 unit/bootJar đạt; live PostgreSQL rotation/replay, 12 concurrent refresh, address/default/ownership và restart đạt; chưa VPS tại commit |
+| 75-api-gateway | `3ec12459fab3a5e2ad028ed29bddc00f3e9d2e91` | 02:51:39 | 18 unit/bootJar đạt; PR #22 CI 38169836536 Java/live/recovery success |
+| 76-infrastructure | `4cf097455977a46f72ce7f859f58bd0b7bb68d11` | 03:02:49 | PR #21 merge sau CI; chỉ IDE/docs, không cần app rollout |
+| 77-auth-service | `b18c9a437fc82b577522c030f18d8c8abca3a289` | 03:02:52 | PR #22 merge sau CI; main 38170555620 verify/publish/deploy success, Auth/Gateway only |
+
+SSH 2026-10-11 20:15:50 UTC: Auth và Gateway image 77 healthy;
+Product/Order/Payment/Notification image 72 healthy. HTTPS domain trả 400
+cho malformed refresh credential và 401 cho address thiếu JWT. PR #21/#22
+ghi SHA, thời gian và kết quả cuối. Logout thu hồi refresh family; JWT
+stateless đã cấp tiếp tục dùng đến exp.
+
+## Product search và variants
+
+| Mốc | SHA | Thời gian +07:00, 2026-10-12 | Kiểm chứng / deploy tại checkpoint |
+|---|---|---|---|
+| 78-infrastructure | `f7f1d9f4d06606f63c8b8e803e54a1a6858de1ba` | 03:17:04 | SQL migration áp dụng/chạy lại trên local PostgreSQL đạt; giữ 65/65 sản phẩm cũ; chưa VPS |
+| 79-product-service | `4ee23243bb7b00e0dbcdbe67c59c4b0483a97fa2` | 03:18:48 | 18 unit/bootJar và 3 live qua Gateway đạt, zero fail/error/skip; đã push feature, chưa merge/VPS |
+
+Live lần đầu 2/3 đạt: assertion SKU của fixture dùng UUID chữ thường,
+khác contract SKU luôn lưu chữ hoa. Sửa expected theo contract, thêm case
+khoảng trắng Unicode/NFKC. Lần cuối 3/3 đạt: 20 request cùng tổ hợp chỉ một
+biến thể, tìm `%` theo ký tự thường, mua biến thể qua Order/Payment, reserved
+về 0 và snapshot SKU/giá vẫn giữ khi ẩn parent. Unit chạy lại sau thay đổi
+chuẩn hóa đạt 18/18. CI head và rollout sau checkpoint ghi trong PR.
