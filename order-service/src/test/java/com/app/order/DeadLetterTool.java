@@ -13,6 +13,7 @@ public final class DeadLetterTool {
     private static final Map<String, Set<String>> ROUTES = Map.of(
             "payment.order-created.q", Set.of("order.created"),
             "order.payment-result.q", Set.of("payment.succeeded", "payment.failed"),
+            "payment.order-expired.q", Set.of("order.expired", "order.refund-requested"),
             "notification.order.q", Set.of("order.confirmed", "order.cancelled"));
 
     public static void main(String[] args) throws Exception {
