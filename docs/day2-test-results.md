@@ -39,3 +39,12 @@ Sửa Compose giữ `hostname: ${RABBITMQ_HOSTNAME:-rabbitmq}`. Local và VPS đ
 - Kết quả thanh toán được ghi cùng transaction vào Payment Outbox; broker confirm/mandatory/return trước published. Live tests SUCCESS/FAILED xác nhận có đúng một outcome được publish persistent. Order compensation/Notification chưa được ghi đạt ở mốc Payment này.
 - Mốc 27 hostname: `a06da8a21f56dc5757857e921ecedd639c14be52`, 2026-10-11 20:13:55 +07:00. CI/Compose/deploy được mở rộng cho Payment với SHA riêng.
 - Order [PR #8](https://github.com/dth251/md05-rikkei-project/pull/8) merge mốc 26 tại `805d791e01c678eb47d9e047617cc3e01d73c3c7`, 20:06:20 +07:00. [Run main](https://github.com/dth251/md05-rikkei-project/actions/runs/38141855301) verify/publish/deploy success, kết thúc 13:15:54 UTC; rollout chọn bốn service do thay đổi Compose/workflow. Payment vẫn chưa deploy VPS ở thời điểm kiểm chứng local này.
+
+## Order Saga: local 2026-10-11 khoảng 20:18–20:24 +07:00
+
+- Order hiện 18 Java unit tests và 8 live tests đạt, 0 failures/errors/skipped khi bật các flags failure/recovery.
+- Consumer `payment.succeeded/payment.failed` claim event ID, khóa order bằng pessimistic write và chỉ xử lý `PENDING_PAYMENT`. Cùng transaction: reserved giảm, FAILED hoàn available, đổi trạng thái và ghi final-order Outbox event. Kiểm tra amount/user với snapshot của Order; sai thì reject, DB lỗi tạm thời thì requeue.
+- PostgreSQL/RabbitMQ thật qua Gateway: SUCCESS → CONFIRMED/available=0/reserved=0; FAILED → CANCELLED/available=1/reserved=0. Event lặp cùng ID và kết quả ngược đến muộn không đổi trạng thái cuối, không hoàn kho hai lần; đúng một final event.
+- Tắt Payment local: Order vẫn PENDING_PAYMENT, route Payment 503. Bật lại Payment healthy, consumer nhận message durable, simulate SUCCESS hoàn tất Saga. Tắt/bật RabbitMQ cũng giữ Order Outbox và publish sau recovery; hostname cố định giữ node dữ liệu.
+- USER token Saga tests là fixture ký bằng secret local; E2E Notification tiếp theo dùng USER token thật do Auth phát. Những test stop/start container chỉ bật bằng flags explicit và chạy trên local/CI runner; không ghi là đã thử failure trên VPS.
+- Mốc 29 Payment credential logging: `7e5349d6133c1e53bf917da6d5a9ab4745f71a6a`, 20:25:27 +07:00; 7 unit tests/build đạt và current reports không có generated credential. [PR #9](https://github.com/dth251/md05-rikkei-project/pull/9) chờ CI head cuối; Saga tích hợp sau Payment qua PR riêng.

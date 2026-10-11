@@ -81,7 +81,7 @@ jobs:
           if [[ -f api-gateway/build.gradle ]]; then
             docker compose up -d --wait --wait-timeout 120 redis
           fi
-          docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --wait --wait-timeout 180 postgres
+          docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --wait --wait-timeout 180 postgres rabbitmq
           docker compose up -d --no-deps --wait --wait-timeout 240 "${services[@]}"
           bash infrastructure/scripts/test-auth-live.sh
           if [[ -f api-gateway/build.gradle ]]; then
@@ -91,7 +91,7 @@ jobs:
             JWT_SECRET="$(sed -n 's/^JWT_SECRET=//p' .env)" product-service/gradlew -p product-service liveTest --no-daemon
           fi
           if [[ -f order-service/build.gradle ]]; then
-            JWT_SECRET="$(sed -n 's/^JWT_SECRET=//p' .env)" ORDER_LIVE_DB_PASSWORD="$(sed -n 's/^ORDER_DB_PASSWORD=//p' .env)" ORDER_OUTBOX_FAILURE_TEST=true order-service/gradlew -p order-service liveTest --no-daemon
+            JWT_SECRET="$(sed -n 's/^JWT_SECRET=//p' .env)" ORDER_LIVE_DB_PASSWORD="$(sed -n 's/^ORDER_DB_PASSWORD=//p' .env)" RABBITMQ_LIVE_USER="$(sed -n 's/^RABBITMQ_DEFAULT_USER=//p' .env)" RABBITMQ_LIVE_PASSWORD="$(sed -n 's/^RABBITMQ_DEFAULT_PASS=//p' .env)" ORDER_OUTBOX_FAILURE_TEST=true ORDER_SAGA_LIVE_TEST=true SAGA_RECOVERY_TEST=true order-service/gradlew -p order-service liveTest --no-daemon
           fi
           if [[ -f payment-service/build.gradle ]]; then
             docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --wait --wait-timeout 180 rabbitmq

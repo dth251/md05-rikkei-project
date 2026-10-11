@@ -30,6 +30,11 @@ spring:
     template:
       mandatory: true
     connection-timeout: 3s
+    listener:
+      simple:
+        prefetch: 1
+        missing-queues-fatal: false
+        default-requeue-rejected: true
 
 management:
   health:
