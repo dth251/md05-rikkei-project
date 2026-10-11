@@ -1,5 +1,7 @@
 # Kiểm thử Order skeleton
 
+Các dòng skeleton bên dưới là bằng chứng ngày 1. Order ngày 2 đã có API/reservation/idempotency/Outbox/Saga; xem [tests ngày 2](day2-test-results.md), [API](api-contract.md) và [runbook](day2-operations.md).
+
 Kiểm chứng local ngày 2026-10-11, Asia/Bangkok:
 
 - 5 Java tests đạt: lưu Order/OrderItem snapshot, tổng tiền, idempotency key UNIQUE theo user, constraint tồn kho không âm, quantity hợp lệ, health public và JWT bắt buộc.

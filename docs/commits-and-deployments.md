@@ -1,6 +1,6 @@
 # Nhật ký commit, CI/CD và deploy
 
-Phạm vi hiện tại theo kế hoạch mới: hạ tầng, Auth, Gateway, Product CRUD và Order skeleton, kèm kiểm thử/CI/CD/VPS. Format mốc: `NN-ten-service: noi dung thay doi`, số tăng dần theo lịch sử thực tế. Không giới hạn số lần commit; hoàn thành và kiểm thử phần công việc thì commit. Các phần bên dưới ghi trạng thái tại thời điểm từng mốc, không thay thế trạng thái hiện tại ở cuối tài liệu.
+Phạm vi hiện tại gồm ngày 2: Order WEB/POS/reservation/idempotency, RabbitMQ/Outbox, Payment mock, Saga và Notification log, kèm kiểm thử/CI/CD/VPS. Format mốc: `NN-ten-service: noi dung thay doi`, số tăng dần theo lịch sử thực tế. Không giới hạn số lần commit; hoàn thành và kiểm thử phần công việc thì commit. Các phần bên dưới ghi trạng thái tại thời điểm từng mốc, không thay thế trạng thái hiện tại ở cuối tài liệu.
 
 ## Các mốc đã push
 
@@ -99,3 +99,39 @@ Product Java live test qua HTTPS thật đạt sau rollout 17: ADMIN CRUD, USER 
 HTTPS kiểm tra lúc 12:33:57 UTC: `/` tới `/gateway-status` trả UP và header `X-Gateway: api-gateway`; catalog 200, Order thiếu token 401, `/actuator/health` 404. Java `GatewayLiveTests` chạy lại qua domain trên image Gateway cuối đạt: register/login/me, JWT, 401/403, quota 429 và header IP giả không vượt giới hạn. Order là skeleton; không ghi nhận API đặt hàng hoặc Saga đã hoàn thành.
 
 Tài liệu hoàn tất ngày 1 được chuẩn bị trên `feature/day1-completion-docs`; mốc tài liệu không thay đổi image đang chạy. SHA commit và kết quả PR được ghi trong mô tả PR sau khi commit thực tế tồn tại.
+
+## Các mốc ngày 2
+
+Thời gian commit 2026-10-11, Asia/Bangkok (+07:00). Các mốc develop và merge được cấp số khi commit thực tế tồn tại; số trên các nhánh có thể xen kẽ do PR/CI đang chạy. Không đổi hoặc force-push lịch sử.
+
+| Mốc | SHA | Thời gian +07:00 | Kiểm chứng / trạng thái tại mốc |
+|---|---|---|---|
+| `22-docs: record day one service tests and verified vps deployment` | `2de3c449b2d02fad78929b038e545ebea0147ab4` | 19:36:16 | Docs links/diff/secret, VPS/domain đạt; không đổi image |
+| `23-docs: integrate verified day one completion and deployment record` | `f98c5f9ca6a4a719d52f637b484cf527b6d69002` | 19:41:24 | [PR #7](https://github.com/dth251/md05-rikkei-project/pull/7) sau CI success; docs không deploy |
+| `24-order-service: implement atomic web pos orders and request idempotency` | `fb3b6fb14d1624446a4e7f1a65991edf0d763415` | 19:52:52 | 10 unit + 4 live đạt; 100 request/1 stock và concurrent replay; chưa VPS |
+| `25-order-service: publish durable order events through transactional outbox` | `f71f21dda709f77b25d0db3adacb4efd2d1caf6b` | 19:59:59 | 13 unit + 5 live đạt; broker failure/recovery, ACK/NACK/returns; chưa VPS |
+| `26-order-service: integrate atomic orders and durable outbox after verification` | `805d791e01c678eb47d9e047617cc3e01d73c3c7` | 20:06:20 | [PR #8](https://github.com/dth251/md05-rikkei-project/pull/8) sau CI; main rollout đạt và SSH health lúc 13:17:09 UTC |
+| `27-infrastructure: preserve rabbitmq node identity across container recreation` | `a06da8a21f56dc5757857e921ecedd639c14be52` | 20:13:55 | Durable probe sống qua recreate; giữ hostname node cũ trong .env local/VPS; chưa rollout sửa Compose |
+| `28-payment-service: consume orders simulate payments and publish idempotent outcomes` | `971cb239b905607d0e2be5c550045277ce0dc9bd` | 20:17:11 | 7 unit + 3 live đạt; own DB, duplicate, outcomes/Outbox; chưa VPS Payment |
+| `29-payment-service: disable unused default credentials in application logs` | `7e5349d6133c1e53bf917da6d5a9ab4745f71a6a` | 20:25:27 | 7 unit/build chạy lại đạt, current reports không còn generated credential; chưa VPS Payment |
+| `30-order-service: consume payment outcomes and compensate reserved inventory once` | `bea24d243aa221a61551c0d696579813a20bf0a3` | 20:30:20 | Order 18 unit + 8 live đạt, stock math/duplicate/late results/Payment recovery; chưa VPS Saga |
+| `31-payment-service: integrate verified mock payments and durable broker identity` | `ae93d718a5c2a42da27fe245f550b6d2ffc5bfed` | 20:30:49 | [PR #9](https://github.com/dth251/md05-rikkei-project/pull/9) sau head cuối CI đạt; rollout đối chiếu riêng bên dưới |
+| `32-notification-service: persist final order events once and verify saga recovery` | `178669cd946c89fc2d5a55924e6132e764999341` | 20:35:34 | 4 unit + 4 live đạt, Auth token E2E/duplicate/consumer recovery; chưa VPS Notification |
+| `33-order-service: integrate verified saga outcomes and inventory compensation` | `150cbf912f0a22865de0a94790bc4f28c3c52b2b` | 20:36:48 | [PR #10](https://github.com/dth251/md05-rikkei-project/pull/10) sau CI trên main có Payment; rollout đối chiếu riêng bên dưới |
+| `34-notification-service: integrate verified notification consumer and complete day two services` | `2f8bb9446582ea3788222b3112c8b655cea331c2` | 20:46:38 | [PR #11](https://github.com/dth251/md05-rikkei-project/pull/11) sau CI success; rollout đối chiếu riêng bên dưới |
+
+## CI ngày 2
+
+| Run | SHA / mốc | UTC 2026-10-11 | Kết quả |
+|---|---|---|---|
+| [Order API push](https://github.com/dth251/md05-rikkei-project/actions/runs/38140962975) | `fb3b6fb`, 24 | Kết thúc 12:57:27 | Verify/publish success, deploy skipped trên feature |
+| [Order PR](https://github.com/dth251/md05-rikkei-project/actions/runs/38141450051) | `f71f21d`, 25 | Kết thúc 13:04:36 | Verify success; publish/deploy skipped |
+| [Order API/Outbox main](https://github.com/dth251/md05-rikkei-project/actions/runs/38141855301) | `805d791`, 26 | 13:06:23–13:15:54 | Verify/publish/deploy success; bốn service được chọn do Compose/workflow |
+| [Hostname push](https://github.com/dth251/md05-rikkei-project/actions/runs/38142353335) | `a06da8a`, 27 | 13:14:00–13:18:37 | Success; deploy skipped trên feature |
+| [Payment PR ban đầu](https://github.com/dth251/md05-rikkei-project/actions/runs/38142595515) | `971cb23`, 28 | Kết thúc 13:22:01 | Verify success; publish/deploy skipped |
+| [Payment PR head cuối](https://github.com/dth251/md05-rikkei-project/actions/runs/38143119704) | `7e5349d`, 29 | Kết thúc 13:29:59 | Verify success; publish/deploy skipped |
+| [Saga PR](https://github.com/dth251/md05-rikkei-project/actions/runs/38143477475) | `bea24d2`, 30 | Kết thúc 13:35:43 | Verify success; publish/deploy skipped |
+| [Payment main](https://github.com/dth251/md05-rikkei-project/actions/runs/38143475079) | `ae93d71`, 31 | 13:30:52–13:43:16 | Verify/publish/deploy success; SSH lúc 13:46:40 UTC xác nhận năm app healthy đúng SHA |
+| [Notification PR](https://github.com/dth251/md05-rikkei-project/actions/runs/38143878409) | `178669c`, 32 | 13:36:54–13:43:36 | Verify success; publish/deploy skipped |
+
+Chi tiết các test, lỗi hostname đã phát hiện/sửa và giới hạn: [ngày 2](day2-test-results.md). Runbook/API: [operations](day2-operations.md), [contract](api-contract.md). Không ghi secret/fixture JWT vào nhật ký; SSH/DB kiểm chứng không mở public ports.
