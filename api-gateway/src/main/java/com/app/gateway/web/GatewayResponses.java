@@ -2,8 +2,7 @@ package com.app.gateway.web;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.time.Instant;
-import java.util.Map;
+import com.app.gateway.dto.response.ApiResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -30,12 +29,7 @@ public class GatewayResponses {
         exchange.getResponse().getHeaders().setContentType(MediaType.APPLICATION_JSON);
         byte[] bytes;
         try {
-            bytes = mapper.writeValueAsBytes(Map.of(
-                    "success", false,
-                    "message", message,
-                    "errors", Map.of(),
-                    "timestamp", Instant.now()
-            ));
+            bytes = mapper.writeValueAsBytes(ApiResponse.error(message));
         } catch (JsonProcessingException exception) {
             return Mono.error(exception);
         }
