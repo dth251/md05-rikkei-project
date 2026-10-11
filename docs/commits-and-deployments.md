@@ -119,6 +119,8 @@ Thời gian commit 2026-10-11, Asia/Bangkok (+07:00). Các mốc develop và mer
 | `32-notification-service: persist final order events once and verify saga recovery` | `178669cd946c89fc2d5a55924e6132e764999341` | 20:35:34 | 4 unit + 4 live đạt, Auth token E2E/duplicate/consumer recovery; chưa VPS Notification |
 | `33-order-service: integrate verified saga outcomes and inventory compensation` | `150cbf912f0a22865de0a94790bc4f28c3c52b2b` | 20:36:48 | [PR #10](https://github.com/dth251/md05-rikkei-project/pull/10) sau CI trên main có Payment; rollout đối chiếu riêng bên dưới |
 | `34-notification-service: integrate verified notification consumer and complete day two services` | `2f8bb9446582ea3788222b3112c8b655cea331c2` | 20:46:38 | [PR #11](https://github.com/dth251/md05-rikkei-project/pull/11) sau CI success; rollout đối chiếu riêng bên dưới |
+| `35-docs: document day two api contracts test results and six service operations` | `06973be3e8d5572d40ebb876a29a70682f74a863` | 20:50:49 | Liên kết Markdown, diff/secret checks đạt; XML local xác nhận 63 unit + 18 live; [PR #12](https://github.com/dth251/md05-rikkei-project/pull/12); không đổi image VPS |
+| `36-notification-service: allow clock margin in vps admin test fixture` | `62c8a955c7d2b91070e024e8519a8dd78585345c` | 21:18:17 | Ba Java E2E HTTPS đạt sau backdate ADMIN fixture 5 giây; một recovery test skip có chủ ý; chỉ đổi test, không đổi xác thực/nghiệp vụ |
 
 ## CI ngày 2
 
@@ -133,5 +135,31 @@ Thời gian commit 2026-10-11, Asia/Bangkok (+07:00). Các mốc develop và mer
 | [Saga PR](https://github.com/dth251/md05-rikkei-project/actions/runs/38143477475) | `bea24d2`, 30 | Kết thúc 13:35:43 | Verify success; publish/deploy skipped |
 | [Payment main](https://github.com/dth251/md05-rikkei-project/actions/runs/38143475079) | `ae93d71`, 31 | 13:30:52–13:43:16 | Verify/publish/deploy success; SSH lúc 13:46:40 UTC xác nhận năm app healthy đúng SHA |
 | [Notification PR](https://github.com/dth251/md05-rikkei-project/actions/runs/38143878409) | `178669c`, 32 | 13:36:54–13:43:36 | Verify success; publish/deploy skipped |
+| [Saga main](https://github.com/dth251/md05-rikkei-project/actions/runs/38143875230) | `150cbf9`, 33 | 13:36:51–13:55:38 | Verify/publish/deploy success; năm app được chọn, Order có consumer compensation |
+| [Docs PR head 35](https://github.com/dth251/md05-rikkei-project/actions/runs/38144830568) | `06973be`, 35 | 13:51:17–13:57:38 | Verify success với sáu app; publish/deploy skipped |
+| [Sáu app main](https://github.com/dth251/md05-rikkei-project/actions/runs/38144528920) | `2f8bb94`, 34 | 13:46:41–14:10:54 | Verify/publish/deploy success; gồm thời gian chờ main 33; cả sáu app được chọn |
 
 Chi tiết các test, lỗi hostname đã phát hiện/sửa và giới hạn: [ngày 2](day2-test-results.md). Runbook/API: [operations](day2-operations.md), [contract](api-contract.md). Không ghi secret/fixture JWT vào nhật ký; SSH/DB kiểm chứng không mở public ports.
+
+## Checkpoint VPS ngày 2, trước merge PR tài liệu/fixture #12
+
+SSH lúc 2026-10-11 14:12:47 UTC xác nhận `.image-tags` và image thực của **cả sáu app** cùng SHA `2f8bb9446582ea3788222b3112c8b655cea331c2`. `current` trỏ tới đúng release SHA này; `.env` owner deploy/mode 600.
+
+| App | Loopback port | Container / health |
+|---|---:|---|
+| Gateway | 8080 | Healthy / UP |
+| Auth | 8081 | Healthy / UP |
+| Product | 8082 | Healthy / UP |
+| Order/Inventory | 8083 | Healthy / UP |
+| Notification | 8084 | Healthy / UP |
+| Payment | 8085 | Healthy / UP |
+
+Verifier chạy lại đạt: năm DB/user, 20 hướng CONNECT chéo bị từ chối, ba durable queues/năm bindings, DB/MQ không publish port. Redis vẫn private. RabbitMQ giữ hostname node cũ `b5688ec24920`; không xóa volume/dữ liệu. HTTPS actuator trả 404.
+
+Ba Java E2E qua `https://md05-rikkei-project.duckdns.org` đạt lúc 14:16:30–14:17:39 UTC: WEB SUCCESS → CONFIRMED, POS FAILED → CANCELLED/hoàn kho, duplicate event ID và ID khác cùng order chỉ một log. USER token do Auth register/login/me cấp; ADMIN fixture ký trong process kiểm thử. DB/MQ kiểm chứng qua SSH tunnel loopback, sau đó đóng; recovery test skip có chủ ý, không stop service VPS.
+
+Lần HTTPS đầu 14:12:18–khoảng 14:13:50 UTC có một bài đạt, hai bài 401 tại ADMIN nhập kho và một bài skip. Fixture dùng iat ngay tại giờ client; Gateway/business services từ chối future iat. Backdate fixture năm giây ở mốc 36 rồi chạy lại đạt, không nới contract xác thực. Reports cả lần lỗi/lần đạt được lưu ngoài Git; không ghi lần lỗi là success.
+
+Đối chiếu 14:18:17–14:18:23 UTC: Order/Payment pending Outbox đều 0; ba queue đều ready=0/unacknowledged=0/consumers=1; Notification có bốn logs, gồm một scenario đạt từ lần đầu và ba scenario chạy lại. Chưa thử k6/load hoặc forced rollback VPS.
+
+SHA/time của mốc tài liệu cuối và merge, CI head cuối và rollout phát sinh sau khi sửa fixture được cập nhật trong [PR #12](https://github.com/dth251/md05-rikkei-project/pull/12). Bảng checkpoint trên ghi trạng thái đã kiểm chứng tại thời điểm cụ thể; không suy ra image bằng SHA main mới hơn.
