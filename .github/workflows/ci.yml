@@ -91,8 +91,7 @@ jobs:
             JWT_SECRET="$(sed -n 's/^JWT_SECRET=//p' .env)" product-service/gradlew -p product-service liveTest --no-daemon
           fi
           if [[ -f order-service/build.gradle ]]; then
-            curl --fail --silent http://127.0.0.1:8083/actuator/health | jq -e '.status == "UP"'
-            docker compose exec -T postgres psql -U postgres -d order_db -Atc "SELECT count(*) = 3 FROM information_schema.tables WHERE table_schema = 'public' AND table_name IN ('orders', 'order_items', 'inventory')" | grep -qx t
+            JWT_SECRET="$(sed -n 's/^JWT_SECRET=//p' .env)" ORDER_LIVE_DB_PASSWORD="$(sed -n 's/^ORDER_DB_PASSWORD=//p' .env)" order-service/gradlew -p order-service liveTest --no-daemon
           fi
       - name: Save Java reports
         if: always()

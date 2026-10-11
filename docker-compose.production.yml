@@ -5,3 +5,5 @@ services:
     image: ghcr.io/dth251/md05-rikkei-project/api-gateway:${GATEWAY_IMAGE_TAG:-${IMAGE_TAG:?Set a tested full commit SHA}}
   product-service:
     image: ghcr.io/dth251/md05-rikkei-project/product-service:${PRODUCT_IMAGE_TAG:-${IMAGE_TAG:?Set a tested full commit SHA}}
+  order-service:
+    image: ghcr.io/dth251/md05-rikkei-project/order-service:${ORDER_IMAGE_TAG:-${IMAGE_TAG:?Set a tested full commit SHA}}
