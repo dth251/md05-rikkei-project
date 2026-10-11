@@ -70,6 +70,8 @@ ADMIN được cấp qua thao tác quản trị database trên server sau khi t�
 | POST | `/api/products` | ADMIN | 201 |
 | PUT | `/api/products/{id}` | ADMIN | 200 |
 | DELETE | `/api/products/{id}` | ADMIN | 200, soft-delete |
+| GET | `/api/products/{parentId}/variants` | Public | 200 |
+| POST | `/api/products/{parentId}/variants` | ADMIN | 201 |
 
 POST/PUT nhận cùng request:
 
@@ -86,7 +88,9 @@ POST/PUT nhận cùng request:
 
 SKU bắt buộc, tối đa 64 ký tự, gồm chữ/số/dấu chấm/gạch dưới/gạch ngang, bắt đầu bằng chữ hoặc số; lưu dạng chữ hoa và duy nhất cả với sản phẩm đã soft-delete. Tên bắt buộc, tối đa 200 ký tự. Giá tối thiểu 0.01, tối đa 12 chữ số phần nguyên và 2 chữ số thập phân. Description tối đa 2000 ký tự; category/brand tối đa 100. Page không âm, size từ 1 đến 100. Lỗi dữ liệu trả 400; SKU trùng hoặc xung đột cập nhật trả 409.
 
-Response `data` chứa `id`, các field trên, `active`, `createdAt`, `updatedAt`. DELETE giữ dữ liệu và đánh dấu inactive; catalog/get public loại sản phẩm này và GET theo id trả 404. Thiếu token khi ghi trả 401, USER ghi trả 403. Product không quản lý tồn kho.
+Response `data` chứa `id`, các field trên, `active`, `createdAt`, `updatedAt`, `parentId` và `attributes`. DELETE giữ dữ liệu và đánh dấu inactive; xóa parent ẩn cả children. Catalog/get public loại sản phẩm này và GET theo id trả 404. Thiếu token khi ghi trả 401, USER ghi trả 403. Product không quản lý tồn kho.
+
+GET danh sách hỗ trợ `q`, `category`, `brand`, `minPrice`, `maxPrice`, `sort`; page tối đa 10000. Biến thể có SKU/giá riêng, attributes chuẩn hóa và bất biến. Contract, giới hạn, body và migration: [product-search-and-variants.md](product-search-and-variants.md).
 
 ## Gateway
 

@@ -2,6 +2,7 @@ package com.app.product.dto.response;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Map;
 
 public record ProductResponse(
         Long id,
@@ -13,6 +14,8 @@ public record ProductResponse(
         String brand,
         boolean active,
         Instant createdAt,
-        Instant updatedAt
+        Instant updatedAt,
+        Long parentId,
+        Map<String, String> attributes
 ) {
 }

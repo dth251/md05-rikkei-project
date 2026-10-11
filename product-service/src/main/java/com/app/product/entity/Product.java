@@ -1,19 +1,35 @@
 package com.app.product.entity;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.ForeignKey;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.MapKeyColumn;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import jakarta.persistence.Version;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import org.hibernate.annotations.BatchSize;
+import org.hibernate.annotations.Check;
 
 @Entity
-@Table(name = "products")
+@Table(name = "products", indexes = @Index(name = "idx_product_parent", columnList = "parent_id"),
+        uniqueConstraints = @UniqueConstraint(name = "uk_product_variant", columnNames = {"parent_id", "variant_key"}))
+@Check(constraints = "(parent_id IS NULL AND variant_key IS NULL) OR "
+        + "(parent_id IS NOT NULL AND variant_key IS NOT NULL AND parent_id <> id)")
 public class Product {
 
     @Id
@@ -37,6 +53,20 @@ public class Product {
 
     @Column(length = 100)
     private String brand;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_id", foreignKey = @ForeignKey(name = "fk_product_parent"))
+    private Product parent;
+
+    @Column(name = "variant_key", length = 64)
+    private String variantKey;
+
+    @ElementCollection
+    @CollectionTable(name = "product_attributes", joinColumns = @JoinColumn(name = "product_id"))
+    @MapKeyColumn(name = "attribute_name", length = 32)
+    @Column(name = "attribute_value", nullable = false, length = 64)
+    @BatchSize(size = 50)
+    private Map<String, String> attributes = new LinkedHashMap<>();
 
     @Column(nullable = false)
     private boolean active = true;
@@ -127,6 +157,27 @@ public class Product {
 
     public boolean isActive() {
         return active;
+    }
+
+    public Long getParentId() {
+        return parent == null ? null : parent.getId();
+    }
+
+    public Map<String, String> getAttributes() {
+        return Map.copyOf(attributes);
+    }
+
+    public void defineVariant(
+            Product parent,
+            Map<String, String> attributes,
+            String variantKey
+    ) {
+        if (id != null || this.parent != null) {
+            throw new IllegalStateException("Variant identity is immutable");
+        }
+        this.parent = parent;
+        this.attributes.putAll(attributes);
+        this.variantKey = variantKey;
     }
 
     public void setActive(
