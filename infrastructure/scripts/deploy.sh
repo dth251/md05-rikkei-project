@@ -42,6 +42,7 @@ compose=(docker compose --project-directory "$DEPLOY_ROOT" --env-file "$DEPLOY_R
 "${compose[@]}" up -d --wait --wait-timeout 180 postgres rabbitmq
 "${compose[@]}" run --rm --no-deps rabbitmq-topology
 bash infrastructure/scripts/verify-infrastructure.sh
+bash infrastructure/scripts/apply-schema.sh "$service"
 if [[ "$service" == api-gateway ]]; then
     "${compose[@]}" up -d --wait --wait-timeout 120 redis
 fi
