@@ -1,0 +1,18 @@
+# Kế hoạch xử lý bốn nhóm sau rà soát
+
+Phạm vi được yêu cầu ngày 2026-10-12. Mỗi phần phát triển trên feature, kiểm thử Java và CI, tích hợp bằng PR rồi triển khai riêng service. Chỉ đánh dấu hoàn tất khi có bằng chứng; cấu hình sẵn không đồng nghĩa đã chạy trên VPS.
+
+1. Tải và pipeline event: Outbox drain có giới hạn, backoff từng event, metrics; profiling và k6 nhiều người dùng, báo cáo cả lỗi/dropped iterations.
+2. Độ tin cậy: nhập kho idempotent; hết hạn reservation, xử lý thanh toán đến muộn; retry có giới hạn, DLQ và công cụ redrive có kiểm soát.
+3. Tính năng: refresh/logout và địa chỉ; tìm kiếm/biến thể Product; Shipping/Completed; VNPay sandbox và SMTP (mặc định, có thể đổi theo lựa chọn người dùng).
+4. Phần nộp: gRPC Product–Order, OpenAPI, dashboard/tracing, demo sự cố thật và bằng chứng khôi phục trên VPS.
+
+## Giới hạn tài nguyên và cấu hình ngoài
+
+VPS tại checkpoint đầu: 1 CPU, 969 MiB RAM, swap 2 GiB đang dùng khoảng 1.3 GiB. Không bật Elasticsearch/Grafana/tracing stack hoặc tải lớn trên cấu hình này. Các thành phần bổ sung phải có profile tách biệt, kiểm thử độc lập và điều kiện tài nguyên trước khi bật. Chưa có chứng cứ nâng cấp máy.
+
+Chưa có cấu hình VNPay sandbox/SMTP riêng. Tích hợp sẽ được kiểm thử chữ ký, callback, giao dịch và SMTP bằng môi trường thử; giao dịch thật trên sandbox và email ngoài cần cấu hình private. Không ghi credential vào repository hay báo cáo.
+
+## Bằng chứng
+
+SHA, thời gian, kiểm thử và deploy từng mốc ghi trong `commits-and-deployments.md` và PR tương ứng. Giữ nguyên dữ liệu/volume hiện có; thay đổi schema phải tương thích dữ liệu cũ, không dùng Flyway/Liquibase.
