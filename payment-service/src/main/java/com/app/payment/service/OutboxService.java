@@ -10,4 +10,6 @@ public interface OutboxService {
     List<String> pending();
 
     void publish(String eventId);
+
+    void defer(String eventId);
 }

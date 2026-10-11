@@ -3,11 +3,12 @@ package com.app.payment.entity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import java.time.Instant;
 
 @Entity
-@Table(name = "outbox_events")
+@Table(name = "outbox_events", indexes = @Index(name = "idx_outbox_due", columnList = "publishedAt,nextAttemptAt,createdAt"))
 public class OutboxEvent {
 
     @Id
@@ -24,6 +25,11 @@ public class OutboxEvent {
     private Instant createdAt;
 
     private Instant publishedAt;
+
+    @Column(nullable = false, columnDefinition = "integer default 0")
+    private int attempts;
+
+    private Instant nextAttemptAt;
 
     protected OutboxEvent() {
     }
