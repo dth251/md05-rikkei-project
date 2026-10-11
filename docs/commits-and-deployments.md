@@ -29,3 +29,5 @@ Thời gian trong bảng là giờ Asia/Bangkok (UTC+07:00), lấy từ Git comm
 SSH tới `root@42.96.2.60` hiện trả `Permission denied (publickey,password)`. Cần cấp quyền cho khóa bootstrap hiện có hoặc cung cấp đường dẫn khóa được VPS chấp nhận trước khi chạy `prepare-vps.sh`. Khóa CI riêng đã được lưu trong Actions secret; public key sẽ được cài cho user `deploy` khi bootstrap SSH hoạt động.
 
 Chưa chạy bootstrap, chưa tạo `.env` VPS, chưa xác nhận container trên VPS, domain API hoặc HTTPS. Không đánh dấu các mục này hoàn thành. Không ghi secret vào nhật ký.
+
+Kiểm tra domain ngày 2026-10-11: A record trỏ đúng `42.96.2.60`; kết nối HTTP/80 và HTTPS/443 đều chưa thành công (`curl` exit 7, HTTP status 000). Cấu hình Nginx và script `setup-domain.sh` được chuẩn bị để triển khai sau khi Auth trên VPS healthy và có quyền root SSH; chưa phải bằng chứng website online.

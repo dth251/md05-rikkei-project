@@ -68,4 +68,12 @@ Phải cấp quyền SSH cho máy vận hành trước. Sau đó chuyển public
 
 Kiểm tra SSH user deploy, `.env` và Actions secrets/variables trong [CI/CD](docs/ci-cd.md), rồi bật `DEPLOY_ENABLED=true`. Workflow chỉ deploy Auth từ main sau khi test/publish đạt. Health VPS là `http://127.0.0.1:8081/actuator/health` qua SSH; không mở port Auth, PostgreSQL hoặc RabbitMQ ra Internet.
 
-Public routing Nginx và HTTPS phải được cấu hình/kiểm chứng trước khi gửi thông tin đăng nhập qua domain. Không coi DNS trỏ đúng hoặc file workflow tồn tại là bằng chứng deploy thành công; kết quả thực tế được ghi trong docs/test-results.md.
+Sau khi Auth chạy healthy trên VPS, chạy bằng root từ thư mục release:
+
+```bash
+TLS_EMAIL=YOUR_CERTIFICATE_CONTACT_EMAIL DOMAIN=md05-rikkei-project.duckdns.org bash infrastructure/scripts/setup-domain.sh
+```
+
+Script cấu hình Nginx proxy Auth, cấp chứng chỉ Certbot, redirect HTTP sang HTTPS, rồi kiểm tra health và smoke API qua domain. Nếu UFW đang active, script mở 80/443; không thay đổi rule SSH hoặc public DB/MQ. Truy cập `/` chuyển tới `/actuator/health` để xem JSON trạng thái API; dự án hiện là backend API. Script giữ cấu hình site đã tồn tại để không ghi đè TLS khi chạy lại.
+
+Chỉ gửi thông tin đăng nhập qua domain sau khi HTTPS được kiểm chứng. Không coi DNS trỏ đúng hoặc file workflow tồn tại là bằng chứng deploy thành công; kết quả thực tế được ghi trong docs/test-results.md.
