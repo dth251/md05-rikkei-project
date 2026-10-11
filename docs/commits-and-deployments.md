@@ -224,6 +224,8 @@ Trạng thái deploy cuối được cập nhật theo image/health thực tế 
 Live Order local ở mốc expiry có 10/11 bài đạt: bài giới hạn nhận kho trả 503,
 lần kiểm tra riêng đầu trả 504. Kiểm tra riêng tiếp theo đạt; giữ nguyên
 assertion 409 và bổ sung body phản hồi để chẩn đoán lỗi trong lần chạy sau.
+Lần chạy lại toàn bộ Order local đạt 11/11, không fail/error/skip, gồm kiểm tra
+hết hạn, overflow, nhận kho đồng thời, broker outage và khôi phục Payment.
 CI head 69 chạy toàn bộ Java/live/recovery đạt. Không ghi các lần local lỗi
 thành success và không suy ra capacity từ CI.
 
@@ -231,3 +233,7 @@ Checkpoint IDE: sáu service biên dịch source/test đạt; nhập lại Gradl
 backup cache riêng của workspace, loại project tạm và classpath cũ. Chi tiết
 trong [java-ide.md](java-ide.md). SHA/time của commit cấu hình IDE và kết quả
 CI sau commit được ghi trong PR #20; chưa có deploy mới tại checkpoint này.
+
+| Mốc | SHA | Thời gian +07:00 | Kiểm chứng / deploy tại checkpoint |
+|---|---|---|---|
+| 70-infrastructure | `35c9bcb0d1354aa65560330aa4eacc77898bb904` | 2026-10-12 02:26:37 | Sáu compile source/test đạt; sáu Gradle project nhập lại, marker Java severity error bằng 0; chưa merge/deploy |

@@ -140,8 +140,9 @@ class OrderConcurrencyLiveTests {
             statement.setLong(1, product);
             assertEquals(1, statement.executeUpdate());
         }
-        assertEquals(409, send(gateway, "POST", "/api/inventory/stocks",
-                Map.of("productId", product, "quantity", 1, "idempotencyKey", UUID.randomUUID().toString()), token(900001, "ADMIN")).statusCode());
+        var rejected = send(gateway, "POST", "/api/inventory/stocks",
+                Map.of("productId", product, "quantity", 1, "idempotencyKey", UUID.randomUUID().toString()), token(900001, "ADMIN"));
+        assertEquals(409, rejected.statusCode(), rejected.body());
         assertStock(product, 2147483646, 1);
     }
 

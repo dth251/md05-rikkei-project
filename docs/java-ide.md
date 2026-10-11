@@ -39,5 +39,6 @@ classpath Spring AMQP/JWT bị thiếu. Cache Java của riêng workspace đư�
 ngoài Git, Java Language Server khởi động lại và nhập đủ sáu build. Log xác nhận
 `initialization job finished` lúc 02:21:37 và `build jobs finished` lúc
 02:22:14 (+07:00). Đối chiếu marker mới không còn lỗi thiếu dependency; còn
-một cảnh báo project encoding của Gateway. Các kết quả này không thay thế
+một cảnh báo project encoding của Gateway tại checkpoint build đầu; cấu hình
+UTF-8 sau đó đã được ghi vào preferences của project. Các kết quả này không thay thế
 kiểm thử nghiệp vụ và không phải bằng chứng deploy VPS.
