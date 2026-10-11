@@ -163,3 +163,37 @@ Lần HTTPS đầu 14:12:18–khoảng 14:13:50 UTC có một bài đạt, hai b
 Đối chiếu 14:18:17–14:18:23 UTC: Order/Payment pending Outbox đều 0; ba queue đều ready=0/unacknowledged=0/consumers=1; Notification có bốn logs, gồm một scenario đạt từ lần đầu và ba scenario chạy lại. Chưa thử k6/load hoặc forced rollback VPS.
 
 SHA/time của mốc tài liệu cuối và merge, CI head cuối và rollout phát sinh sau khi sửa fixture được cập nhật trong [PR #12](https://github.com/dth251/md05-rikkei-project/pull/12). Bảng checkpoint trên ghi trạng thái đã kiểm chứng tại thời điểm cụ thể; không suy ra image bằng SHA main mới hơn.
+
+## Ngày 3: mốc đã kiểm chứng
+
+Ngày bắt đầu 2026-10-11, tiếp tục sau 00:00 ngày 2026-10-12 (+07:00). Số tiếp tục từ Git thật. Kết quả và giới hạn tải: [day3-test-results.md](day3-test-results.md).
+
+| Mốc | SHA | Thời gian +07:00 | Kiểm chứng / deploy tại checkpoint |
+|---|---|---|---|
+| 39-infrastructure | `9981dfb29457eae8a6fbd84e7a757e7e7490b9da` | 2026-10-11 23:27:19 | Bash/diff, UFW, real forced smoke rollback VPS đạt; image/current/manifest khôi phục |
+| 40-auth-service | `a16b7d3ed78a853744d6cfe0d98c8b1d03213b48` | 23:30:27 | 12 unit/build đạt, private Prometheus + sensitive endpoint protection; chưa metrics VPS |
+| 41-product-service | `88ec1d793cb49b6adaf4bab51b1849b0359780cd` | 23:34:11 | 9 unit/build đạt sau sửa matcher; chưa metrics VPS |
+| 42-payment-service | `790654be58695e2b7bd4b6330a9f4a72ea966bfd` | 23:34:51 | 8 unit/build đạt; chưa metrics VPS |
+| 43-notification-service | `05d3e5b00e80e7bb2a4aeb8003e4bd890e4f312c` | 23:34:52 | 5 unit/build đạt, internal metrics; chưa metrics VPS |
+| 44-infrastructure | `6bca54e8d915a786eb5aa6c49b00fd57f90389fe` | 23:34:54 | [PR #13](https://github.com/dth251/md05-rikkei-project/pull/13) sau CI; [main deploy](https://github.com/dth251/md05-rikkei-project/actions/runs/38156063749) success, SSH 16:51 UTC sáu image đúng SHA/UP, pending Outbox/queues=0 |
+| 45-order-service | `dbbae4e503358e6e3fcf420dc67e35b3a673eb49` | 23:39:46 | 19 unit/build đạt; chưa metrics VPS |
+| 46-api-gateway | `10d7eadb78c61b9500a364022f1da71acce99fa7` | 23:42:28 | 16 unit/build + 3 live Product/Redis/JWT/quota đạt; actionlint đạt |
+| 47-order-service | `dcff91a022f1790e3100c344877c68446e1b8746` | 23:47:42 | Java fixture prepare/SQL race/finish local đạt: 12 orders confirmed/reserved=0 |
+| 48-infrastructure | `18ed2dcf9ecf6a1171ba18b3c4fa688e42289aee` | 23:52:53 | k6 race/order/quota, Newman 12 requests/16 assertions, resource guard stop, syntax/actionlint đạt; chưa tool main rollout |
+| 49-api-gateway | `8ece1e0a5d2b0da16e83369facad1815803746f6` | 23:53:13 | [PR #14](https://github.com/dth251/md05-rikkei-project/pull/14) sau CI 69 unit/20 live đạt; metrics main rollout đang chờ tại checkpoint này |
+
+Những mục “chưa/đang chờ” là trạng thái tại mốc, không phải khẳng định trạng thái cuối. SHA/time mốc docs/harness cuối, CI head cuối và deploy thực tế sau checkpoint được ghi trong PR tương ứng và phần hoàn tất bên dưới.
+
+| Mốc | SHA | Thời gian +07:00 | Kiểm chứng / trạng thái thực tế |
+|---|---|---|---|
+| 50-docs | `787be39088655f0ac49202178707ced0f6ee636f` | 2026-10-11 23:56:49 | README/architecture/runbook/contract; SVG→PNG đã xem, link/diff kiểm tra; chưa merge tài liệu hoàn tất |
+| 51-infrastructure | `894caa3f8804c8bde0f34cf91841e4f42d3349c1` | 23:58:47 | 9 selector cases + actionlint đạt; workflow_dispatch chọn full, first push dùng main merge base; PR #15 head CI đạt |
+| 52-api-gateway | `12538403d9a7e3be4fecf4bef13177e43a883e64` | 2026-10-12 00:07:56 | Concurrent Java quota local/VPS 401/403/429 đạt sau sequential fixture không tạo đủ burst; PR #16 head CI đạt |
+| 53-infrastructure | `fb348bd1bc12d208d8ddef5d3373fb235d7a2567` | 00:10:04 | PR #15 merge sau CI 69 unit/20 live; main deploy **Order only** success 17:19:47 UTC; SSH image/health đúng SHA |
+| 54-api-gateway | `06340098eae04131a8e8da856f746f27109916d2` | 00:16:59 | PR #16 merge sau CI; main publish/deploy **Gateway only** success 17:31:10 UTC; sáu health/queues/Outbox audit sau rollout đạt |
+| 55-infrastructure | `f5f6869653732a1814be27e35da50e88ea074b06` | 00:26:17 | Full status counters race/order; local k6 100 request 1/99 + SQL + finish đạt; VPS giảm 1/s 19×201/zero error counters, dropped 2 vẫn ghi hạn chế |
+| 56-docs | `3c51bcbe44366a6cc8b9163080c54b7086205ba0` | 00:45:34 | Report/checklist cập nhật, 46 orders finalize/Notification một log mỗi order, PNG đã xem, video 63.24s/1440×900 decode; 251 text files secret scan và 59 file links đạt; đã push feature |
+
+Main metrics 49 hoàn tất deploy sáu app 17:08:44 UTC. [Audit cuối](evidence/vps-final-audit.txt) 17:41:02–17:41:28 UTC xác nhận Gateway image 54, Order 53, Auth/Product/Payment/Notification 49; current release 54. Sáu health UP, metrics private có JVM/application tag, public metrics 404. Ba queue ready/unacked=0/consumer=1, hai pending Outbox=0; 46 fixture orders CONFIRMED/reserved=0 và 46 notification logs (mỗi order một).
+
+[PR #14](https://github.com/dth251/md05-rikkei-project/pull/14), [#15](https://github.com/dth251/md05-rikkei-project/pull/15), [#16](https://github.com/dth251/md05-rikkei-project/pull/16) có SHA/time/CI/deploy thực tế cập nhật. Head/merge tài liệu và CI cuối ghi trong PR hoàn tất để tránh cần commit chỉ để ghi SHA của chính commit. Kết quả tải lỗi/stop/throttle được lưu nguyên trong [báo cáo](day3-test-results.md); không dùng trạng thái CI đạt làm bằng chứng đạt capacity.

@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="960" viewBox="0 0 1440 960">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#64748b"/></marker>
+    <style>text{font-family:Arial,sans-serif;fill:#e2e8f0} .title{font-size:32px;font-weight:700}.label{font-size:23px;font-weight:700}.small{font-size:18px;fill:#94a3b8}.card{fill:#142034;stroke:#334155;stroke-width:2}.edge{fill:none;stroke:#64748b;stroke-width:2.5;marker-end:url(#arrow)}</style>
+  </defs>
+  <rect width="1440" height="960" fill="#0b1220"/>
+  <text x="60" y="65" class="title">MD05 · Omnichannel backend · Six independent Java apps</text>
+  <text x="60" y="102" class="small">Java 21 · Spring Boot 3.5.6 · Gradle Groovy · PostgreSQL · RabbitMQ · Redis</text>
+  <rect x="60" y="142" width="220" height="96" rx="14" class="card"/><text x="84" y="180" class="label">Client WEB / POS</text><text x="84" y="214" class="small">Postman / k6 / API</text>
+  <rect x="340" y="142" width="220" height="96" rx="14" class="card"/><text x="370" y="180" class="label">Nginx · TLS</text><text x="370" y="214" class="small">Public HTTPS :443</text>
+  <rect x="620" y="142" width="380" height="96" rx="14" fill="#133d4a" stroke="#2dd4bf"/><text x="648" y="180" class="label">API Gateway :8080</text><text x="648" y="214" class="small">JWT · request ID · Redis quotas</text>
+  <rect x="1080" y="142" width="270" height="96" rx="14" class="card"/><text x="1110" y="180" class="label">Redis · private</text><text x="1110" y="214" class="small">Fail closed: 503 / quota: 429</text>
+  <path d="M280 190H340 M560 190H620 M1000 190H1080" class="edge"/>
+  <path d="M810 238V277H205V310 M810 277H535V310 M810 277H865V310 M810 277H1195V310" class="edge"/>
+  <rect x="60" y="310" width="290" height="140" rx="14" class="card"/><text x="85" y="355" class="label">Auth :8081</text><text x="85" y="392" class="small">BCrypt · USER / ADMIN</text><text x="85" y="427" class="small">Owned database: auth_db</text>
+  <rect x="390" y="310" width="290" height="140" rx="14" class="card"/><text x="415" y="355" class="label">Product :8082</text><text x="415" y="392" class="small">Catalog CRUD · soft-delete</text><text x="415" y="427" class="small">Owned database: product_db</text>
+  <rect x="720" y="310" width="290" height="140" rx="14" class="card"/><text x="745" y="355" class="label">Order / Inventory :8083</text><text x="745" y="392" class="small">Atomic reserve · idempotency</text><text x="745" y="427" class="small">order_db · Outbox / Saga</text>
+  <rect x="1050" y="310" width="300" height="140" rx="14" class="card"/><text x="1075" y="355" class="label">Payment mock :8085</text><text x="1075" y="392" class="small">PENDING / SUCCESS / FAILED</text><text x="1075" y="427" class="small">payment_db · Outbox</text>
+  <path d="M865 450V505H535V450" class="edge"/><text x="580" y="491" class="small">Product snapshot HTTP</text>
+  <rect x="720" y="555" width="630" height="118" rx="14" fill="#352b4c" stroke="#a78bfa"/><text x="750" y="595" class="label">RabbitMQ · durable topic + persistent messages</text><text x="750" y="630" class="small">order.created → payment outcome → order final event</text><text x="750" y="656" class="small">Broker confirms · retry · consumer deduplication · ACK after DB commit</text>
+  <path d="M865 505V555 M1200 450V555 M750 555V527H900V450 M1315 555V450" class="edge"/>
+  <rect x="60" y="555" width="550" height="118" rx="14" class="card"/><text x="85" y="595" class="label">Notification :8084 · internal only</text><text x="85" y="630" class="small">One notification log per final order · no public route</text><text x="85" y="656" class="small">Owned database: notification_db · no SMTP/SMS</text>
+  <path d="M720 612H610" class="edge"/>
+  <rect x="60" y="726" width="1290" height="160" rx="14" class="card"/>
+  <text x="86" y="764" class="label">Production boundaries and operational evidence</text>
+  <text x="86" y="801" class="small">Five isolated DB users · App ports loopback · DB / MQ / Redis private · UFW public only 22 / 80 / 443</text>
+  <text x="86" y="833" class="small">Private Actuator / Prometheus · Java unit/live recovery tests · k6 read/write/race/quota measured separately</text>
+  <text x="86" y="865" class="small">At-least-once transport · Mock payments · No reservation expiry · One Gateway replica is a single point of failure</text>
+  <text x="60" y="925" class="small">Source diagram and event sequence: docs/architecture.md · No frontend application</text>
+</svg>

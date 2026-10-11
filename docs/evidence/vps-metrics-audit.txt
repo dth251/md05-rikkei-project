@@ -1,0 +1,14 @@
+2026-10-11T17:09:10Z
+PASS private Prometheus JVM metrics + application tag: 8080
+PASS private Prometheus JVM metrics + application tag: 8081
+PASS private Prometheus JVM metrics + application tag: 8082
+PASS private Prometheus JVM metrics + application tag: 8083
+PASS private Prometheus JVM metrics + application tag: 8084
+PASS private Prometheus JVM metrics + application tag: 8085
+AUTH_IMAGE_TAG=8ece1e0a5d2b0da16e83369facad1815803746f6
+GATEWAY_IMAGE_TAG=8ece1e0a5d2b0da16e83369facad1815803746f6
+PRODUCT_IMAGE_TAG=8ece1e0a5d2b0da16e83369facad1815803746f6
+ORDER_IMAGE_TAG=8ece1e0a5d2b0da16e83369facad1815803746f6
+PAYMENT_IMAGE_TAG=8ece1e0a5d2b0da16e83369facad1815803746f6
+NOTIFICATION_IMAGE_TAG=8ece1e0a5d2b0da16e83369facad1815803746f6
+2026-10-11T17:09:27Z

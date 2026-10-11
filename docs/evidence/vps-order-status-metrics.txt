@@ -1,0 +1,3 @@
+http_server_requests_seconds_count{application="order-service",error="none",exception="none",method="POST",outcome="SERVER_ERROR",status="503",uri="/api/orders"} 6
+http_server_requests_seconds_count{application="order-service",error="none",exception="none",method="POST",outcome="SUCCESS",status="200",uri="/api/orders"} 1
+http_server_requests_seconds_count{application="order-service",error="none",exception="none",method="POST",outcome="SUCCESS",status="201",uri="/api/orders"} 27
