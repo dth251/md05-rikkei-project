@@ -126,13 +126,19 @@ class GatewayLiveTests {
         long id = json.readTree(me.body()).path("data").path("id").asLong();
         assertEquals(403, send("GET", "/api/auth/admin/users/" + id, null, token).statusCode());
         int throttled = 0;
+        var burst = new java.util.ArrayList<java.util.concurrent.Callable<HttpResponse<String>>>();
         for (int index = 0; index < 20; index++) {
-            var response = send("POST", "/api/auth/login", Map.of(
+            burst.add(() -> send("POST", "/api/auth/login", Map.of(
                     "email", email, "password", "IncorrectPassword"
-            ), null);
-            assertTrue(response.statusCode() == 401 || response.statusCode() == 429);
-            if (response.statusCode() == 429) {
-                throttled++;
+            ), null));
+        }
+        try (var executor = java.util.concurrent.Executors.newFixedThreadPool(20)) {
+            for (var result : executor.invokeAll(burst)) {
+                var response = result.get();
+                assertTrue(response.statusCode() == 401 || response.statusCode() == 429);
+                if (response.statusCode() == 429) {
+                    throttled++;
+                }
             }
         }
         assertTrue(throttled > 0, "Redis login limit must produce 429");
