@@ -34,4 +34,4 @@ Vướng mắc SSH ban đầu đã giải quyết: public key máy vận hành �
 
 Kiểm tra từ máy vận hành lúc 2026-10-11 10:44:29 UTC: [trang gốc HTTPS](https://md05-rikkei-project.duckdns.org/) chuyển tới health và trả `{"status":"UP"}`. Nginx/Certbot đã cấu hình; chứng chỉ Let's Encrypt hết hạn 2027-01-09, `certbot.timer` active. Smoke qua HTTPS đạt register 201, login/me 200, thiếu token 401, USER gọi admin 403 và đăng ký trùng 409.
 
-DB/MQ không publish port; Auth chỉ bind loopback 8081 và public qua Nginx 80/443. 5 database có owner riêng và kiểm tra CONNECT isolation/durable topology đạt. Nhật ký raw không chứa credential được giữ local ở `.verification/vps-verification.log`; bằng chứng tóm tắt và liên kết CI nằm trong [commits-and-deployments.md](commits-and-deployments.md).
+DB/MQ không publish port; Auth chỉ bind loopback 8081 và public qua Nginx 80/443. 5 database có owner riêng và kiểm tra CONNECT isolation/durable topology đạt. Tệp kiểm chứng tạm đã được chuyển ra ngoài dự án; bằng chứng tóm tắt và liên kết CI nằm trong [commits-and-deployments.md](commits-and-deployments.md).

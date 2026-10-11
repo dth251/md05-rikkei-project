@@ -1,0 +1,73 @@
+server:
+  port: 8080
+  forward-headers-strategy: none
+
+spring:
+  application:
+    name: api-gateway
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:16379}
+      timeout: 1s
+      connect-timeout: 1s
+  cloud:
+    gateway:
+      server:
+        webflux:
+          httpclient:
+            connect-timeout: 3000
+            response-timeout: 10s
+          routes:
+            - id: auth-login
+              uri: ${AUTH_URI:http://auth-service:8081}
+              predicates:
+                - Path=/api/auth/login
+                - Method=POST
+              filters:
+                - name: RequestRateLimiter
+                  args:
+                    key-resolver: '#{@clientIpKeyResolver}'
+                    redis-rate-limiter.replenishRate: 2
+                    redis-rate-limiter.burstCapacity: 5
+            - id: auth-service
+              uri: ${AUTH_URI:http://auth-service:8081}
+              predicates:
+                - Path=/api/auth/**
+            - id: product-service
+              uri: ${PRODUCT_URI:http://product-service:8082}
+              predicates:
+                - Path=/api/products/**
+            - id: order-service
+              uri: ${ORDER_URI:http://order-service:8083}
+              predicates:
+                - Path=/api/orders/**,/api/inventory/**
+              filters:
+                - name: RequestRateLimiter
+                  args:
+                    key-resolver: '#{@userKeyResolver}'
+                    redis-rate-limiter.replenishRate: 20
+                    redis-rate-limiter.burstCapacity: 40
+            - id: payment-service
+              uri: ${PAYMENT_URI:http://payment-service:8085}
+              predicates:
+                - Path=/api/payments/**
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+  health:
+    redis:
+      enabled: false
+
+jwt:
+  secret: ${JWT_SECRET}
+  issuer: omnichannel-auth
+
+gateway:
+  trusted-proxies: ${TRUSTED_PROXY_IPS:127.0.0.1,::1}

@@ -18,7 +18,7 @@ call() {
     fi
     [[ "$status" == "$expected" ]] || { echo "$method $path expected $expected, received $status" >&2; exit 1; }
 }
-call GET /actuator/health 200
+call GET "${SMOKE_HEALTH_PATH:-/actuator/health}" 200
 jq -e '.status == "UP"' "$temporary/response.json" > /dev/null
 registration="$(jq -nc --arg email "$email" --arg password "$password" '{fullName:"VPS Smoke",email:$email,password:$password}')"
 credentials="$(jq -nc --arg email "$email" --arg password "$password" '{email:$email,password:$password}')"

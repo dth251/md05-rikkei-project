@@ -1,8 +1,9 @@
 # Quy ước triển khai
 
 - Java 21, Spring Boot 3.5.6, Gradle Groovy và Gradle Wrapper riêng từng service.
-- Phạm vi hiện tại: service 0 (hạ tầng) và service 1 (Auth), CI/CD và deploy VPS theo yêu cầu người dùng.
+- Phạm vi hiện tại: ngày 1 theo kế hoạch có API Gateway — hạ tầng/Auth đã có, Gateway + Redis rate limit, Product CRUD và Order skeleton; kiểm thử, CI/CD và deploy VPS từng service.
 - Phát triển trên feature/...; commit từng mốc theo số tăng dần.
+- Commit sau khi hoàn thành và kiểm thử một phần công việc; không giới hạn số lần commit theo bảng kế hoạch. Cấp số từ lịch sử Git thực tế.
 - Commit, tiêu đề PR và ghi chú CI/CD tuân format NN-ten-service: noi dung thay doi; summary/nhật ký ghi SHA, thời gian, kết quả kiểm tra và trạng thái deploy thực tế.
 - Tích hợp bằng Pull Request sau khi build và kiểm thử đạt; không force-push.
 - Không tạo shared, bootstrap, Maven, Flyway, Liquibase hoặc frontend.
