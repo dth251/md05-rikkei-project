@@ -82,10 +82,51 @@ SKU bắt buộc, tối đa 64 ký tự, gồm chữ/số/dấu chấm/gạch d�
 
 Response `data` chứa `id`, các field trên, `active`, `createdAt`, `updatedAt`. DELETE giữ dữ liệu và đánh dấu inactive; catalog/get public loại sản phẩm này và GET theo id trả 404. Thiếu token khi ghi trả 401, USER ghi trả 403. Product không quản lý tồn kho.
 
-## Gateway và Order skeleton
+## Gateway
 
 Gateway giữ nguyên prefix API, xác minh JWT, loại header giả mạo identity, trả `X-Gateway: api-gateway` và request ID. Login giới hạn theo IP: 2 request/giây, burst 5; `/api/orders/**` theo user ID: 20 request/giây, burst 40. Vượt quota trả 429. Redis không hoạt động khi áp dụng quota trả 503; backend không truy cập được trả 503. IP header chỉ được tin từ proxy cấu hình; Nginx ghi đè IP client.
 
 `GET /gateway-status` trên domain trả trạng thái Gateway; `/` redirect tới đó. `/actuator/**` không công khai trên domain. Redis không thuộc health dependency của Gateway: health UP không chứng minh các route phụ thuộc Redis đang phục vụ.
 
-Order hiện chỉ có security, health và schema `orders`, `order_items`, `inventory` trong DB riêng. `/api/orders` thiếu JWT trả 401; JWT hợp lệ tới skeleton trả 404. Route `/api/inventory/**` cũng đi tới Order. API đặt hàng WEB/POS, atomic reservation, idempotency xử lý request và Saga sẽ triển khai ngày 2. Route Payment đã được khai báo cho ngày 2 nhưng service chưa chạy.
+## Order và Inventory
+
+| Method | Endpoint | Quyền | Thành công |
+|---|---|---|---|
+| POST | `/api/orders` | USER/ADMIN | 201 lần tạo đầu, 200 replay |
+| GET | `/api/orders/{id}` | Chủ đơn/ADMIN | 200; người khác 404 |
+| GET | `/api/inventory/{productId}` | JWT | 200 |
+| POST | `/api/inventory/stocks` | ADMIN | 200, nhập thêm kho |
+
+```json
+{
+  "channel": "WEB",
+  "idempotencyKey": "user-web-001",
+  "items": [{ "productId": 1, "quantity": 2 }]
+}
+```
+
+Channel là WEB/POS. Key bắt buộc, tối đa 128 ký tự, duy nhất theo user. Items có 1–50 sản phẩm khác nhau; quantity 1–10000. User ID lấy từ JWT, giá/SKU/name lấy snapshot Product; client không truyền giá. Không đủ kho 409; không có Product 404; catalog không truy cập được 503. Tổng tiền hỗ trợ tối đa 16 chữ số phần nguyên/2 thập phân. Order, reservation và `order.created` Outbox nằm trong một transaction; thất bại rollback tất cả.
+
+Replay cùng key và cùng channel/items/quantity trả cùng order, không giữ kho hay tạo event lần nữa. Đổi nội dung trả 409; thứ tự items không làm đổi fingerprint. Replay đơn đã có không phụ thuộc Product đang hoạt động. Request thất bại chưa lưu đơn không chiếm key. Response `data`: `id`, `userId`, `channel`, `status`, `totalAmount`, `items` (snapshot), `createdAt`.
+
+Nhập kho nhận `{"productId":1,"quantity":10}`; quantity 1–1000000. Đây là thao tác cộng kho, chưa có idempotency key cho nhập kho. Response inventory: `productId`, `available`, `reserved`. Tổng available/reserved được giới hạn để hoàn kho không tràn số nguyên. WEB/POS cùng dùng một inventory trong Order DB.
+
+## Payment mock
+
+| Method | Endpoint | Quyền | Thành công |
+|---|---|---|---|
+| GET | `/api/payments/{id}` | Chủ đơn/ADMIN | 200 |
+| GET | `/api/payments/by-order/{orderId}` | Chủ đơn/ADMIN | 200, 404 khi chưa có/không được đọc |
+| POST | `/api/payments/{id}/simulate` | ADMIN | 200 |
+
+Consumer `order.created` tạo payment PENDING bất đồng bộ; client có thể nhận 404 trước khi consumer xử lý. Simulate nhận `{"status":"SUCCESS"}` hoặc `{"status":"FAILED"}`. PENDING/enum sai 400; cùng kết quả replay 200; đổi kết quả sau hoàn tất 409. Thiếu JWT 401, USER simulate 403. Response: `id`, `orderId`, `userId`, `amount`, `status`, `createdAt`, `completedAt`.
+
+Payment result ghi cùng transaction vào Payment Outbox. Order nhận SUCCESS → CONFIRMED và trừ reserved; FAILED → CANCELLED, trừ reserved và hoàn available đúng một lần. Khóa đơn, event ID và trạng thái cuối ngăn duplicate hoặc kết quả ngược đến muộn làm đổi kho lần nữa. Đây là thanh toán mock, chưa tích hợp cổng tiền thật/refund/webhook.
+
+## Notification và event contract
+
+Notification không có API client hoặc Gateway route. Consumer ghi một notification log cho mỗi order final vào DB riêng; MVP chưa gửi email/SMS. Event IDs và UNIQUE order ID chống duplicate delivery.
+
+Event JSON của mỗi service tự sở hữu gồm `eventId` (UUID), `type`, `orderId`, `userId`, `amount`, `paymentId`, `occurredAt` (ISO UTC). `paymentId=null` với `order.created`; các outcome/final events có payment ID. Exchange topic durable `commerce.events`; ba durable queues và năm bindings như kế hoạch. Routing: `order.created` → `payment.succeeded/payment.failed` → `order.confirmed/order.cancelled`.
+
+Order/Payment có transactional Outbox, persistent messages và broker confirms/returns. Consumer ACK sau local DB commit và deduplicate. Delivery là at-least-once; không tuyên bố exactly-once transport. Payload sai bị reject, chưa có malformed-event DLQ/replay tool; sự cố DB/MQ tạm thời được thử lại. Reservation chưa có timeout/hủy tự động: Payment dừng hoặc chưa simulate thì order giữ PENDING_PAYMENT đến khi xử lý tiếp.

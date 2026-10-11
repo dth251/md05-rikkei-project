@@ -1,6 +1,6 @@
 # Kết quả kiểm thử
 
-Phạm vi hiện tại: hạ tầng/Auth, Gateway + Redis rate limit, Product CRUD và Order skeleton theo ngày 1 của kế hoạch mới. Các phần Auth ban đầu bên dưới là bằng chứng lịch sử; kết quả cho phạm vi mới nằm ở cuối tài liệu. Thời gian kiểm chứng local: 2026-10-11, múi giờ Asia/Bangkok (UTC+07:00).
+Phạm vi hiện tại gồm ngày 2: Order WEB/POS, atomic reservation/idempotency, Outbox/RabbitMQ, Payment mock, Saga và Notification log. Các phần Auth/ngày 1 bên dưới là bằng chứng lịch sử tại từng mốc; kết quả mới nằm ở cuối tài liệu. Thời gian local: 2026-10-11, Asia/Bangkok (UTC+07:00).
 
 ## Kiểm chứng local
 
@@ -55,4 +55,23 @@ Product live test qua HTTPS thật đã đạt sau rollout 17, gồm CRUD/RBAC/v
 
 Đối chiếu VPS ngày 2026-10-11 12:33–12:35 UTC: Auth/Product/Order chạy image `63dd5be`, Gateway chạy `867e87b`; bốn container healthy và health nội bộ UP. PostgreSQL/RabbitMQ/Redis healthy, không public port; verifier hạ tầng chạy lại đạt. Java Gateway live test chạy lại qua HTTPS trên bản Gateway cuối đạt, bao gồm token thật do Auth cấp và Redis 429. Root tới `/gateway-status` UP, catalog 200, Order thiếu token 401, actuator công khai 404. Hai run main Order/Gateway đều verify/publish/deploy success; SHA đầy đủ và thời gian nằm trong nhật ký.
 
-Order hiện chỉ là skeleton. Atomic stock reservation, request idempotency nghiệp vụ, RabbitMQ publisher/consumer, Payment, Notification, Saga, outbox và kiểm thử tải chưa được triển khai trong ngày 1. Constraint UNIQUE trong schema không đồng nghĩa đã có API idempotent.
+Tại thời điểm ngày 1, Order chỉ là skeleton; các nghiệp vụ ngày 2 chưa được triển khai. Constraint UNIQUE trong schema ngày 1 không đồng nghĩa đã có API idempotent.
+
+## Ngày 2
+
+Reports local xác nhận 63 unit + 18 live Java tests, 0 failures/errors khi bật recovery flags:
+
+| Module | Unit | Live | Phạm vi |
+|---|---:|---:|---|
+| Auth | 11 | 1 | Register/login/me, JWT/RBAC, PostgreSQL/restart |
+| Gateway | 15 | 1 | JWT/routing, Redis 429/fail-closed |
+| Product | 8 | 1 | CRUD/RBAC, SKU concurrency/soft-delete |
+| Order | 18 | 8 | WEB/POS, 100-request stock race, concurrent replay, Outbox, Saga, Payment/broker recovery |
+| Payment | 7 | 3 | Pending consumer, ownership/simulate, duplicate protection, concurrent outcome, Outbox |
+| Notification | 4 | 4 | Log uniqueness, real Auth USER token E2E, duplicate delivery, consumer recovery |
+
+Chi tiết SHA/thời gian/kịch bản đã chạy và các lỗi phát hiện/sửa: [day2-test-results.md](day2-test-results.md). Runbook: [day2-operations.md](day2-operations.md). CI chạy lại tất cả module trên mỗi head PR; publish/deploy chỉ sau verify đạt.
+
+Order/Payment có Outbox; consumer idempotent và Saga stock compensation đã kiểm thử thực tế. Chưa có k6/load production, tự hủy reservation, thanh toán thật, email/SMS, malformed-event DLQ/replay hoặc thử rollback cưỡng bức trên VPS. Không tuyên bố exactly-once transport.
+
+Main sáu app SHA `2f8bb9446582ea3788222b3112c8b655cea331c2` đã verify/publish/deploy success; SSH 2026-10-11 14:12:47 UTC xác nhận cả sáu container healthy/UP, image đúng SHA và chỉ loopback. Java E2E qua HTTPS đạt 3 tests/0 failure/error lúc 14:17:39 UTC: WEB success, POS failure/hoàn kho và duplicate notification; recovery test skip có chủ ý trên VPS. Lần đầu hai bài 401 tại nhập kho ADMIN đã được ghi riêng; fixture backdate năm giây rồi chạy lại đạt, phù hợp với khả năng iat sát giờ client bị future-iat guard từ chối. Pending Outbox/backlog đều 0 lúc 14:18:23 UTC. Chi tiết lịch sử và mốc cuối: [nhật ký](commits-and-deployments.md), [PR #12](https://github.com/dth251/md05-rikkei-project/pull/12).

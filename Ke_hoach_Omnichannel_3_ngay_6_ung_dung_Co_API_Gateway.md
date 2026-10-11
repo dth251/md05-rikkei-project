@@ -809,12 +809,12 @@ Bằng chứng SHA, UTC, CI và deploy thực tế: [nhật ký](docs/commits-an
 
 ### Ngày 2: Order → Payment → Notification
 
-- [ ] `15`: Atomic reserve SQL + idempotency + API WEB/POS.
-- [ ] `16`: RabbitMQ `order.created` durable.
-- [ ] `17–18`: Payment Service mock PENDING/SUCCESS/FAILED; event results.
-- [ ] `19`: Order consume result + Saga compensation/trả kho.
-- [ ] `20–21`: Notification consumer + duplicate protection.
-- [ ] Test end-to-end qua Nginx → API Gateway, không gọi port public trực tiếp của service.
+- [x] Mốc thực tế `24–26`: Atomic reserve SQL + idempotency + API WEB/POS; Java race 100 requests/1 stock đạt.
+- [x] Mốc thực tế `25–27`: RabbitMQ `order.created` durable qua transactional Outbox; confirm/returns và broker recovery đạt.
+- [x] Mốc thực tế `28–29`, `31`: Payment mock PENDING/SUCCESS/FAILED, own Outbox/DB và duplicate protection; CI/PR đạt.
+- [x] Mốc thực tế `30`, `33`: Order consume result + Saga compensation/trả kho đúng một lần; CI/PR đạt.
+- [x] Mốc thực tế `32`, `34`: Notification consumer/log + duplicate protection; E2E/recovery local và CI/PR đạt.
+- [x] Test end-to-end qua Nginx HTTPS → API Gateway trên VPS: 3 Java tests WEB success/POS failure/duplicate notification đạt 2026-10-11 14:17:39 UTC; cả 6 app healthy và CI/CD mốc `34` thành công. Chi tiết SHA, lần test lỗi/fixture fix và giới hạn trong [nhật ký ngày 2](docs/day2-test-results.md).
 
 ### Ngày 3: VPS/CI/CD/Test/Docs
 
