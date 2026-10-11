@@ -35,3 +35,9 @@ Deploy chuyển cấu hình vào `/opt/omnichannel-ecommerce/releases/<SHA>`, d�
 Chỉ Auth được recreate với `--no-deps --no-build`. Script khóa deploy bằng `flock`, pull image trước, đợi health rồi smoke test. Nếu thất bại và đã có bản thành công trước, script quay về image SHA cũ và vẫn báo job thất bại.
 
 Không xóa volume hoặc chạy `docker compose down -v` trên VPS. Init SQL chỉ tạo database/user khi volume PostgreSQL còn mới. Hibernate `ddl-auto=update` là lựa chọn demo; rollback image không tự rollback schema.
+
+## Trạng thái triển khai đã kiểm chứng
+
+`DEPLOY_ENABLED=true` sau khi xác minh khóa SSH của user `deploy` và `.env` VPS. [Run triển khai thực tế](https://github.com/dth251/md05-rikkei-project/actions/runs/38132486801), SHA `5f441d2c5c85de10d0d68dcbf02a38952937c6d7`: verify, publish và deploy đều success, kết thúc 2026-10-11 10:43:21 UTC.
+
+Nginx/Certbot đã được cấu hình bằng quyền root sau khi rollout Auth đạt. [Domain HTTPS](https://md05-rikkei-project.duckdns.org/) trả health UP; HTTP redirect sang HTTPS. Chứng chỉ hết hạn 2027-01-09 và `certbot.timer` active. Các lần deploy Auth tiếp theo dùng image đã kiểm thử, giữ cấu hình TLS và dữ liệu PostgreSQL/RabbitMQ.

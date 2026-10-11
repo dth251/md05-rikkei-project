@@ -26,4 +26,12 @@ Run đầu tiên: [03-devops: add auth ci and selective vps deployment](https://
 
 [Run trên mốc 04-devops](https://github.com/dth251/md05-rikkei-project/actions/runs/38130745804), SHA `c694454e8687d608cecc78f6d6257eb671c18462`: verify và GHCR publish đều success; deploy skipped. [PR verify](https://github.com/dth251/md05-rikkei-project/actions/runs/38130766520) trên cùng head cũng success. Bộ kiểm thử Java với PostgreSQL thực đã chạy trên runner Ubuntu, không chỉ local Windows.
 
-VPS `42.96.2.60` chưa deploy: SSH bootstrap trả `Permission denied (publickey,password)` với khóa máy hiện tại. Actions variables/secrets đã cấu hình; `DEPLOY_ENABLED=false` cho đến khi kiểm chứng SSH user deploy và `.env` VPS. Chưa xác nhận API online hoặc HTTPS. Không coi local tests hoặc GHCR publish là bằng chứng VPS đã chạy.
+## Kiểm chứng VPS và domain
+
+Vướng mắc SSH ban đầu đã giải quyết: public key máy vận hành được cấp quyền cho root; khóa CI riêng được cấp cho user `deploy`. Cả hai đăng nhập bằng khóa đã được kiểm chứng. `.env` VPS có owner `deploy`, mode `600`; mật khẩu root cũ đã được thay sau khi xác minh SSH bằng khóa.
+
+[Auth CI/CD deploy run](https://github.com/dth251/md05-rikkei-project/actions/runs/38132486801), SHA `5f441d2c5c85de10d0d68dcbf02a38952937c6d7`, kết thúc 2026-10-11 10:43:21 UTC: verify, publish và deploy đều success. VPS chạy PostgreSQL, RabbitMQ và Auth; health/smoke nội bộ đạt.
+
+Kiểm tra từ máy vận hành lúc 2026-10-11 10:44:29 UTC: [trang gốc HTTPS](https://md05-rikkei-project.duckdns.org/) chuyển tới health và trả `{"status":"UP"}`. Nginx/Certbot đã cấu hình; chứng chỉ Let's Encrypt hết hạn 2027-01-09, `certbot.timer` active. Smoke qua HTTPS đạt register 201, login/me 200, thiếu token 401, USER gọi admin 403 và đăng ký trùng 409.
+
+DB/MQ không publish port; Auth chỉ bind loopback 8081 và public qua Nginx 80/443. 5 database có owner riêng và kiểm tra CONNECT isolation/durable topology đạt. Nhật ký raw không chứa credential được giữ local ở `.verification/vps-verification.log`; bằng chứng tóm tắt và liên kết CI nằm trong [commits-and-deployments.md](commits-and-deployments.md).

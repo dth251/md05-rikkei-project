@@ -4,6 +4,8 @@ Backend API Java 21, Spring Boot 3.5.6, Gradle Groovy, PostgreSQL và RabbitMQ. 
 
 Java được tổ chức theo phong cách [RikkeiProject_MD03](https://github.com/dth251/RikkeiProject_MD03): service interface/implementation, DTO request/response, mapper, ApiResponse và exception handler riêng mỗi service. Xem [quy ước Java](docs/coding-conventions.md), [API](docs/api-contract.md), [CI/CD](docs/ci-cd.md) và [kết quả kiểm thử](docs/test-results.md).
 
+API đã deploy tại [md05-rikkei-project.duckdns.org](https://md05-rikkei-project.duckdns.org/). Trang gốc chuyển tới `/actuator/health` và trả JSON `{"status":"UP"}`. Register/login/me phục vụ qua HTTPS; PostgreSQL/RabbitMQ giữ trong mạng Docker riêng. Xem [nhật ký deploy thực tế](docs/commits-and-deployments.md) để đối chiếu SHA và run CI.
+
 ## Chạy local trên Windows
 
 Cần Java 21, Git, Docker Desktop đang chạy và PowerShell. Mỗi lệnh chạy riêng từ thư mục dự án.
