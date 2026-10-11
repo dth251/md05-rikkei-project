@@ -33,6 +33,22 @@ Spring/JWT, chạy `Java: Reload Projects`. Khi vẫn còn classpath cũ, chạy
 Không thêm thư viện thủ công vào `java.project.referencedLibraries` và không
 thêm Maven để chữa lỗi import.
 
+Giữ Git worktree bên ngoài thư mục đang mở trong IDE, ví dụ
+`C:\md05-rikkei-worktrees\ten-feature`. `java.import.exclusions` chỉ loại build
+khỏi importer; watcher vẫn có thể nhận file Java được tạo trong bản sao và
+đưa vào `jdt.ls-java-project` không có dependency. Settings cũng loại thư mục
+kiểm chứng/worktree khỏi file watcher. Source và test của sáu service thật
+vẫn được nhập và kiểm tra bình thường.
+
+```powershell
+git worktree add C:\md05-rikkei-worktrees\ten-feature -b feature/ten-feature
+```
+
+Khi đã có worktree trong `.worktrees`, dùng `git worktree move` tới thư mục
+ngoài và kiểm tra `git worktree list`; không copy/xóa worktree vì Git cần cập
+nhật metadata và giữ thay đổi chưa commit. Chỉ làm sạch cache Java riêng
+workspace sau khi đã giữ bản sao và xác định đúng workspace.
+
 Checkpoint 2026-10-12: cả sáu `compileJava`/`compileTestJava` đạt. Cache cũ
 chứa project `wrapper-bootstrap` và API Gateway trong project Java tạm;
 classpath Spring AMQP/JWT bị thiếu. Cache Java của riêng workspace được sao lưu
