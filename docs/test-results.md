@@ -1,4 +1,4 @@
-# Kết quả kiểm thử ngày 1
+# Kết quả kiểm thử hạ tầng và Auth
 
 Phạm vi thực hiện: service 0 (hạ tầng), service 1 (Auth), CI/CD. Thời gian kiểm chứng local: 2026-10-11, múi giờ Asia/Bangkok (UTC+07:00).
 

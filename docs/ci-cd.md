@@ -1,6 +1,6 @@
-# CI/CD ngày 1
+# Auth CI/CD
 
-Workflow: `.github/workflows/ci.yml` — `Day 1 Auth CI/CD`.
+Workflow: `.github/workflows/ci.yml` — `Auth CI/CD`.
 
 ## Quy tắc push và ghi chú
 

@@ -1,4 +1,4 @@
-name: Day 1 Auth CI/CD
+name: Auth CI/CD
 
 on:
   push:
