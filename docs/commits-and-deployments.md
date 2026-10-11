@@ -192,6 +192,7 @@ Những mục “chưa/đang chờ” là trạng thái tại mốc, không ph�
 | 53-infrastructure | `fb348bd1bc12d208d8ddef5d3373fb235d7a2567` | 00:10:04 | PR #15 merge sau CI 69 unit/20 live; main deploy **Order only** success 17:19:47 UTC; SSH image/health đúng SHA |
 | 54-api-gateway | `06340098eae04131a8e8da856f746f27109916d2` | 00:16:59 | PR #16 merge sau CI; main publish/deploy **Gateway only** success 17:31:10 UTC; sáu health/queues/Outbox audit sau rollout đạt |
 | 55-infrastructure | `f5f6869653732a1814be27e35da50e88ea074b06` | 00:26:17 | Full status counters race/order; local k6 100 request 1/99 + SQL + finish đạt; VPS giảm 1/s 19×201/zero error counters, dropped 2 vẫn ghi hạn chế |
+| 56-docs | `3c51bcbe44366a6cc8b9163080c54b7086205ba0` | 00:45:34 | Report/checklist cập nhật, 46 orders finalize/Notification một log mỗi order, PNG đã xem, video 63.24s/1440×900 decode; 251 text files secret scan và 59 file links đạt; đã push feature |
 
 Main metrics 49 hoàn tất deploy sáu app 17:08:44 UTC. [Audit cuối](evidence/vps-final-audit.txt) 17:41:02–17:41:28 UTC xác nhận Gateway image 54, Order 53, Auth/Product/Payment/Notification 49; current release 54. Sáu health UP, metrics private có JVM/application tag, public metrics 404. Ba queue ready/unacked=0/consumer=1, hai pending Outbox=0; 46 fixture orders CONFIRMED/reserved=0 và 46 notification logs (mỗi order một).
 
