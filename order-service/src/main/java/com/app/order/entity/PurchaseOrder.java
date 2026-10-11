@@ -37,6 +37,9 @@ public class PurchaseOrder {
     @Column(name = "idempotency_key", nullable = false, length = 128)
     private String idempotencyKey;
 
+    @Column(length = 64)
+    private String requestFingerprint;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private SalesChannel channel;
@@ -108,5 +111,28 @@ public class PurchaseOrder {
 
     public List<OrderItem> getItems() {
         return List.copyOf(items);
+    }
+
+    public SalesChannel getChannel() {
+        return channel;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public String getRequestFingerprint() {
+        return requestFingerprint;
+    }
+
+    public void setRequestFingerprint(String requestFingerprint) {
+        this.requestFingerprint = requestFingerprint;
+    }
+
+    public void completePayment(boolean successful) {
+        if (status != OrderStatus.PENDING_PAYMENT) {
+            throw new IllegalStateException("Order already finalized");
+        }
+        status = successful ? OrderStatus.CONFIRMED : OrderStatus.CANCELLED;
     }
 }

@@ -59,11 +59,11 @@ class OrderLiveTests {
         String token = Jwts.builder().subject("1").issuer("omnichannel-auth")
                 .issuedAt(new Date()).expiration(Date.from(Instant.now().plusSeconds(60)))
                 .claim("roles", List.of("USER")).signWith(key, Jwts.SIG.HS256).compact();
-        var authenticated = client.send(HttpRequest.newBuilder(URI.create(base + "/api/orders"))
+        var authenticated = client.send(HttpRequest.newBuilder(URI.create(base + "/api/orders/999999999"))
                 .timeout(Duration.ofSeconds(15)).header("Authorization", "Bearer " + token).GET().build(),
                 HttpResponse.BodyHandlers.ofString());
-        assertEquals(404, authenticated.statusCode(), "Order business API is intentionally a day 2 milestone");
+        assertEquals(404, authenticated.statusCode(), "Unknown order must not be exposed");
         assertEquals("api-gateway", authenticated.headers().firstValue("X-Gateway").orElseThrow());
-        assertEquals("Resource not found", new ObjectMapper().readTree(authenticated.body()).path("message").asText());
+        assertEquals("Order not found", new ObjectMapper().readTree(authenticated.body()).path("message").asText());
     }
 }
