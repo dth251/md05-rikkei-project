@@ -110,6 +110,28 @@ class OrderConcurrencyLiveTests {
     }
 
     @Test
+    void concurrentReceiptRetriesAddStockOnlyOnce() throws Exception {
+        long product = product();
+        String receiptKey = UUID.randomUUID().toString();
+        var request = Map.of("productId", product, "quantity", 7, "idempotencyKey", receiptKey);
+        try (var executor = Executors.newFixedThreadPool(10)) {
+            List<Callable<HttpResponse<String>>> tasks = new ArrayList<>();
+            for (int index = 0; index < 20; index++) {
+                tasks.add(() -> send(gateway, "POST", "/api/inventory/stocks", request, token(900001, "ADMIN")));
+            }
+            for (var result : executor.invokeAll(tasks)) {
+                var response = result.get();
+                assertEquals(200, response.statusCode());
+                assertEquals(7, json.readTree(response.body()).path("data").path("available").asInt());
+            }
+        }
+        assertStock(product, 7, 0);
+        assertEquals(409, send(gateway, "POST", "/api/inventory/stocks",
+                Map.of("productId", product, "quantity", 8, "idempotencyKey", receiptKey), token(900001, "ADMIN")).statusCode());
+        assertStock(product, 7, 0);
+    }
+
+    @Test
     void stockReceiptLeavesRoomForReservedStockToBeReleased() throws Exception {
         long product = product();
         receive(product, 1);
@@ -119,7 +141,7 @@ class OrderConcurrencyLiveTests {
             assertEquals(1, statement.executeUpdate());
         }
         assertEquals(409, send(gateway, "POST", "/api/inventory/stocks",
-                Map.of("productId", product, "quantity", 1), token(900001, "ADMIN")).statusCode());
+                Map.of("productId", product, "quantity", 1, "idempotencyKey", UUID.randomUUID().toString()), token(900001, "ADMIN")).statusCode());
         assertStock(product, 2147483646, 1);
     }
 
@@ -179,9 +201,9 @@ class OrderConcurrencyLiveTests {
         int quantity
     ) throws Exception {
         assertEquals(403, send(gateway, "POST", "/api/inventory/stocks",
-                Map.of("productId", product, "quantity", quantity), token(900001, "USER")).statusCode());
+                Map.of("productId", product, "quantity", quantity, "idempotencyKey", UUID.randomUUID().toString()), token(900001, "USER")).statusCode());
         assertEquals(200, send(gateway, "POST", "/api/inventory/stocks",
-                Map.of("productId", product, "quantity", quantity), token(900001, "ADMIN")).statusCode());
+                Map.of("productId", product, "quantity", quantity, "idempotencyKey", UUID.randomUUID().toString()), token(900001, "ADMIN")).statusCode());
     }
 
     private HttpResponse<String> create(

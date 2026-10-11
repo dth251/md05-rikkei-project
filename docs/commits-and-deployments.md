@@ -197,3 +197,13 @@ Những mục “chưa/đang chờ” là trạng thái tại mốc, không ph�
 Main metrics 49 hoàn tất deploy sáu app 17:08:44 UTC. [Audit cuối](evidence/vps-final-audit.txt) 17:41:02–17:41:28 UTC xác nhận Gateway image 54, Order 53, Auth/Product/Payment/Notification 49; current release 54. Sáu health UP, metrics private có JVM/application tag, public metrics 404. Ba queue ready/unacked=0/consumer=1, hai pending Outbox=0; 46 fixture orders CONFIRMED/reserved=0 và 46 notification logs (mỗi order một).
 
 [PR #14](https://github.com/dth251/md05-rikkei-project/pull/14), [#15](https://github.com/dth251/md05-rikkei-project/pull/15), [#16](https://github.com/dth251/md05-rikkei-project/pull/16) có SHA/time/CI/deploy thực tế cập nhật. Head/merge tài liệu và CI cuối ghi trong PR hoàn tất để tránh cần commit chỉ để ghi SHA của chính commit. Kết quả tải lỗi/stop/throttle được lưu nguyên trong [báo cáo](day3-test-results.md); không dùng trạng thái CI đạt làm bằng chứng đạt capacity.
+
+## Khắc phục sau rà soát: Outbox
+
+| Mốc | SHA | Thời gian +07:00 | Kiểm chứng / deploy tại checkpoint |
+|---|---|---|---|
+| 59-order-service | `c74b44e8a6bb76a72d08750fcb42416b4099d1a5` | 2026-10-12 01:42:51 | 21 unit/bootJar đạt, NACK không chặn 101 event; chưa VPS |
+| 60-payment-service | `79ee731d572027374a89ffc8ce45121b36ad3ce9` | 01:43:07 | 13 unit/bootJar đạt; chưa VPS |
+| 61-order-service | `3dc5d27ef8bc1ff8c8996098afd3299cac51a210` | 01:51:40 | PR #18 merge sau CI 38165003440: Java và live/recovery đạt; main CI/deploy 38165583249 đang chạy |
+
+Trạng thái deploy cuối được cập nhật theo image/health thực tế và PR, không suy ra từ merge. Kế hoạch tiếp theo: [remediation-plan.md](remediation-plan.md).

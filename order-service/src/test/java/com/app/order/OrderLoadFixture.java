@@ -85,7 +85,7 @@ public class OrderLoadFixture {
                 "name", name, "unitPrice", 12.50), admin);
         expect(response, 201);
         long id = json.readTree(response.body()).path("data").path("id").asLong();
-        expect(send("POST", "/api/inventory/stocks", Map.of("productId", id, "quantity", quantity), admin), 200);
+        expect(send("POST", "/api/inventory/stocks", Map.of("productId", id, "quantity", quantity, "idempotencyKey", UUID.randomUUID().toString()), admin), 200);
         return id;
     }
 

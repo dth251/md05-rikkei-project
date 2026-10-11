@@ -3,6 +3,8 @@ package com.app.order.dto.request;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 public record StockRequest(
         @NotNull
@@ -11,6 +13,10 @@ public record StockRequest(
 
         @Positive
         @Max(1000000)
-        int quantity
+        int quantity,
+
+        @NotBlank
+        @Size(max = 128)
+        String idempotencyKey
 ) {
 }

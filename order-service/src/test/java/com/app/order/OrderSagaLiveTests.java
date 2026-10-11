@@ -96,7 +96,7 @@ class OrderSagaLiveTests {
                 "name", "Saga fixture", "unitPrice", 12.50), "ADMIN");
         assertEquals(201, product.statusCode());
         long productId = json.readTree(product.body()).path("data").path("id").asLong();
-        assertEquals(200, send("POST", "/api/inventory/stocks", Map.of("productId", productId, "quantity", 1), "ADMIN").statusCode());
+        assertEquals(200, send("POST", "/api/inventory/stocks", Map.of("productId", productId, "quantity", 1, "idempotencyKey", UUID.randomUUID().toString()), "ADMIN").statusCode());
         var response = send("POST", "/api/orders", Map.of("channel", "POS", "idempotencyKey", UUID.randomUUID().toString(),
                 "items", List.of(Map.of("productId", productId, "quantity", 1))), "USER");
         assertEquals(201, response.statusCode());

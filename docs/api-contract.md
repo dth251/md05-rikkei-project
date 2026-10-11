@@ -111,7 +111,7 @@ Channel là WEB/POS. Key bắt buộc, tối đa 128 ký tự, duy nhất theo u
 
 Replay cùng key và cùng channel/items/quantity trả cùng order, không giữ kho hay tạo event lần nữa. Đổi nội dung trả 409; thứ tự items không làm đổi fingerprint. Replay đơn đã có không phụ thuộc Product đang hoạt động. Request thất bại chưa lưu đơn không chiếm key. Response `data`: `id`, `userId`, `channel`, `status`, `totalAmount`, `items` (snapshot), `createdAt`.
 
-Nhập kho nhận `{"productId":1,"quantity":10}`; quantity 1–1000000. Đây là thao tác cộng kho, chưa có idempotency key cho nhập kho. Response inventory: `productId`, `available`, `reserved`. Tổng available/reserved được giới hạn để hoàn kho không tràn số nguyên. WEB/POS cùng dùng một inventory trong Order DB.
+Nhập kho nhận `{"productId":1,"quantity":10,"idempotencyKey":"receipt-001"}`; quantity 1–1000000, key bắt buộc/tối đa 128 ký tự. Retry phải giữ nguyên key: cộng kho đúng một lần và trả snapshot của phiếu nhập đầu tiên; dùng lại key với product/quantity khác trả 409. Phiếu và kho commit cùng transaction; lỗi rollback không chiếm key. Response inventory: `productId`, `available`, `reserved`. Tổng available/reserved được giới hạn để hoàn kho không tràn số nguyên. WEB/POS cùng dùng một inventory trong Order DB.
 
 ## Payment mock
 
