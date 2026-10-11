@@ -23,7 +23,7 @@ public class GatewaySecurityConfig {
                 .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
                 .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
                 .authorizeExchange(exchange -> exchange
-                        .pathMatchers(HttpMethod.GET, "/actuator/health").permitAll()
+                        .pathMatchers(HttpMethod.GET, "/actuator/health", "/actuator/prometheus").permitAll()
                         .pathMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login").permitAll()
                         .pathMatchers(HttpMethod.GET, "/api/products", "/api/products/**").permitAll()
                         .anyExchange().authenticated()

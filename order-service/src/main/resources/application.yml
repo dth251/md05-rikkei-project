@@ -37,13 +37,16 @@ spring:
         default-requeue-rejected: true
 
 management:
+  metrics:
+    tags:
+      application: order-service
   health:
     rabbit:
       enabled: false
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,prometheus
   endpoint:
     health:
       show-details: never

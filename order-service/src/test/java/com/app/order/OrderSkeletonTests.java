@@ -24,6 +24,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@org.springframework.boot.test.autoconfigure.actuate.observability.AutoConfigureObservability
 @ActiveProfiles("test")
 class OrderSkeletonTests {
 
@@ -38,6 +39,14 @@ class OrderSkeletonTests {
 
     @Autowired
     private MockMvc mvc;
+
+    @Test
+    void privatePrometheusExportsJvmMetricsWhileSensitiveEndpointsStayProtected() throws Exception {
+        mvc.perform(get("/actuator/prometheus")).andExpect(status().isOk())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.content()
+                        .string(org.hamcrest.Matchers.containsString("jvm_memory_used_bytes")));
+        mvc.perform(get("/actuator/env")).andExpect(status().isUnauthorized());
+    }
 
     @Test
     void savesAggregateWithProductSnapshot() {

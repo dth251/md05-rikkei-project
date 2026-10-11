@@ -22,10 +22,13 @@ spring:
       fail-on-unknown-properties: true
 
 management:
+  metrics:
+    tags:
+      application: product-service
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,prometheus
   endpoint:
     health:
       show-details: never
