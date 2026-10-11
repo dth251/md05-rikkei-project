@@ -277,3 +277,24 @@ khoảng trắng Unicode/NFKC. Lần cuối 3/3 đạt: 20 request cùng tổ h�
 biến thể, tìm `%` theo ký tự thường, mua biến thể qua Order/Payment, reserved
 về 0 và snapshot SKU/giá vẫn giữ khi ẩn parent. Unit chạy lại sau thay đổi
 chuẩn hóa đạt 18/18. CI head và rollout sau checkpoint ghi trong PR.
+
+Product head 80 `a37a5bca3b071bdd072488e9ff305f4def26cbee`, 03:19:35:
+PR #23 CI 38171736979 toàn bộ Java/live/recovery success. Merge
+81-product-service `5862f4ce70056d4d83853353e0709e3121040385`, 03:29:36.
+Main 38172436422 verify và publish sáu image đã đạt, deploy đang chạy tại
+checkpoint Shipping. Không suy ra Product VPS đã cập nhật từ trạng thái publish.
+
+## Shipping/Completed và notification stage
+
+| Mốc | SHA | Thời gian +07:00, 2026-10-12 | Kiểm chứng / deploy tại checkpoint |
+|---|---|---|---|
+| 82-infrastructure | `561ea7be9cc878ab3c0905bd146cb53be5e3a867` | 03:38:24 | SQL apply/replay giữ 63/63 đơn cũ; topology/durable policy đạt, verifier local loopback đạt; chưa VPS |
+| 83-order-service | `174802836ad8eb04c881d30282f19f003331be78` | 03:39:10 | 33 unit/bootJar đạt; fulfillment local qua Gateway/PostgreSQL đạt; chưa merge/VPS |
+| 84-notification-service | `15a94efb1c5870a4d4a83d79acf9e86a39a69ea7` | 03:39:15 | 10 unit/bootJar, 5/5 live đạt gồm 20 request/stage, stage log dedup và restart recovery; chưa merge/VPS |
+
+Order local chạy lại toàn bộ live sau source/test thay đổi: 11/11 đạt,
+zero fail/error/skip, gồm expiry/stock race, broker outage và Payment recovery.
+Notification 5/5 zero fail/error/skip. Verifier default chạy trên local có
+port test từ chối đúng ở postgres; không ghi thành success. Chế độ explicit
+`--allow-loopback` đạt, chỉ nhận loopback và giữ default không publish cho
+CI/VPS. CI head cuối và rollout phát sinh sau checkpoint ghi trong PR.

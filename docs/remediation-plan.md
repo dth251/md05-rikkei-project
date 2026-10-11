@@ -25,3 +25,9 @@ markers. Product search/variants đã đạt 18 unit và 3 live local, ở featu
 chờ CI/PR. Shipping/Completed, VNPay/SMTP, gRPC, OpenAPI, monitoring/tracing
 và profiling/k6 nhiều tài khoản trong đợt này vẫn còn công việc; không
 đánh dấu bốn nhóm hoàn tất từ các checkpoint trên.
+
+Checkpoint Shipping tiếp theo: Product được merge main 81 sau CI PR #23
+đạt, main deploy đang chạy. Shipping/Completed và notification stage đã
+đạt local Order 33 unit + 11 live, Notification 10 unit + 5 live và schema
+apply/replay; feature chờ CI/PR, chưa ghi thành deploy VPS. Phần này là
+ADMIN ghi nhận vận đơn, chưa tích hợp hãng vận chuyển hoặc gửi SMTP thật.
