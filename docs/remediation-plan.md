@@ -16,3 +16,12 @@ Chưa có cấu hình VNPay sandbox/SMTP riêng. Tích hợp sẽ được kiể
 ## Bằng chứng
 
 SHA, thời gian, kiểm thử và deploy từng mốc ghi trong `commits-and-deployments.md` và PR tương ứng. Giữ nguyên dữ liệu/volume hiện có; thay đổi schema phải tương thích dữ liệu cũ, không dùng Flyway/Liquibase.
+
+Checkpoint 2026-10-12: Outbox, nhận kho idempotent, retry/DLQ/redrive và
+reservation expiry đã qua CI và deploy. Auth refresh/logout/địa chỉ cùng
+Gateway quota đã qua CI và rollout main 77; sáu service healthy. Lỗi nhập
+Java IDE được sửa và kiểm chứng lại sau main 77: đủ sáu project, zero error
+markers. Product search/variants đã đạt 18 unit và 3 live local, ở feature
+chờ CI/PR. Shipping/Completed, VNPay/SMTP, gRPC, OpenAPI, monitoring/tracing
+và profiling/k6 nhiều tài khoản trong đợt này vẫn còn công việc; không
+đánh dấu bốn nhóm hoàn tất từ các checkpoint trên.

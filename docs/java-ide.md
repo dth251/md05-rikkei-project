@@ -58,3 +58,9 @@ ngoài Git, Java Language Server khởi động lại và nhập đủ sáu buil
 một cảnh báo project encoding của Gateway tại checkpoint build đầu; cấu hình
 UTF-8 sau đó đã được ghi vào preferences của project. Các kết quả này không thay thế
 kiểm thử nghiệp vụ và không phải bằng chứng deploy VPS.
+
+Checkpoint sau merge main 77: cache mới chỉ có sáu project thật, không còn
+`jdt.ls-java-project`. IDE đã biên dịch class refresh/session mới của Auth
+lúc 03:03:01–03:03:02 (+07:00); kiểm tra lại marker Java severity error bằng
+0. Worktree đang phát triển đặt trong `C:\md05-rikkei-worktrees`, bên ngoài
+workspace đang mở. PR #21 merge sau CI head 73 toàn bộ Java/live/recovery đạt.
