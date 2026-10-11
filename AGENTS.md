@@ -8,3 +8,5 @@
 - Mỗi service tự sở hữu DTO, security và error handlers; định dạng code xuống dòng rõ ràng.
 - Không commit secret, .env, private key hoặc .verification; không ghi secret vào logs.
 - Không xóa volume, dữ liệu hoặc ứng dụng ngoài phạm vi dự án.
+- Tuân theo docs/coding-conventions.md: service interface + impl, DTO request/response, mapper riêng và ApiResponse theo phong cách MD03.
+- Nghiệp vụ và kiểm thử service viết bằng Java; script vận hành dùng Bash/PowerShell, không đưa Python vào source.

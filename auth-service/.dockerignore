@@ -1,4 +1,7 @@
 .gradle/
-build/
+build/*
+!build/libs/
+build/libs/*
+!build/libs/app.jar
 .git/
 .env*
