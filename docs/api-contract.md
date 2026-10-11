@@ -8,6 +8,10 @@ Base URL local qua Gateway: `http://127.0.0.1:8080`. Production: `https://md05-r
 |---|---|---|---|
 | POST | `/api/auth/register` | Public | 201 |
 | POST | `/api/auth/login` | Public | 200 |
+| POST | `/api/auth/refresh` | Refresh credential | 200 |
+| POST | `/api/auth/logout` | Refresh credential | 204 |
+| GET/POST | `/api/auth/addresses` | USER/ADMIN, chính user | 200/201 |
+| GET/PUT/DELETE | `/api/auth/addresses/{id}` | USER/ADMIN, chính user | 200/200/204 |
 | GET | `/api/auth/me` | USER/ADMIN | 200 |
 | GET | `/api/auth/admin/users/{id}` | ADMIN | 200 |
 | GET | `/actuator/health` | Loopback/administration | 200, `status=UP` |
@@ -33,7 +37,9 @@ Response nghiệp vụ có dạng `ApiResponse<T>` theo MD03:
   "data": {
     "accessToken": "JWT_RETURNED_BY_SERVER",
     "tokenType": "Bearer",
-    "expiresIn": 3600,
+    "expiresIn": 900,
+    "refreshToken": "OPAQUE_CREDENTIAL_RETURNED_BY_SERVER",
+    "refreshExpiresIn": 604799,
     "user": {
       "id": 1,
       "fullName": "Demo User",
@@ -49,11 +55,11 @@ Response nghiệp vụ có dạng `ApiResponse<T>` theo MD03:
 
 Token nằm tại `data.accessToken`. Gửi `Authorization: Bearer <token>` cho API cần xác thực.
 
-JWT dùng HS256 với key tối thiểu 32 random bytes, được truyền qua `JWT_SECRET` dạng Base64. Contract: `sub` là user ID, `iss=omnichannel-auth`, `iat`, `exp`, `roles=["USER"]` hoặc `["ADMIN"]`. Thời hạn mặc định 1 giờ. Token thiếu claim, sai issuer/signature, hết hạn hoặc role lạ trả 401.
+JWT dùng HS256 với key tối thiểu 32 random bytes, được truyền qua `JWT_SECRET` dạng Base64. Contract: `sub` là user ID, `iss=omnichannel-auth`, `iat`, `exp`, `roles=["USER"]` hoặc `["ADMIN"]`. JWT mới có thời hạn mặc định 15 phút; JWT cũ giữ `exp` đã cấp. Token thiếu claim, sai issuer/signature, hết hạn hoặc role lạ trả 401.
 
 Lỗi giữ HTTP status thực tế: 400 validation/JSON, 401 xác thực, 403 quyền, 404 tài nguyên, 409 email trùng. Body có `success=false`, `data=null`, `message` và `errors` (map lỗi từng trường nếu có). Health dùng response chuẩn Spring Actuator, không bọc ApiResponse.
 
-ADMIN được cấp qua thao tác quản trị database trên server sau khi tài khoản đã đăng ký; không có endpoint public tự nâng quyền. Lấy token mới sau khi đổi role. Token đã cấp vẫn giữ quyền trong claim đến khi hết hạn; MVP chưa có refresh token, blacklist hoặc thu hồi token tức thời.
+ADMIN được cấp qua thao tác quản trị database trên server sau khi tài khoản đã đăng ký; không có endpoint public tự nâng quyền. Lấy token mới sau khi đổi role. Token đã cấp vẫn giữ quyền trong claim đến khi hết hạn. Refresh có rotation, phát hiện replay và logout thu hồi family; JWT đã cấp chưa bị thu hồi tức thời. Địa chỉ kiểm tra ownership, tối đa mười địa chỉ/một default. Chi tiết body và hành vi cạnh tranh: [auth-sessions-and-addresses.md](auth-sessions-and-addresses.md).
 
 ## Product
 
@@ -85,6 +91,8 @@ Response `data` chứa `id`, các field trên, `active`, `createdAt`, `updatedAt
 ## Gateway
 
 Gateway giữ nguyên prefix API, xác minh JWT, loại header giả mạo identity, trả `X-Gateway: api-gateway` và request ID. Login giới hạn theo IP: 2 request/giây, burst 5; `/api/orders/**` theo user ID: 20 request/giây, burst 40. Vượt quota trả 429. Redis không hoạt động khi áp dụng quota trả 503; backend không truy cập được trả 503. IP header chỉ được tin từ proxy cấu hình; Nginx ghi đè IP client.
+
+Refresh/logout dùng chung quota IP 2/s, burst 5 trên route riêng với login. Redis lỗi trả 503; địa chỉ vẫn cần JWT.
 
 `GET /gateway-status` trên domain trả trạng thái Gateway; `/` redirect tới đó. `/actuator/**` không công khai trên domain. Redis không thuộc health dependency của Gateway: health UP không chứng minh các route phụ thuộc Redis đang phục vụ. Gateway có response deadline 10 giây; nếu upstream chưa trả trước deadline, trả 504 với API error envelope. Product disconnect thường trả 503; Order phụ thuộc snapshot Product có thể nhận 503 hoặc 504 qua Gateway khi dependency/DNS/network chậm.
 

@@ -6,7 +6,7 @@ import com.app.auth.dto.request.RegisterRequest;
 import com.app.auth.dto.response.UserResponse;
 import com.app.auth.entity.User;
 import com.app.auth.repository.UserRepository;
-import com.app.auth.security.TokenService;
+import com.app.auth.service.AuthSessionService;
 import com.app.auth.config.exception.ApiException;
 import com.app.auth.mapper.UserMapper;
 import com.app.auth.service.AuthService;
@@ -22,19 +22,19 @@ public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final TokenService tokenService;
+    private final AuthSessionService sessions;
     private final UserMapper userMapper;
     private final String dummyHash;
 
     public AuthServiceImpl(
             UserRepository userRepository,
             PasswordEncoder passwordEncoder,
-            TokenService tokenService,
+            AuthSessionService sessions,
             UserMapper userMapper
     ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
-        this.tokenService = tokenService;
+        this.sessions = sessions;
         this.userMapper = userMapper;
         this.dummyHash = passwordEncoder.encode("constant-for-unknown-user-timing");
     }
@@ -58,7 +58,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public AuthResponse login(
             LoginRequest request
     ) {
@@ -71,12 +71,7 @@ public class AuthServiceImpl implements AuthService {
         if (user == null || !matches) {
             throw new ApiException(HttpStatus.UNAUTHORIZED, "Invalid email or password");
         }
-        return new AuthResponse(
-                tokenService.create(user),
-                "Bearer",
-                tokenService.expiresIn(),
-                userMapper.toResponse(user)
-        );
+        return sessions.issue(user);
     }
 
     @Override

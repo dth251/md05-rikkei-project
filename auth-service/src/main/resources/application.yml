@@ -36,7 +36,10 @@ management:
 jwt:
   secret: ${JWT_SECRET}
   issuer: omnichannel-auth
-  ttl: PT1H
+  ttl: PT15M
+
+auth:
+  refresh-ttl: P7D
 
 logging:
   level:
