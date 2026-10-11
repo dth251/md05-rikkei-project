@@ -1,0 +1,63 @@
+name: omnichannel-day1
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+      AUTH_DB_PASSWORD: ${AUTH_DB_PASSWORD:?Set AUTH_DB_PASSWORD}
+      PRODUCT_DB_PASSWORD: ${PRODUCT_DB_PASSWORD:?Set PRODUCT_DB_PASSWORD}
+      ORDER_DB_PASSWORD: ${ORDER_DB_PASSWORD:?Set ORDER_DB_PASSWORD}
+      PAYMENT_DB_PASSWORD: ${PAYMENT_DB_PASSWORD:?Set PAYMENT_DB_PASSWORD}
+      NOTIFICATION_DB_PASSWORD: ${NOTIFICATION_DB_PASSWORD:?Set NOTIFICATION_DB_PASSWORD}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./infrastructure/postgres/init-databases.sh:/docker-entrypoint-initdb.d/10-databases.sh:ro
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U "$${POSTGRES_USER}" -d postgres']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  rabbitmq:
+    image: rabbitmq:4.1-management-alpine
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-commerce_app}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:?Set RABBITMQ_DEFAULT_PASS}
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: [CMD, rabbitmq-diagnostics, -q, check_running]
+      interval: 5s
+      timeout: 10s
+      retries: 30
+
+  rabbitmq-topology:
+    image: curlimages/curl:8.16.0
+    restart: 'no'
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-commerce_app}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:?Set RABBITMQ_DEFAULT_PASS}
+    volumes:
+      - ./infrastructure/rabbitmq/definitions.json:/definitions.json:ro
+    entrypoint: [/bin/sh, -ec]
+    command:
+      - |
+        for attempt in 1 2 3 4 5 6 7 8 9 10; do
+          if curl --fail --silent --show-error --user "$${RABBITMQ_DEFAULT_USER}:$${RABBITMQ_DEFAULT_PASS}" --header 'Content-Type: application/json' --data-binary @/definitions.json http://rabbitmq:15672/api/definitions; then
+            echo 'RabbitMQ durable topology provisioned'
+            exit 0
+          fi
+          sleep 3
+        done
+        exit 1
+
+volumes:
+  postgres-data:
+  rabbitmq-data:

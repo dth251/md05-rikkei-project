@@ -1,0 +1,10 @@
+.env
+.env.*
+!.env.example
+**/build/
+**/.gradle/
+.verification/
+.worktrees/
+.idea/
+*.iml
+*.log
