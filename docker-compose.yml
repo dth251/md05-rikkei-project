@@ -22,6 +22,7 @@ services:
       retries: 20
 
   rabbitmq:
+    hostname: ${RABBITMQ_HOSTNAME:-rabbitmq}
     image: rabbitmq:4.1-management-alpine
     restart: unless-stopped
     environment:

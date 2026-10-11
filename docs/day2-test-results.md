@@ -24,3 +24,9 @@ Reports XML/HTML nằm trong `order-service/build/test-results/` và `build/repo
 - Cú pháp Bash, actionlint và production Compose đạt. Delivery là at-least-once; crash sau ACK trước DB update có thể gửi lại, consumer cần deduplicate `eventId`.
 
 Tham chiếu hành vi publisher: [Spring AMQP 3.2 confirms/returns](https://docs.spring.io/spring-amqp/reference/3.2/amqp/template.html). Payment/Notification và consumer compensation chưa có ở mốc này; không ghi nhận E2E Saga đã hoàn tất.
+
+## RabbitMQ node identity: kiểm chứng 2026-10-11 khoảng 20:10–20:13 +07:00
+
+Payment integration phát hiện lỗi vận hành trước khi commit service: recreate RabbitMQ để thêm port loopback làm hostname tự sinh thay đổi; node mới không đọc lại topology của node cũ trong volume. Ba live tests Payment ban đầu không nhận được payment mới và thất bại; event chưa gửi vẫn ở Order Outbox.
+
+Sửa Compose giữ `hostname: ${RABBITMQ_HOSTNAME:-rabbitmq}`. Local và VPS đã ghi hostname node đang chạy vào `.env` trước thay đổi để giữ dữ liệu hiện tại; `.env` VPS vẫn mode 600/owner deploy. Local được provision lại topology và consumer restart, không xóa volume/dữ liệu. Queue thử nghiệm riêng có durable=true và message delivery_mode=2 được xác nhận giữ nguyên payload qua force-recreate broker; chỉ queue thử nghiệm được xóa sau kiểm tra. Các thư mục node cũ được giữ nguyên. Bộ kiểm thử Payment chạy lại sau khi sửa; chưa ghi đạt cho lần thất bại ban đầu.

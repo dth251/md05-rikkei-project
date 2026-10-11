@@ -42,6 +42,8 @@ Chỉ `main` được deploy khi bật `DEPLOY_ENABLED`. CI chuyển cấu hình
 
 Không xóa volume hoặc dùng `down -v`. PostgreSQL init chỉ provision khi volume mới; mỗi business service sở hữu DB riêng. Gateway không truy cập PostgreSQL/RabbitMQ. Redis chỉ phục vụ rate limit, có AOF. Gateway/Product/Order có giới hạn bộ nhớ để chạy trên VPS khoảng 1 GB RAM và 2 GB swap; chưa kiểm thử tải sản xuất.
 
+RabbitMQ phải giữ hostname cố định qua recreate để dùng cùng node và thư mục dữ liệu trong volume. Với volume mới, Compose dùng `rabbitmq`. Với VPS/local đã chạy trước quy tắc này, đọc hostname hiện tại bằng `docker inspect --format '{{.Config.Hostname}}' omnichannel-day1-rabbitmq-1`, rồi đặt `RABBITMQ_HOSTNAME` bằng đúng giá trị đó trong `.env` trước rollout. Không đổi hostname tùy ý trên volume đã có dữ liệu. Môi trường local/VPS hiện tại đã giữ hostname node cũ; message persistent thử nghiệm local đã sống qua recreate. Không xóa volume hay thư mục node cũ để sửa topology.
+
 ## HTTPS và bằng chứng triển khai
 
 Nginx dùng chứng chỉ hiện có và proxy `/api/` tới Gateway loopback 8080. Root redirect `/gateway-status`; `/actuator/**` không công khai. Service và DB/MQ/Redis không bind cổng Internet. `switch-gateway-domain.sh` kiểm tra Gateway và smoke trước/sau chuyển, giữ khả năng phục hồi site cũ khi lỗi.
