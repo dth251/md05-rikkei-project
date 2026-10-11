@@ -28,6 +28,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@org.springframework.boot.test.autoconfigure.actuate.observability.AutoConfigureObservability
 @ActiveProfiles("test")
 class AuthApiTests {
 
@@ -48,6 +49,14 @@ class AuthApiTests {
 
     @Autowired
     private JwtSettings jwt;
+
+    @Test
+    void privatePrometheusExportsJvmMetricsWhileSensitiveEndpointsStayProtected() throws Exception {
+        mvc.perform(get("/actuator/prometheus")).andExpect(status().isOk())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.content()
+                        .string(org.hamcrest.Matchers.containsString("jvm_memory_used_bytes")));
+        mvc.perform(get("/actuator/env")).andExpect(status().isUnauthorized());
+    }
 
     @Test
     void registerLoginAndReadMeStoresHashAndNormalizesEmail() throws Exception {
