@@ -75,7 +75,7 @@ class AuthApiTests {
                         ))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("data.tokenType").value("Bearer"))
-                .andExpect(jsonPath("data.expiresIn").value(3600))
+                .andExpect(jsonPath("data.expiresIn").value(900))
                 .andReturn().getResponse().getContentAsString();
         String token = json.readTree(response).path("data").path("accessToken").asText();
         mvc.perform(get("/api/auth/me").header("Authorization", "Bearer " + token))

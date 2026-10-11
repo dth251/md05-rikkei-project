@@ -237,3 +237,8 @@ CI sau commit được ghi trong PR #20; chưa có deploy mới tại checkpoint
 | Mốc | SHA | Thời gian +07:00 | Kiểm chứng / deploy tại checkpoint |
 |---|---|---|---|
 | 70-infrastructure | `35c9bcb0d1354aa65560330aa4eacc77898bb904` | 2026-10-12 02:26:37 | Sáu compile source/test đạt; sáu Gradle project nhập lại, marker Java severity error bằng 0; chưa merge/deploy |
+| 71-order-service | `bdaa9fec94229dd0e14e3dc2d4c87180fcc7ea9d` | 02:28:25 | Order 11/11 live đạt, zero fail/error/skip; thêm body vào assertion overflow để chẩn đoán; CI head 71 success |
+| 72-order-service | `5fba35d89112d6a1c338eceb5f5b9554e7233dc8` | 02:41:28 | PR #20 merge sau CI 38168169242 toàn bộ Java/live/recovery đạt; main rollout đang chờ tại checkpoint |
+| 73-infrastructure | `b7e8570099f9eeef1bf035c794ca61de721a0b11` | 02:50:37 | Worktree di chuyển ra ngoài thư mục IDE, settings watcher và JSON/diff kiểm tra đạt, sáu project thật và zero error markers; PR #21 CI đang chờ, không cần deploy app |
+
+Phần Auth refresh/logout/địa chỉ tiếp theo: [auth-sessions-and-addresses.md](auth-sessions-and-addresses.md).

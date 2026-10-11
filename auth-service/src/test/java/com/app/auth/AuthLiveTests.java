@@ -61,6 +61,8 @@ class AuthLiveTests {
         ), null);
         String token = login.path("accessToken").asText();
         assertEquals("Bearer", login.path("tokenType").asText());
+        assertEquals(900, login.path("expiresIn").asLong());
+        verifyRefreshAndAddresses(id, token, login.path("refreshToken").asText(), password);
         assertEquals(id, expect("GET", "/api/auth/me", 200, null, token).path("id").asLong());
         expect("GET", "/api/auth/me", 401, null, null);
         expect("GET", "/api/auth/me", 401, null, "invalid");
@@ -126,7 +128,8 @@ class AuthLiveTests {
 
         if ("true".equals(System.getenv("AUTH_SMOKE_RESTART"))) {
             var process = new ProcessBuilder(
-                    "docker", "compose", "--project-directory", "..", "restart", "auth-service"
+                    "docker", "compose", "--project-directory",
+                    System.getenv().getOrDefault("AUTH_SMOKE_PROJECT_DIR", ".."), "restart", "auth-service"
             ).inheritIO().start();
             assertTrue(process.waitFor(30, TimeUnit.SECONDS));
             assertEquals(0, process.exitValue());
@@ -143,7 +146,7 @@ class AuthLiveTests {
     private HttpResponse<String> request(
             String method,
             String path,
-            Map<String, String> body,
+            Map<String, ?> body,
             String token
     ) throws Exception {
         var builder = HttpRequest.newBuilder(URI.create(baseUrl + path))
@@ -165,13 +168,79 @@ class AuthLiveTests {
             String method,
             String path,
             int status,
-            Map<String, String> body,
+            Map<String, ?> body,
             String token
     ) throws Exception {
         var response = request(method, path, body, token);
         assertEquals(status, response.statusCode(), method + " " + path);
+        if (status == 204) {
+            return json.nullNode();
+        }
         JsonNode responseBody = json.readTree(response.body());
         return path.equals("/actuator/health") ? responseBody : responseBody.path("data");
+    }
+
+    private void verifyRefreshAndAddresses(
+            long userId,
+            String accessToken,
+            String refreshToken,
+            String password
+    ) throws Exception {
+        assertEquals(43, refreshToken.length());
+        List<Future<HttpResponse<String>>> results = new ArrayList<>();
+        String successor = null;
+        int winners = 0;
+        try (var executor = Executors.newFixedThreadPool(6)) {
+            for (int index = 0; index < 12; index++) {
+                results.add(executor.submit(() -> request("POST", "/api/auth/refresh",
+                        Map.of("refreshToken", refreshToken), null)));
+            }
+            for (var result : results) {
+                var response = result.get(30, TimeUnit.SECONDS);
+                if (response.statusCode() == 200) {
+                    winners++;
+                    successor = json.readTree(response.body()).path("data").path("refreshToken").asText();
+                } else {
+                    assertEquals(401, response.statusCode());
+                }
+            }
+        }
+        assertEquals(1, winners);
+        expect("POST", "/api/auth/refresh", 401, Map.of("refreshToken", successor), null);
+        expect("POST", "/api/auth/logout", 204, Map.of("refreshToken", refreshToken), null);
+
+        Map<String, Object> address = Map.of("recipientName", "Live fixture", "phone", "0900000000",
+                "street", "Fixture street", "ward", "Fixture ward", "district", "Fixture district",
+                "province", "Fixture province", "defaultAddress", true);
+        long first = expect("POST", "/api/auth/addresses", 201, address, accessToken).path("id").asLong();
+        long second = expect("POST", "/api/auth/addresses", 201, address, accessToken).path("id").asLong();
+        assertFalse(expect("GET", "/api/auth/addresses/" + first, 200, null, accessToken)
+                .path("defaultAddress").asBoolean());
+        assertTrue(expect("GET", "/api/auth/addresses/" + second, 200, null, accessToken)
+                .path("defaultAddress").asBoolean());
+        String otherEmail = UUID.randomUUID() + "@example.com";
+        expect("POST", "/api/auth/register", 201,
+                Map.of("fullName", "Other fixture", "email", otherEmail, "password", password), null);
+        String other = expect("POST", "/api/auth/login", 200,
+                Map.of("email", otherEmail, "password", password), null).path("accessToken").asText();
+        expect("GET", "/api/auth/addresses/" + second, 404, null, other);
+        expect("PUT", "/api/auth/addresses/" + second, 404, address, other);
+        expect("DELETE", "/api/auth/addresses/" + second, 404, null, other);
+        expect("DELETE", "/api/auth/addresses/" + second, 204, null, accessToken);
+        assertTrue(expect("GET", "/api/auth/addresses/" + first, 200, null, accessToken)
+                .path("defaultAddress").asBoolean());
+        if (System.getenv("AUTH_SMOKE_DB_URL") != null) {
+            try (var connection = DriverManager.getConnection(System.getenv("AUTH_SMOKE_DB_URL"),
+                    "auth_user", System.getenv("AUTH_SMOKE_DB_PASSWORD"));
+                 var statement = connection.prepareStatement("SELECT count(*) FROM refresh_tokens t "
+                         + "JOIN refresh_sessions s ON s.id=t.session_id WHERE s.user_id=? AND length(t.token_hash)=64")) {
+                statement.setLong(1, userId);
+                try (var row = statement.executeQuery()) {
+                    assertTrue(row.next());
+                    assertEquals(2, row.getInt(1));
+                }
+            }
+        }
     }
 
     private void waitForHealth() throws Exception {
