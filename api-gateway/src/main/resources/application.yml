@@ -19,6 +19,17 @@ spring:
             connect-timeout: 3000
             response-timeout: 10s
           routes:
+            - id: auth-login
+              uri: ${AUTH_URI:http://auth-service:8081}
+              predicates:
+                - Path=/api/auth/login
+                - Method=POST
+              filters:
+                - name: RequestRateLimiter
+                  args:
+                    key-resolver: '#{@clientIpKeyResolver}'
+                    redis-rate-limiter.replenishRate: 2
+                    redis-rate-limiter.burstCapacity: 5
             - id: auth-service
               uri: ${AUTH_URI:http://auth-service:8081}
               predicates:
@@ -31,6 +42,12 @@ spring:
               uri: ${ORDER_URI:http://order-service:8083}
               predicates:
                 - Path=/api/orders/**,/api/inventory/**
+              filters:
+                - name: RequestRateLimiter
+                  args:
+                    key-resolver: '#{@userKeyResolver}'
+                    redis-rate-limiter.replenishRate: 20
+                    redis-rate-limiter.burstCapacity: 40
             - id: payment-service
               uri: ${PAYMENT_URI:http://payment-service:8085}
               predicates:
@@ -51,3 +68,6 @@ management:
 jwt:
   secret: ${JWT_SECRET}
   issuer: omnichannel-auth
+
+gateway:
+  trusted-proxies: ${TRUSTED_PROXY_IPS:127.0.0.1,::1}
