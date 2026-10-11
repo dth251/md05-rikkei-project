@@ -35,13 +35,16 @@ spring:
         missing-queues-fatal: false
         default-requeue-rejected: true
 management:
+  metrics:
+    tags:
+      application: payment-service
   health:
     rabbit:
       enabled: false
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,prometheus
   endpoint:
     health:
       show-details: never
