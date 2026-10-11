@@ -95,6 +95,24 @@
                        "arguments":  {
 
                                      }
+                   },
+                   {
+                       "name":  "notification.fulfillment.q",
+                       "vhost":  "/",
+                       "durable":  true,
+                       "auto_delete":  false,
+                       "arguments":  {
+
+                                     }
+                   },
+                   {
+                       "name":  "notification.fulfillment.q.dlq",
+                       "vhost":  "/",
+                       "durable":  true,
+                       "auto_delete":  false,
+                       "arguments":  {
+
+                                     }
                    }
                ],
     "bindings":  [
@@ -207,6 +225,36 @@
                          "arguments":  {
 
                                        }
+                     },
+                     {
+                         "source":  "commerce.events",
+                         "vhost":  "/",
+                         "destination":  "notification.fulfillment.q",
+                         "destination_type":  "queue",
+                         "routing_key":  "order.shipped",
+                         "arguments":  {
+
+                                       }
+                     },
+                     {
+                         "source":  "commerce.events",
+                         "vhost":  "/",
+                         "destination":  "notification.fulfillment.q",
+                         "destination_type":  "queue",
+                         "routing_key":  "order.completed",
+                         "arguments":  {
+
+                                       }
+                     },
+                     {
+                         "source":  "commerce.dead-letter",
+                         "vhost":  "/",
+                         "destination":  "notification.fulfillment.q.dlq",
+                         "destination_type":  "queue",
+                         "routing_key":  "notification.fulfillment.q",
+                         "arguments":  {
+
+                                       }
                      }
                  ],
     "policies":  [
@@ -251,6 +299,17 @@
                          "definition":  {
                                             "dead-letter-exchange":  "commerce.dead-letter",
                                             "dead-letter-routing-key":  "payment.order-expired.q"
+                                        },
+                         "priority":  10
+                     },
+                     {
+                         "name":  "dlx-notification.fulfillment.q",
+                         "vhost":  "/",
+                         "pattern":  "^notification\\.fulfillment\\.q$",
+                         "apply-to":  "queues",
+                         "definition":  {
+                                            "dead-letter-exchange":  "commerce.dead-letter",
+                                            "dead-letter-routing-key":  "notification.fulfillment.q"
                                         },
                          "priority":  10
                      }
