@@ -7,8 +7,10 @@ import com.app.payment.entity.Payment;
 import com.app.payment.entity.PaymentStatus;
 import com.app.payment.mapper.PaymentMapper;
 import com.app.payment.repository.PaymentRepository;
+import com.app.payment.repository.PaymentOrderLock;
 import com.app.payment.service.OutboxService;
 import com.app.payment.service.PaymentService;
+import com.app.payment.service.PaymentExpiryService;
 import java.time.Instant;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
@@ -24,22 +26,29 @@ public class PaymentServiceImpl implements PaymentService {
     private final PaymentMapper paymentMapper;
     private final OutboxService outboxService;
     private final JdbcTemplate jdbc;
+    private final PaymentOrderLock orderLocks;
+    private final PaymentExpiryService expiry;
 
     public PaymentServiceImpl(
             PaymentRepository paymentRepository,
             PaymentMapper paymentMapper,
             OutboxService outboxService,
-            JdbcTemplate jdbc
+            JdbcTemplate jdbc,
+            PaymentOrderLock orderLocks,
+            PaymentExpiryService expiry
     ) {
         this.paymentRepository = paymentRepository;
         this.paymentMapper = paymentMapper;
         this.outboxService = outboxService;
         this.jdbc = jdbc;
+        this.orderLocks = orderLocks;
+        this.expiry = expiry;
     }
 
     @Override
     @Transactional
     public void acceptOrder(CommerceEvent event) {
+        orderLocks.lock(event.orderId());
         int claimed = jdbc.update("INSERT INTO processed_events (event_id, event_type, processed_at) VALUES (?, ?, CURRENT_TIMESTAMP) "
                 + "ON CONFLICT (event_id) DO NOTHING", event.eventId(), event.type());
         if (claimed == 0) {
@@ -52,6 +61,7 @@ public class PaymentServiceImpl implements PaymentService {
         if (!payment.getUserId().equals(event.userId()) || payment.getAmount().compareTo(event.amount()) != 0) {
             throw new IllegalArgumentException("Conflicting order event");
         }
+        expiry.apply(payment);
     }
 
     @Override

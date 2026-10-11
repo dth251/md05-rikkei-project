@@ -9,6 +9,7 @@ public class PaymentMapper {
 
     public PaymentResponse toResponse(Payment payment) {
         return new PaymentResponse(payment.getId(), payment.getOrderId(), payment.getUserId(), payment.getAmount(),
-                payment.getStatus(), payment.getCreatedAt(), payment.getCompletedAt());
+                payment.getStatus(), payment.getCreatedAt(), payment.getCompletedAt(),
+                payment.isReservationExpired(), payment.getRefundStatus());
     }
 }
