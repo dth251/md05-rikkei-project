@@ -35,6 +35,41 @@ class OrderSagaLiveTests {
     private final String gateway = System.getenv().getOrDefault("ORDER_LIVE_URL", "http://127.0.0.1:8080");
 
     @Test
+    void expiredReservationRestoresStockAndCancelsPendingPayment() throws Exception {
+        JsonNode order = createOrder();
+        long orderId = order.path("id").asLong();
+        JsonNode payment = awaitPayment(orderId);
+        try (var connection = DriverManager.getConnection(System.getenv().getOrDefault("ORDER_LIVE_DB_URL",
+                "jdbc:postgresql://localhost:15432/order_db"), "order_user", System.getenv("ORDER_LIVE_DB_PASSWORD"));
+             var statement = connection.prepareStatement("UPDATE orders SET created_at=? WHERE id=? AND status='PENDING_PAYMENT'")) {
+            statement.setTimestamp(1, java.sql.Timestamp.from(Instant.now().minusSeconds(1900)));
+            statement.setLong(2, orderId);
+            assertEquals(1, statement.executeUpdate());
+        }
+        awaitOrder(orderId, "EXPIRED");
+        stock(order, 1, 0);
+        Instant deadline = Instant.now().plusSeconds(45);
+        JsonNode finalPayment = null;
+        while (Instant.now().isBefore(deadline)) {
+            var response = send("GET", "/api/payments/" + payment.path("id").asLong(), null, "USER");
+            assertEquals(200, response.statusCode());
+            finalPayment = json.readTree(response.body()).path("data");
+            if ("FAILED".equals(finalPayment.path("status").asText())) {
+                break;
+            }
+            Thread.sleep(300);
+        }
+        assertEquals("FAILED", finalPayment.path("status").asText());
+        assertTrue(finalPayment.path("reservationExpired").asBoolean());
+        assertEquals("NONE", finalPayment.path("refundStatus").asText());
+        assertEquals(409, send("POST", "/api/payments/" + payment.path("id").asLong() + "/simulate",
+                Map.of("status", "SUCCESS"), "ADMIN").statusCode());
+        assertEquals(1, scalar("SELECT count(*) FROM outbox_events WHERE event_type='order.expired' AND payload LIKE ?",
+                "%\"orderId\":" + orderId + ",%"));
+        stock(order, 1, 0);
+    }
+
+    @Test
     void paymentSuccessConfirmsAndConsumesReservedStockOnce() throws Exception {
         scenario("SUCCESS", "CONFIRMED", 0);
     }

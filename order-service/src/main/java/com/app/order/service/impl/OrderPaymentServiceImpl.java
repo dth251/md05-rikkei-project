@@ -45,6 +45,12 @@ public class OrderPaymentServiceImpl implements OrderPaymentService {
         if (!order.getUserId().equals(event.userId()) || order.getTotalAmount().compareTo(event.amount()) != 0) {
             throw new IllegalArgumentException("Payment event does not match order");
         }
+        if (order.getStatus() == OrderStatus.EXPIRED && "payment.succeeded".equals(event.type())) {
+            // Expiration already released stock. Never confirm or reserve again after late payment.
+            outboxService.append(new CommerceEvent(UUID.randomUUID().toString(), "order.refund-requested",
+                    order.getId(), order.getUserId(), order.getTotalAmount(), event.paymentId(), Instant.now()));
+            return;
+        }
         if (order.getStatus() != OrderStatus.PENDING_PAYMENT) {
             return;
         }

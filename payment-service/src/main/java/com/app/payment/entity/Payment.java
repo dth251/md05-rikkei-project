@@ -41,6 +41,13 @@ public class Payment {
 
     private Instant completedAt;
 
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private boolean reservationExpired;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 16, columnDefinition = "varchar(16) default 'NONE'")
+    private RefundStatus refundStatus = RefundStatus.NONE;
+
     @Version
     private Long version;
 
@@ -102,5 +109,22 @@ public class Payment {
 
     public Instant getCompletedAt() {
         return completedAt;
+    }
+
+    public boolean isReservationExpired() {
+        return reservationExpired;
+    }
+
+    public RefundStatus getRefundStatus() {
+        return refundStatus;
+    }
+
+    public void expireReservation() {
+        reservationExpired = true;
+        if (status == PaymentStatus.PENDING) {
+            complete(PaymentStatus.FAILED);
+        } else if (status == PaymentStatus.SUCCESS && refundStatus == RefundStatus.NONE) {
+            refundStatus = RefundStatus.REQUIRED;
+        }
     }
 }

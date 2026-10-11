@@ -14,5 +14,7 @@ spring:
 jwt:
   secret: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
 commerce:
+  reservation:
+    expiry-enabled: false
   outbox:
     enabled: false

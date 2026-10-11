@@ -78,6 +78,9 @@ jobs:
           docker compose up -d --wait --wait-timeout 180 postgres rabbitmq
           docker compose run --rm --no-deps rabbitmq-topology
           bash infrastructure/scripts/verify-infrastructure.sh
+          for service in auth-service product-service order-service payment-service notification-service; do
+            bash infrastructure/scripts/apply-schema.sh "$service"
+          done
           services=(auth-service)
           for service in api-gateway product-service order-service payment-service notification-service; do
             [[ ! -f "$service/build.gradle" ]] || services+=("$service")

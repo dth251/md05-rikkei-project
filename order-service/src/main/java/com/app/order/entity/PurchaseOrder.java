@@ -8,6 +8,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
@@ -21,7 +22,7 @@ import java.util.Objects;
 import org.hibernate.annotations.Check;
 
 @Entity
-@Table(name = "orders", uniqueConstraints = @UniqueConstraint(
+@Table(name = "orders", indexes = @Index(name = "idx_order_expiration", columnList = "status,createdAt"), uniqueConstraints = @UniqueConstraint(
         name = "uk_order_user_idempotency", columnNames = {"user_id", "idempotency_key"}
 ))
 @Check(constraints = "total_amount >= 0 AND user_id > 0")
@@ -134,5 +135,12 @@ public class PurchaseOrder {
             throw new IllegalStateException("Order already finalized");
         }
         status = successful ? OrderStatus.CONFIRMED : OrderStatus.CANCELLED;
+    }
+
+    public void expire() {
+        if (status != OrderStatus.PENDING_PAYMENT) {
+            throw new IllegalStateException("Only pending reservations can expire");
+        }
+        status = OrderStatus.EXPIRED;
     }
 }
