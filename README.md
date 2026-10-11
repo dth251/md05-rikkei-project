@@ -1,110 +1,73 @@
-# Omnichannel E-Commerce
+# md05-rikkei-project
 
-Backend API Java 21, Spring Boot 3.5.6 và Gradle Groovy. Phạm vi đã triển khai theo ngày 1 của kế hoạch mới: hạ tầng PostgreSQL/RabbitMQ/Redis, Auth, API Gateway, Product CRUD và Order/Inventory skeleton. Order API, reservation, Payment, Notification và Saga thuộc ngày 2.
+Backend Omnichannel WEB/POS: **Client → Nginx HTTPS → API Gateway → Auth / Product / Order / Payment**, RabbitMQ chuyển event tới Payment, Order và Notification. Sáu app Java độc lập, mỗi app có Gradle Wrapper Groovy, DTO/security/error handlers riêng theo MD03.
 
-Java được tổ chức theo phong cách [RikkeiProject_MD03](https://github.com/dth251/RikkeiProject_MD03): service interface/implementation, DTO request/response, mapper, ApiResponse và exception handler riêng mỗi service. Xem [quy ước Java](docs/coding-conventions.md), [API](docs/api-contract.md), [CI/CD](docs/ci-cd.md) và [kết quả kiểm thử](docs/test-results.md).
+Java 21 · Spring Boot 3.5.6 · Spring Cloud 2025.0.3 · PostgreSQL · RabbitMQ · Redis · Docker Compose · GitHub Actions/GHCR. Không có frontend, shared module, Maven, Flyway hoặc Liquibase.
 
-API đã deploy tại [md05-rikkei-project.duckdns.org](https://md05-rikkei-project.duckdns.org/). Trang gốc chuyển tới `/gateway-status` và trả JSON `{"status":"UP"}`. Nginx HTTPS chỉ proxy API qua Gateway; register/login/me và catalog phục vụ qua domain. PostgreSQL/RabbitMQ/Redis giữ trong mạng Docker riêng. Xem [nhật ký deploy thực tế](docs/commits-and-deployments.md) để đối chiếu SHA và run CI.
+| App | Loopback port | Sở hữu |
+|---|---:|---|
+| api-gateway | 8080 | JWT verify, routes, request ID, Redis login/order quota |
+| auth-service | 8081 | auth_db, USER registration, BCrypt, JWT, ADMIN RBAC |
+| product-service | 8082 | product_db, catalog CRUD ADMIN, soft-delete |
+| order-service | 8083 | order_db, WEB/POS order, atomic inventory, idempotency, Outbox/Saga |
+| notification-service | 8084 | notification_db, durable final-event consumer, logs-only, deduplication |
+| payment-service | 8085 | payment_db, mock PENDING/SUCCESS/FAILED, own Outbox |
 
-## Chạy local trên Windows
+Production Gateway: **https://md05-rikkei-project.duckdns.org**. `/gateway-status` là health, `/api/products` là catalog public. Notification/Actuator/DB/MQ/Redis không có public route. Một instance PostgreSQL có năm DB/user cách ly; inventory thuộc Order.
 
-Cần Java 21, Git, Docker Desktop đang chạy và PowerShell. Mỗi lệnh chạy riêng từ thư mục dự án.
+```text
+api-gateway/             # WebFlux Gateway + Redis
+auth-service/            # Controller → service interface/impl → repository
+product-service/         # DTO request/response + mapper + own security
+order-service/           # Atomic SQL inventory, order/items, Outbox/Saga
+payment-service/         # Mock payment, event inbox/Outbox
+notification-service/    # Idempotent event consumer and notification logs
+infrastructure/          # PostgreSQL init, Rabbit topology, Nginx, Bash/PowerShell ops
+tests/k6/                # Catalog/write/race/quota tool harness
+tests/postman/           # API collection, no credentials
+docs/                    # Contracts, runbooks, diagrams, measured evidence, Git/deploy journal
+.github/workflows/ci.yml # Test all six apps, publish/deploy changed services
+```
 
-Tạo `.env` một lần nếu chưa có; không ghi đè `.env` đang dùng:
+## Local build/run
+
+Cài Java 21 và Docker Compose; dùng Wrapper từng app. Generator tạo `.env` private, không ghi đè file đang dùng:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File infrastructure/scripts/generate-env.ps1
-```
-
-Build/test Java:
-
-```powershell
-foreach ($service in 'auth-service', 'api-gateway', 'product-service', 'order-service') {
-    & ".\$service\gradlew.bat" -p $service clean test bootJar --no-daemon
+$services = 'auth-service','api-gateway','product-service','order-service','payment-service','notification-service'
+foreach ($service in $services) {
+    & ".\$service\gradlew.bat" -p $service test bootJar --no-daemon
     if ($LASTEXITCODE -ne 0) { throw "Build failed: $service" }
 }
-```
-
-Khởi chạy hạ tầng và provision durable queue trước khi chạy consumer trong các ngày tiếp theo:
-
-```powershell
 docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --wait postgres rabbitmq redis
 docker compose run --rm --no-deps rabbitmq-topology
 powershell -ExecutionPolicy Bypass -File infrastructure/scripts/verify-infrastructure.ps1 -AllowLoopback
+docker compose build $services
+docker compose up -d --no-deps --wait $services
 ```
 
-Chạy bốn ứng dụng và kiểm thử Java với PostgreSQL thực:
+Local Gateway `http://127.0.0.1:8080`; infrastructure test ports 15432/15672/15673/16379 chỉ loopback. Với volume RabbitMQ cũ, giữ hostname node đang dùng theo [CI/CD runbook](docs/ci-cd.md). Không xóa volume để xử lý lỗi hostname/topology.
 
-```powershell
-docker compose build auth-service api-gateway product-service order-service
-docker compose up -d --no-deps --wait auth-service api-gateway product-service order-service
-powershell -ExecutionPolicy Bypass -File infrastructure/scripts/test-auth-live.ps1
-.\api-gateway\gradlew.bat -p api-gateway liveTest --no-daemon
-```
+## API và Saga
 
-Gateway: `http://127.0.0.1:8080`; Auth/Product/Order lần lượt ở loopback 8081/8082/8083; health nội bộ là `/actuator/health`. PostgreSQL local ở `127.0.0.1:15432`, RabbitMQ Management ở `127.0.0.1:15672`, Redis ở `127.0.0.1:16379`. Chỉ file override local mở các cổng hạ tầng và chỉ trên loopback. Các mật khẩu nằm trong `.env`, không ghi vào Git.
+[API contract](docs/api-contract.md) mô tả request/response/status/roles và event. [Postman collection](tests/postman/md05.postman_collection.json) có 19 requests; nạp credential ADMIN riêng, không export token/password. Register luôn USER, không có public endpoint tự nâng ADMIN.
 
-Live tests Product và Order cần fixture JWT của môi trường local; Order cần thêm mật khẩu DB riêng. Đọc vào biến môi trường rồi xóa khỏi process sau khi chạy:
+Order tạo đầu trả 201 `PENDING_PAYMENT`, replay cùng user/key/body trả 200 cùng đơn, đổi body trả 409. Order/atomic reservation/Outbox commit cùng transaction. `order.created → payment.succeeded/payment.failed → order.confirmed/order.cancelled`. SUCCESS tiêu thụ reserved; FAILED trả available đúng một lần. Notification ghi một log cho final order. Xem [sơ đồ Mermaid](docs/architecture.md).
 
-```powershell
-try {
-    foreach ($line in Get-Content .env) {
-        if ($line -match '^JWT_SECRET=(.+)$') { $env:JWT_SECRET = $Matches[1] }
-        if ($line -match '^ORDER_DB_PASSWORD=(.+)$') { $env:ORDER_LIVE_DB_PASSWORD = $Matches[1] }
-    }
-    .\product-service\gradlew.bat -p product-service liveTest --no-daemon
-    if ($LASTEXITCODE -ne 0) { throw 'Product live test failed' }
-    .\order-service\gradlew.bat -p order-service liveTest --no-daemon
-    if ($LASTEXITCODE -ne 0) { throw 'Order live test failed' }
-} finally {
-    Remove-Item Env:JWT_SECRET, Env:ORDER_LIVE_DB_PASSWORD -ErrorAction SilentlyContinue
-}
-```
+Transport at-least-once, consumer deduplicate theo event/business key. Payment mock cần ADMIN simulate; reservation không tự hết hạn. Chưa có thanh toán thật/refund/SMTP, Elasticsearch, gRPC, DLQ replay hoặc tracing. Một Gateway replica chưa có HA.
 
-## Linux và CI
+## Kiểm chứng và triển khai
 
-```bash
-bash infrastructure/scripts/generate-env.sh
-for service in auth-service api-gateway product-service order-service; do
-    "$service/gradlew" -p "$service" clean test bootJar --no-daemon || exit 1
-done
-docker compose up -d --wait postgres rabbitmq
-docker compose run --rm --no-deps rabbitmq-topology
-bash infrastructure/scripts/verify-infrastructure.sh
-docker compose build auth-service api-gateway product-service order-service
-docker compose up -d --wait redis
-docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --wait postgres
-docker compose up -d --no-deps --wait auth-service api-gateway product-service order-service
-bash infrastructure/scripts/test-auth-live.sh
-api-gateway/gradlew -p api-gateway liveTest --no-daemon
-JWT_SECRET="$(sed -n 's/^JWT_SECRET=//p' .env)" product-service/gradlew -p product-service liveTest --no-daemon
-JWT_SECRET="$(sed -n 's/^JWT_SECRET=//p' .env)" ORDER_LIVE_DB_PASSWORD="$(sed -n 's/^ORDER_DB_PASSWORD=//p' .env)" order-service/gradlew -p order-service liveTest --no-daemon
-```
+[Runbook ngày 2](docs/day2-operations.md) có unit/live/recovery Java; [runbook ngày 3](docs/day3-operations.md) có private Prometheus, forced image rollback, k6 resource guard và fixture. Race gọi Order private để tránh 429 che kết quả kho; quota kiểm tra riêng qua Gateway. Tải GET catalog và ghi Order đo riêng, report actual RPS/p95/p99/error/CPU/RAM/dropped iterations và queue depth. VPS nhỏ có thể dừng trước 500–1000 RPS; xem số liệu đo thật, không suy ra năng lực từ target.
 
-`Dockerfile.runtime` đóng gói JAR đã được Gradle kiểm thử; `Dockerfile` là tùy chọn build toàn bộ source trong container. CI dùng artifact đã kiểm thử và Dockerfile.runtime.
+Phát triển `feature/...`, commit từng phần đã kiểm thử với số nối tiếp lịch sử Git. PR CI test/build cả sáu app và integration PostgreSQL/RabbitMQ/Redis/recovery. Main publish GHCR immutable SHA cho app thay đổi, SSH deploy đúng service, health/smoke, ghi `.image-tags`; smoke lỗi thì phục hồi image trước. Không force-push, không build source trên VPS. Deploy dùng user deploy/SSH strict, secrets ở GitHub/.env private; chỉ SSH/80/443 public, UFW active. Rollback image không rollback schema Hibernate.
 
-## Chuẩn bị VPS
+- [Kế hoạch mới nhất](Ke_hoach_Omnichannel_3_ngay_6_ung_dung_Co_API_Gateway.md)
+- [Quy ước code](docs/coding-conventions.md)
+- [Kết quả ngày 2](docs/day2-test-results.md)
+- [Kết quả ngày 3](docs/day3-test-results.md)
+- [Nhật ký SHA/CI/deploy](docs/commits-and-deployments.md)
+- [CI/CD và VPS](docs/ci-cd.md)
 
-VPS: `42.96.2.60`; domain: `md05-rikkei-project.duckdns.org`; thư mục: `/opt/omnichannel-ecommerce`.
-
-Phải cấp quyền SSH cho máy vận hành trước. Sau đó chuyển public key CI riêng và `infrastructure/scripts/prepare-vps.sh` lên VPS, chạy script bằng root với đường dẫn public key. Script chuẩn bị Docker Compose, Nginx/Certbot và user `deploy`; không xóa dữ liệu/volume có sẵn.
-
-Đăng nhập user deploy, clone repository public vào đường dẫn triển khai nếu chưa có repo. Tạo `.env` bằng `bash infrastructure/scripts/generate-env.sh` và giữ quyền 600. Không clone đè thư mục đã có dữ liệu; repository đã clone được cập nhật bằng `git pull --ff-only`.
-
-Kiểm tra SSH user deploy, `.env` và Actions secrets/variables trong [CI/CD](docs/ci-cd.md), rồi bật `DEPLOY_ENABLED=true`. Workflow deploy từng service thay đổi từ main sau khi test/publish đạt, giữ SHA riêng của các service còn lại. Gateway cần `TRUSTED_PROXY_IPS` là địa chỉ bridge Docker mà Nginx trên host dùng để kết nối; xác minh địa chỉ mạng thực tế trước khi cấu hình. Health VPS kiểm tra qua SSH tại các port loopback; không mở port ứng dụng hoặc hạ tầng ra Internet.
-
-Với VPS mới chưa có site/chứng chỉ, provision HTTPS Auth bằng script hiện có sau khi Auth healthy:
-
-```bash
-TLS_EMAIL=YOUR_CERTIFICATE_CONTACT_EMAIL DOMAIN=md05-rikkei-project.duckdns.org bash infrastructure/scripts/setup-domain.sh
-```
-
-Sau khi Gateway đã deploy healthy, chuyển site HTTPS hiện có sang Gateway bằng root:
-
-```bash
-DOMAIN=md05-rikkei-project.duckdns.org bash infrastructure/scripts/switch-gateway-domain.sh /opt/omnichannel-ecommerce/current
-```
-
-VPS hiện tại đã hoàn tất bước chuyển này. Script dùng chứng chỉ sẵn có, chạy `nginx -t`, reload và smoke HTTPS; phục hồi site cũ khi kiểm tra thất bại. `/gateway-status` công khai chỉ trạng thái Gateway; `/actuator/**` qua domain trả 404. Các health của service vẫn kiểm tra qua SSH. Dự án hiện là backend API.
-
-Chỉ gửi thông tin đăng nhập qua domain sau khi HTTPS được kiểm chứng. Không coi DNS trỏ đúng hoặc file workflow tồn tại là bằng chứng deploy thành công; kết quả thực tế được ghi trong docs/test-results.md.
+Không commit `.env`, private key, JWT hoặc `.verification`. Giữ dữ liệu fixture audit và không thay đổi ứng dụng ngoài dự án.

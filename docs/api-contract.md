@@ -86,7 +86,9 @@ Response `data` chứa `id`, các field trên, `active`, `createdAt`, `updatedAt
 
 Gateway giữ nguyên prefix API, xác minh JWT, loại header giả mạo identity, trả `X-Gateway: api-gateway` và request ID. Login giới hạn theo IP: 2 request/giây, burst 5; `/api/orders/**` theo user ID: 20 request/giây, burst 40. Vượt quota trả 429. Redis không hoạt động khi áp dụng quota trả 503; backend không truy cập được trả 503. IP header chỉ được tin từ proxy cấu hình; Nginx ghi đè IP client.
 
-`GET /gateway-status` trên domain trả trạng thái Gateway; `/` redirect tới đó. `/actuator/**` không công khai trên domain. Redis không thuộc health dependency của Gateway: health UP không chứng minh các route phụ thuộc Redis đang phục vụ.
+`GET /gateway-status` trên domain trả trạng thái Gateway; `/` redirect tới đó. `/actuator/**` không công khai trên domain. Redis không thuộc health dependency của Gateway: health UP không chứng minh các route phụ thuộc Redis đang phục vụ. Gateway có response deadline 10 giây; nếu upstream chưa trả trước deadline, trả 504 với API error envelope. Product disconnect thường trả 503; Order phụ thuộc snapshot Product có thể nhận 503 hoặc 504 qua Gateway khi dependency/DNS/network chậm.
+
+Mỗi app có private `GET /actuator/prometheus` với JVM/process/HTTP metrics và tag `application`; chỉ scrape qua loopback/SSH/internal network. Endpoint `/actuator/env` vẫn được bảo vệ; domain public trả 404 cho Actuator. Chưa deploy Prometheus/Grafana server.
 
 ## Order và Inventory
 
