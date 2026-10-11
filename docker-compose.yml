@@ -58,6 +58,44 @@ services:
         done
         exit 1
 
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: [redis-server, --appendonly, 'yes', --maxmemory, 64mb, --maxmemory-policy, noeviction]
+    mem_limit: 96m
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: [CMD, redis-cli, ping]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+
+  api-gateway:
+    image: omnichannel-gateway:local
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile.runtime
+    restart: unless-stopped
+    mem_limit: 256m
+    environment:
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      TRUSTED_PROXY_IPS: ${TRUSTED_PROXY_IPS:-127.0.0.1,::1}
+      JAVA_TOOL_OPTIONS: -Xms32m -Xmx112m -XX:MaxMetaspaceSize=96m -XX:ReservedCodeCacheSize=32m -XX:ActiveProcessorCount=2 -Xss256k
+    ports:
+      - 127.0.0.1:8080:8080
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: [CMD, wget, -q, --spider, http://127.0.0.1:8080/actuator/health]
+      interval: 10s
+      timeout: 5s
+      start_period: 30s
+      retries: 12
+
   auth-service:
     image: omnichannel-auth:local
     build:
@@ -84,3 +122,4 @@ services:
 volumes:
   postgres-data:
   rabbitmq-data:
+  redis-data:
