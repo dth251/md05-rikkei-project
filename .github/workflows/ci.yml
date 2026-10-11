@@ -30,8 +30,11 @@ jobs:
           EVENT: ${{ github.event_name }}
         run: |
           set -euo pipefail
-          if [[ "$EVENT" == workflow_dispatch || -z "$BEFORE" || "$BEFORE" =~ ^0+$ ]]; then
-            paths=.github/workflows/ci.yml
+          if [[ "$EVENT" == workflow_dispatch ]]; then
+            paths=docker-compose.yml
+          elif [[ -z "$BEFORE" || "$BEFORE" =~ ^0+$ ]]; then
+            baseline="$(git merge-base HEAD origin/main)"
+            paths="$(git diff --name-only "$baseline" HEAD)"
           else
             paths="$(git diff --name-only "$BEFORE" HEAD)"
           fi
