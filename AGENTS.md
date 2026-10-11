@@ -1,7 +1,7 @@
 # Quy ước triển khai
 
 - Java 21, Spring Boot 3.5.6, Gradle Groovy và Gradle Wrapper riêng từng service.
-- Phạm vi hiện tại: ngày 3 theo kế hoạch mới nhất — VPS HTTPS/UFW/rollback, CI/CD sáu app, metrics private, Java security/recovery tests, k6/Postman, báo cáo tải, README/sơ đồ và bằng chứng demo. Nghiệp vụ ngày 1–2 đã triển khai.
+- Phạm vi hiện tại: xử lý bốn nhóm sau rà soát theo docs/remediation-plan.md, tiếp nối nghiệp vụ và hạ tầng ngày 1–3; kiểm thử, CI/CD và deploy riêng từng service.
 - Phát triển trên feature/...; commit từng mốc theo số tăng dần.
 - Commit sau khi hoàn thành và kiểm thử một phần công việc; không giới hạn số lần commit theo bảng kế hoạch. Cấp số từ lịch sử Git thực tế.
 - Commit, tiêu đề PR và ghi chú CI/CD tuân format NN-ten-service: noi dung thay doi; summary/nhật ký ghi SHA, thời gian, kết quả kiểm tra và trạng thái deploy thực tế.
