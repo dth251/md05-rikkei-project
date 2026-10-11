@@ -15,6 +15,15 @@ done
 count="$(query "SELECT count(*) FROM pg_database WHERE datname IN ('auth_db', 'product_db', 'order_db', 'payment_db', 'notification_db')")"
 [[ "$count" == 5 ]]
 queues="$(docker compose exec -T rabbitmq rabbitmqctl -q list_queues name durable)"
+for queue in payment.order-created.q.dlq order.payment-result.q.dlq notification.order.q.dlq; do
+    grep -Fqx "$queue"$'\ttrue' <<< "$queues" \
+        || { echo "Missing durable dead letter queue: $queue" >&2; exit 1; }
+done
+policies="$(docker compose exec -T rabbitmq rabbitmqctl -q list_policies)"
+for queue in payment.order-created.q order.payment-result.q notification.order.q; do
+    grep -Fq "dlx-$queue" <<< "$policies" \
+        || { echo "Missing scoped DLX policy: $queue" >&2; exit 1; }
+done
 for queue in payment.order-created.q order.payment-result.q notification.order.q; do
     grep -Fqx "$queue"$'\ttrue' <<< "$queues" || { echo "Missing durable queue: $queue" >&2; exit 1; }
 done

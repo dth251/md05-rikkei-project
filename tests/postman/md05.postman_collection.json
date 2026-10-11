@@ -370,7 +370,7 @@
                                   {
                                       "request":  {
                                                       "body":  {
-                                                                   "raw":  "{\"productId\":{{productId}},\"quantity\":1}",
+                                                                   "raw":  "{\"productId\":{{productId}},\"quantity\":1,\"idempotencyKey\":\"receipt-{{orderKey}}\"}",
                                                                    "options":  {
                                                                                    "raw":  {
                                                                                                "language":  "json"
@@ -412,7 +412,7 @@
                                   {
                                       "request":  {
                                                       "body":  {
-                                                                   "raw":  "{\"channel\":\"WEB\",\"idempotencyKey\":\"{{orderKey}}\",\"items\":[{\"productId\":{{productId}},\"quantity\":1}]}",
+                                                                   "raw":  "{\"channel\":\"WEB\",\"idempotencyKey\":\"{{orderKey}}\",\"items\":[{\"productId\":{{productId}},\"quantity\":1,\"idempotencyKey\":\"receipt-{{orderKey}}\"}]}",
                                                                    "options":  {
                                                                                    "raw":  {
                                                                                                "language":  "json"
@@ -450,7 +450,7 @@
                                   {
                                       "request":  {
                                                       "body":  {
-                                                                   "raw":  "{\"channel\":\"WEB\",\"idempotencyKey\":\"{{orderKey}}\",\"items\":[{\"productId\":{{productId}},\"quantity\":1}]}",
+                                                                   "raw":  "{\"channel\":\"WEB\",\"idempotencyKey\":\"{{orderKey}}\",\"items\":[{\"productId\":{{productId}},\"quantity\":1,\"idempotencyKey\":\"receipt-{{orderKey}}\"}]}",
                                                                    "options":  {
                                                                                    "raw":  {
                                                                                                "language":  "json"
