@@ -1,0 +1,40 @@
+server:
+  port: 8082
+  error:
+    include-message: never
+    include-stacktrace: never
+
+spring:
+  application:
+    name: product-service
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:15432/product_db}
+    username: ${DB_USERNAME:product_user}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 4
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+
+jwt:
+  secret: ${JWT_SECRET}
+  issuer: omnichannel-auth
+  ttl: PT1H
+
+logging:
+  level:
+    org.hibernate.engine.jdbc.spi.SqlExceptionHelper: OFF
