@@ -32,6 +32,7 @@ import reactor.core.publisher.Mono;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
         properties = "JWT_SECRET=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=")
 @AutoConfigureWebTestClient
+@org.springframework.boot.test.autoconfigure.actuate.observability.AutoConfigureObservability
 class GatewaySecurityTests {
 
     private static final HttpServer backend = startBackend();
@@ -59,6 +60,14 @@ class GatewaySecurityTests {
     @AfterAll
     static void stopBackend() {
         backend.stop(0);
+    }
+
+    @Test
+    void privatePrometheusExportsJvmMetrics() {
+        client.mutate().responseTimeout(java.time.Duration.ofSeconds(30)).build()
+                .get().uri("/actuator/prometheus").exchange().expectStatus().isOk()
+                .expectBody(String.class).value(body ->
+                        org.junit.jupiter.api.Assertions.assertTrue(body.contains("jvm_memory_used_bytes")));
     }
 
     @Test

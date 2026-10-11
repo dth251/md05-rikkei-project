@@ -58,10 +58,13 @@ spring:
                 - Path=/api/payments/**
 
 management:
+  metrics:
+    tags:
+      application: api-gateway
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,prometheus
   endpoint:
     health:
       show-details: never
