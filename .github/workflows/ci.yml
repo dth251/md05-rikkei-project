@@ -3,7 +3,7 @@ name: Services CI/CD
 on:
   push:
     branches: [main, 'feature/**']
-    paths: ['*-service/**', 'api-gateway/**', 'infrastructure/**', 'docker-compose*.yml', '.github/workflows/ci.yml']
+    paths: ['*-service/**', 'api-gateway/**', 'infrastructure/**', 'tests/**', 'docker-compose*.yml', '.github/workflows/ci.yml']
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -30,15 +30,20 @@ jobs:
           EVENT: ${{ github.event_name }}
         run: |
           set -euo pipefail
-          if [[ "$EVENT" == workflow_dispatch || -z "$BEFORE" || "$BEFORE" =~ ^0+$ ]]; then
-            paths=.github/workflows/ci.yml
+          if [[ "$EVENT" == workflow_dispatch ]]; then
+            paths=docker-compose.yml
+          elif [[ -z "$BEFORE" || "$BEFORE" =~ ^0+$ ]]; then
+            baseline="$(git merge-base HEAD origin/main)"
+            paths="$(git diff --name-only "$baseline" HEAD)"
           else
             paths="$(git diff --name-only "$BEFORE" HEAD)"
           fi
           services=()
           for service in auth-service api-gateway product-service order-service payment-service notification-service; do
             [[ -f "$service/build.gradle" ]] || continue
-            if grep -Eq "^($service/|infrastructure/|docker-compose[^/]*\.yml$|\.github/workflows/ci\.yml$)" <<< "$paths"; then
+            # Test/load/observation tools still run verification, but do not recreate every VPS app.
+            # Runtime infrastructure/Compose changes affect all services; module changes select that app.
+            if grep -Eq "^($service/|infrastructure/(postgres/|rabbitmq/|scripts/(deploy|verify-infrastructure|smoke-auth)\.sh$)|docker-compose[^/]*\.yml$)" <<< "$paths"; then
               services+=("$service")
             fi
           done

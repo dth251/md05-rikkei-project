@@ -12,4 +12,4 @@
 - Không xóa volume, dữ liệu hoặc ứng dụng ngoài phạm vi dự án.
 - Tuân theo docs/coding-conventions.md: service interface + impl, DTO request/response, mapper riêng và ApiResponse theo phong cách MD03.
 - Nghiệp vụ và kiểm thử service viết bằng Java; script vận hành dùng Bash/PowerShell, không đưa Python vào source.
-- Kịch bản k6 dùng JavaScript của công cụ k6 theo kế hoạch ngày 3; không thay thế unit/integration tests Java.
+- Kịch bản k6/Postman dùng JavaScript của công cụ theo kế hoạch ngày 3; không thay thế unit/integration tests Java.
