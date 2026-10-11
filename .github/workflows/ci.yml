@@ -78,8 +78,11 @@ jobs:
             [[ ! -f "$service/build.gradle" ]] || services+=("$service")
           done
           docker compose build "${services[@]}"
+          if [[ -f api-gateway/build.gradle ]]; then
+            docker compose up -d --wait --wait-timeout 120 redis
+          fi
           docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --wait --wait-timeout 180 postgres
-          docker compose up -d --wait --wait-timeout 240 "${services[@]}"
+          docker compose up -d --no-deps --wait --wait-timeout 240 "${services[@]}"
           bash infrastructure/scripts/test-auth-live.sh
           if [[ -f api-gateway/build.gradle ]]; then
             (cd api-gateway && ./gradlew liveTest --no-daemon)
