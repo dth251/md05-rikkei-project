@@ -1,0 +1,19 @@
+{
+    "files.encoding": "utf8",
+    "java.project.encoding": "setDefault",
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "java.import.projectSelection": "automatic",
+    "java.import.gradle.enabled": true,
+    "java.import.gradle.wrapper.enabled": true,
+    "java.import.maven.enabled": false,
+    "java.import.exclusions": [
+        "**/node_modules/**",
+        "**/.metadata/**",
+        "**/archetype-resources/**",
+        "**/META-INF/maven/**",
+        "**/.verification/**",
+        "**/.worktrees/**",
+        "**/.gradle/**",
+        "**/build/**"
+    ]
+}

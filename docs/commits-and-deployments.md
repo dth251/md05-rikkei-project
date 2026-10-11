@@ -207,3 +207,27 @@ Main metrics 49 hoàn tất deploy sáu app 17:08:44 UTC. [Audit cuối](evidenc
 | 61-order-service | `3dc5d27ef8bc1ff8c8996098afd3299cac51a210` | 01:51:40 | PR #18 merge sau CI 38165003440: Java và live/recovery đạt; main CI/deploy 38165583249 đang chạy |
 
 Trạng thái deploy cuối được cập nhật theo image/health thực tế và PR, không suy ra từ merge. Kế hoạch tiếp theo: [remediation-plan.md](remediation-plan.md).
+
+## Khắc phục: nhận kho, DLQ và hết hạn reservation
+
+| Mốc | SHA | Thời gian +07:00, 2026-10-12 | Kiểm chứng / deploy tại checkpoint |
+|---|---|---|---|
+| 62-order-service | `171f3f7470f49d895b7fd20e0ed5c5cc2c88db07` | 01:52:45 | Nhận kho idempotent, retry có giới hạn, công cụ DLQ; Order 25 unit và 10 live đạt; chưa VPS tại commit |
+| 63-infrastructure | `27e1155386ff6de24e799fce62cec154aa8e0017` | 01:53:21 | DLQ và policy theo từng queue, Postman cập nhật receipt key; topology local đạt |
+| 64-payment-service | `755608cf149b9490bbf88995e6eb5b191b02d848` | 01:53:26 | Payment 15 unit/bootJar đạt; chưa VPS tại commit |
+| 65-notification-service | `b56d46a772eebda20e5bd340c34a4e1de6993e81` | 01:53:33 | Notification 7 unit/bootJar đạt; chưa VPS tại commit |
+| 66-order-service | `ad2a84fc2603ad87d73c3c5b5e5d0cce1f9e81d9` | 02:02:17 | PR #19 CI 38165773294 đạt; main CI/publish/deploy 38166325281 success; SSH 19:25:24 UTC xác nhận sáu image 66 healthy |
+| 67-order-service | `af1182b9ba7c301aef135442b0f3647d96aa0e70` | 02:10:42 | Order 28 unit/bootJar đạt; test live expiry đạt; chưa merge/deploy |
+| 68-infrastructure | `5014c71f03830d847c72f4e1ae8c2b6189b25132` | 02:10:46 | SQL migration/checksum áp dụng và chạy lại local đạt; queue expiry được cấu hình; chưa VPS |
+| 69-payment-service | `27200e8e1ddb62c77fd9427b83b78857d7017d96` | 02:12:13 | Payment 18 unit/bootJar đạt; PR #20 CI 38167069975 Java/live/recovery success; chưa merge/deploy |
+
+Live Order local ở mốc expiry có 10/11 bài đạt: bài giới hạn nhận kho trả 503,
+lần kiểm tra riêng đầu trả 504. Kiểm tra riêng tiếp theo đạt; giữ nguyên
+assertion 409 và bổ sung body phản hồi để chẩn đoán lỗi trong lần chạy sau.
+CI head 69 chạy toàn bộ Java/live/recovery đạt. Không ghi các lần local lỗi
+thành success và không suy ra capacity từ CI.
+
+Checkpoint IDE: sáu service biên dịch source/test đạt; nhập lại Gradle sau
+backup cache riêng của workspace, loại project tạm và classpath cũ. Chi tiết
+trong [java-ide.md](java-ide.md). SHA/time của commit cấu hình IDE và kết quả
+CI sau commit được ghi trong PR #20; chưa có deploy mới tại checkpoint này.

@@ -9,4 +9,5 @@
 .idea/
 *.iml
 *.log
-.vscode/
+.vscode/*
+!.vscode/settings.json
