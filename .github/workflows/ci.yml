@@ -31,15 +31,18 @@ jobs:
           java-version: '21'
       - uses: gradle/actions/setup-gradle@v4
       - name: Verify Auth Java tests and artifact
+        id: java
         working-directory: auth-service
         run: ./gradlew clean test bootJar --no-daemon
       - name: Start and verify infrastructure
+        id: infrastructure
         run: |
           bash infrastructure/scripts/generate-env.sh
           docker compose up -d --wait --wait-timeout 180 postgres rabbitmq
           docker compose run --rm --no-deps rabbitmq-topology
           bash infrastructure/scripts/verify-infrastructure.sh
       - name: Verify real PostgreSQL, Auth container and restart using Java
+        id: live
         run: |
           docker compose build auth-service
           docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --wait --wait-timeout 180 postgres
@@ -62,6 +65,25 @@ jobs:
       - name: Stop CI containers
         if: always()
         run: docker compose down
+      - name: Record verification against push milestone
+        if: always()
+        env:
+          MILESTONE: ${{ github.event.pull_request.title || github.event.head_commit.message }}
+          JAVA_RESULT: ${{ steps.java.outcome }}
+          INFRA_RESULT: ${{ steps.infrastructure.outcome }}
+          LIVE_RESULT: ${{ steps.live.outcome }}
+        run: |
+          milestone="${MILESTONE:-$(git log -1 --format=%s)}"
+          {
+            printf '### %s\n\n' "$milestone"
+            printf -- '- Commit tested: `%s`\n' "$GITHUB_SHA"
+            printf -- '- Time (UTC): `%s`\n' "$(date -u +%FT%TZ)"
+            printf -- '- Auth Java tests/build: %s\n' "$JAVA_RESULT"
+            printf -- '- PostgreSQL/RabbitMQ: %s\n' "$INFRA_RESULT"
+            printf -- '- Auth API/PostgreSQL/restart: %s\n' "$LIVE_RESULT"
+            printf -- '- Reports: auth-java-test-reports artifact\n'
+            printf -- '- VPS deployment is recorded separately by the deploy job.\n'
+          } >> "$GITHUB_STEP_SUMMARY"
 
   publish:
     needs: verify
@@ -83,6 +105,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - uses: docker/build-push-action@v6
+        id: image
         with:
           context: auth-service
           file: auth-service/Dockerfile.runtime
@@ -91,6 +114,19 @@ jobs:
           labels: |
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
             org.opencontainers.image.revision=${{ github.sha }}
+      - name: Record published image against push milestone
+        if: always()
+        env:
+          IMAGE_RESULT: ${{ steps.image.outcome }}
+          IMAGE_DIGEST: ${{ steps.image.outputs.digest }}
+        run: |
+          {
+            printf '### %s\n\n' "$(git log -1 --format=%s)"
+            printf -- '- GHCR publish: %s\n' "$IMAGE_RESULT"
+            printf -- '- Image: `ghcr.io/%s/auth-service:%s`\n' "$GITHUB_REPOSITORY" "$GITHUB_SHA"
+            printf -- '- Digest: `%s`\n' "$IMAGE_DIGEST"
+            printf -- '- Time (UTC): `%s`\n' "$(date -u +%FT%TZ)"
+          } >> "$GITHUB_STEP_SUMMARY"
 
   deploy:
     needs: publish
@@ -138,9 +174,22 @@ jobs:
           scp -i ~/.ssh/id_deploy -o StrictHostKeyChecking=yes release.tar.gz "$VPS_USER@$VPS_HOST:$DEPLOY_ROOT/releases/$IMAGE_TAG/"
           ssh -i ~/.ssh/id_deploy -o StrictHostKeyChecking=yes "$VPS_USER@$VPS_HOST" "cd '$DEPLOY_ROOT/releases/$IMAGE_TAG' && tar -xzf release.tar.gz && test -f '$DEPLOY_ROOT/.env' && ln -sfn '$DEPLOY_ROOT/.env' .env"
       - name: Pull tested image and deploy only Auth
+        id: rollout
         env:
           REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
           remote="cd '$DEPLOY_ROOT/releases/$IMAGE_TAG' && export DOCKER_CONFIG=\$(mktemp -d) && trap 'rm -f \"\$DOCKER_CONFIG/config.json\"; rmdir \"\$DOCKER_CONFIG\"' EXIT && docker login ghcr.io --username '$REGISTRY_USER' --password-stdin && IMAGE_TAG='$IMAGE_TAG' AUTH_IMAGE='$AUTH_IMAGE' DEPLOY_ROOT='$DEPLOY_ROOT' bash infrastructure/scripts/deploy.sh"
           printf '%s' "$REGISTRY_TOKEN" | ssh -i ~/.ssh/id_deploy -o StrictHostKeyChecking=yes "$VPS_USER@$VPS_HOST" "$remote"
+      - name: Record VPS deployment against push milestone
+        if: always()
+        env:
+          DEPLOY_RESULT: ${{ steps.rollout.outcome }}
+        run: |
+          {
+            printf '### %s\n\n' "$(git log -1 --format=%s)"
+            printf -- '- Auth deployment/health/smoke: %s\n' "$DEPLOY_RESULT"
+            printf -- '- Image commit: `%s`\n' "$IMAGE_TAG"
+            printf -- '- Time (UTC): `%s`\n' "$(date -u +%FT%TZ)"
+            printf -- '- A failed deployment is not marked complete; see rollback/job logs.\n'
+          } >> "$GITHUB_STEP_SUMMARY"
