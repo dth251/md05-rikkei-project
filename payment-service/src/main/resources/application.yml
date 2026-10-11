@@ -1,0 +1,54 @@
+server:
+  port: 8085
+  error:
+    include-message: never
+    include-stacktrace: never
+spring:
+  application:
+    name: payment-service
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:15432/payment_db}
+    username: ${DB_USERNAME:payment_user}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 4
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: true
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:15673}
+    username: ${RABBITMQ_USER:commerce_app}
+    password: ${RABBITMQ_PASSWORD:}
+    publisher-confirm-type: correlated
+    publisher-returns: true
+    template:
+      mandatory: true
+    connection-timeout: 3s
+    listener:
+      simple:
+        prefetch: 1
+        missing-queues-fatal: false
+        default-requeue-rejected: true
+management:
+  health:
+    rabbit:
+      enabled: false
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+jwt:
+  secret: ${JWT_SECRET}
+  issuer: omnichannel-auth
+  ttl: PT1H
+logging:
+  level:
+    org.hibernate.engine.jdbc.spi.SqlExceptionHelper: OFF

@@ -30,3 +30,12 @@ Tham chiếu hành vi publisher: [Spring AMQP 3.2 confirms/returns](https://docs
 Payment integration phát hiện lỗi vận hành trước khi commit service: recreate RabbitMQ để thêm port loopback làm hostname tự sinh thay đổi; node mới không đọc lại topology của node cũ trong volume. Ba live tests Payment ban đầu không nhận được payment mới và thất bại; event chưa gửi vẫn ở Order Outbox.
 
 Sửa Compose giữ `hostname: ${RABBITMQ_HOSTNAME:-rabbitmq}`. Local và VPS đã ghi hostname node đang chạy vào `.env` trước thay đổi để giữ dữ liệu hiện tại; `.env` VPS vẫn mode 600/owner deploy. Local được provision lại topology và consumer restart, không xóa volume/dữ liệu. Queue thử nghiệm riêng có durable=true và message delivery_mode=2 được xác nhận giữ nguyên payload qua force-recreate broker; chỉ queue thử nghiệm được xóa sau kiểm tra. Các thư mục node cũ được giữ nguyên. Bộ kiểm thử Payment chạy lại sau khi sửa; chưa ghi đạt cho lần thất bại ban đầu.
+
+## Payment: local 2026-10-11 khoảng 20:04–20:16 +07:00
+
+- 7 Java unit tests và 3 Java live tests đạt sau sửa hostname và chọn HTTP/1.1 cho RabbitMQ Management test client. Có `payment_db`/`payment_user` riêng, không truy vấn DB Order trong nghiệp vụ.
+- `order.created` tạo Payment PENDING. Claim event ID và insert payment UNIQUE order ID cùng transaction PostgreSQL; hai lần cùng event và một event ID khác cho cùng đơn vẫn một payment.
+- Chủ đơn/ADMIN đọc payment; người khác 404. Simulate chỉ ADMIN, chọn SUCCESS/FAILED; PENDING hoặc field/enum sai 400. Replay cùng outcome 200; đổi outcome sau hoàn tất 409. Hai outcome đồng thời chỉ một commit và một Outbox event.
+- Kết quả thanh toán được ghi cùng transaction vào Payment Outbox; broker confirm/mandatory/return trước published. Live tests SUCCESS/FAILED xác nhận có đúng một outcome được publish persistent. Order compensation/Notification chưa được ghi đạt ở mốc Payment này.
+- Mốc 27 hostname: `a06da8a21f56dc5757857e921ecedd639c14be52`, 2026-10-11 20:13:55 +07:00. CI/Compose/deploy được mở rộng cho Payment với SHA riêng.
+- Order [PR #8](https://github.com/dth251/md05-rikkei-project/pull/8) merge mốc 26 tại `805d791e01c678eb47d9e047617cc3e01d73c3c7`, 20:06:20 +07:00. [Run main](https://github.com/dth251/md05-rikkei-project/actions/runs/38141855301) verify/publish/deploy success, kết thúc 13:15:54 UTC; rollout chọn bốn service do thay đổi Compose/workflow. Payment vẫn chưa deploy VPS ở thời điểm kiểm chứng local này.

@@ -126,6 +126,37 @@ services:
       start_period: 30s
       retries: 12
 
+  payment-service:
+    image: omnichannel-payment:local
+    build:
+      context: ./payment-service
+      dockerfile: Dockerfile.runtime
+    restart: unless-stopped
+    mem_limit: 288m
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/payment_db
+      DB_USERNAME: payment_user
+      DB_PASSWORD: ${PAYMENT_DB_PASSWORD:?Set PAYMENT_DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET}
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: ${RABBITMQ_DEFAULT_USER:-commerce_app}
+      RABBITMQ_PASSWORD: ${RABBITMQ_DEFAULT_PASS:?Set RABBITMQ_DEFAULT_PASS}
+      JAVA_TOOL_OPTIONS: -Xms32m -Xmx112m -XX:MaxMetaspaceSize=112m -XX:ReservedCodeCacheSize=32m -XX:ActiveProcessorCount=2 -Xss256k
+    ports:
+      - 127.0.0.1:8085:8085
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test: [CMD, wget, -q, --spider, http://127.0.0.1:8085/actuator/health]
+      interval: 10s
+      timeout: 5s
+      start_period: 30s
+      retries: 12
+
   product-service:
     image: omnichannel-product:local
     build:
