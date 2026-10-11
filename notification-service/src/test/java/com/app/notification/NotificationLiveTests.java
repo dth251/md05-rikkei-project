@@ -109,7 +109,7 @@ class NotificationLiveTests {
                 "name", "Notification fixture", "unitPrice", 12.50), adminToken());
         assertEquals(201, product.statusCode());
         long productId = json.readTree(product.body()).path("data").path("id").asLong();
-        assertEquals(200, send("POST", "/api/inventory/stocks", Map.of("productId", productId, "quantity", 1), adminToken()).statusCode());
+        assertEquals(200, send("POST", "/api/inventory/stocks", Map.of("productId", productId, "quantity", 1, "idempotencyKey", UUID.randomUUID().toString()), adminToken()).statusCode());
         var created = send("POST", "/api/orders", Map.of("channel", channel, "idempotencyKey", UUID.randomUUID().toString(),
                 "items", List.of(Map.of("productId", productId, "quantity", 1))), userToken);
         assertEquals(201, created.statusCode());

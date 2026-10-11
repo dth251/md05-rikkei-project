@@ -19,9 +19,17 @@ $expected = @($names | ForEach-Object { "${_}_db:${_}_user" } | Sort-Object)
 if (($owners -join ',') -ne ($expected -join ',')) { throw 'Expected five owned databases' }
 $queues = docker compose exec -T rabbitmq rabbitmqctl -q list_queues name durable
 if ($LASTEXITCODE -ne 0) { throw 'Cannot list RabbitMQ queues' }
-foreach ($queue in @('payment.order-created.q', 'order.payment-result.q', 'notification.order.q')) {
+foreach ($queue in @('payment.order-created.q', 'order.payment-result.q', 'notification.order.q',
+        'payment.order-created.q.dlq', 'order.payment-result.q.dlq', 'notification.order.q.dlq')) {
     if (($queues -join "`n") -notmatch ([regex]::Escape($queue) + '\s+true')) {
         throw "Missing durable queue: $queue"
+    }
+}
+$policies = docker compose exec -T rabbitmq rabbitmqctl -q list_policies
+if ($LASTEXITCODE -ne 0) { throw 'Cannot list RabbitMQ policies' }
+foreach ($queue in @('payment.order-created.q', 'order.payment-result.q', 'notification.order.q')) {
+    if (($policies -join "`n") -notmatch [regex]::Escape("dlx-$queue")) {
+        throw "Missing scoped DLX policy: $queue"
     }
 }
 $bindings = docker compose exec -T rabbitmq rabbitmqctl -q list_bindings source_name destination_name routing_key
