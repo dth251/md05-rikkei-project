@@ -76,7 +76,7 @@ class PaymentLiveTests {
                 "name", "Payment fixture", "unitPrice", 12.50), token(900101, "ADMIN"));
         assertEquals(201, product.statusCode());
         long productId = json.readTree(product.body()).path("data").path("id").asLong();
-        assertEquals(200, send("POST", "/api/inventory/stocks", Map.of("productId", productId, "quantity", 1), token(900101, "ADMIN")).statusCode());
+        assertEquals(200, send("POST", "/api/inventory/stocks", Map.of("productId", productId, "quantity", 1, "idempotencyKey", UUID.randomUUID().toString()), token(900101, "ADMIN")).statusCode());
         var order = send("POST", "/api/orders", Map.of("channel", "WEB", "idempotencyKey", UUID.randomUUID().toString(),
                 "items", List.of(Map.of("productId", productId, "quantity", 1))), token(900101, "USER"));
         assertEquals(201, order.statusCode());
