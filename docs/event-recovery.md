@@ -17,7 +17,7 @@ cd order-service
 .\gradlew.bat deadLetter -PdlqAction=redrive -PdlqQueue=payment.order-created.q --no-daemon
 ```
 
-Queue hợp lệ: `payment.order-created.q`, `order.payment-result.q`, `notification.order.q`, `payment.order-expired.q`. Inspect chỉ in UUID hợp lệ/kích thước, không body hoặc credential; message được requeue khi đóng channel. Redrive không sửa payload; chỉ ack DLQ sau publisher confirm và kiểm tra mandatory return. Lỗi/chết tiến trình giữ message trong DLQ, hoặc có thể tạo bản gửi trùng sau confirm: consumer phải tiếp tục dedup eventId. Payload hỏng giữ lại và cần quy trình sửa dữ liệu có kiểm soát, không tự sửa hoặc purge.
+Queue hợp lệ: `payment.order-created.q`, `order.payment-result.q`, `notification.order.q`, `payment.order-expired.q`, `notification.fulfillment.q`. Inspect chỉ in UUID hợp lệ/kích thước, không body hoặc credential; message được requeue khi đóng channel. Redrive không sửa payload; chỉ ack DLQ sau publisher confirm và kiểm tra mandatory return. Lỗi/chết tiến trình giữ message trong DLQ, hoặc có thể tạo bản gửi trùng sau confirm: consumer phải tiếp tục dedup eventId. Payload hỏng giữ lại và cần quy trình sửa dữ liệu có kiểm soát, không tự sửa hoặc purge.
 
 ## Hết hạn reservation
 

@@ -14,7 +14,8 @@ public final class DeadLetterTool {
             "payment.order-created.q", Set.of("order.created"),
             "order.payment-result.q", Set.of("payment.succeeded", "payment.failed"),
             "payment.order-expired.q", Set.of("order.expired", "order.refund-requested"),
-            "notification.order.q", Set.of("order.confirmed", "order.cancelled"));
+            "notification.order.q", Set.of("order.confirmed", "order.cancelled"),
+            "notification.fulfillment.q", Set.of("order.shipped", "order.completed"));
 
     public static void main(String[] args) throws Exception {
         if (args.length != 2 || !Set.of("inspect", "redrive").contains(args[0]) || !ROUTES.containsKey(args[1])) {

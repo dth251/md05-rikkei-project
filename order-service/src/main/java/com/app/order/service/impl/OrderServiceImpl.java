@@ -66,6 +66,15 @@ public class OrderServiceImpl implements OrderService {
         StringBuilder canonical = new StringBuilder(request.channel().name());
         request.items().stream().sorted(Comparator.comparing(item -> item.productId()))
                 .forEach(item -> canonical.append('|').append(item.productId()).append(':').append(item.quantity()));
+        if (request.shippingAddress() != null) {
+            var address = request.shippingAddress();
+            canonical.append("|address");
+            for (String value : new String[]{address.recipientName(), address.phone(), address.street(), address.ward(),
+                    address.district(), address.province(), address.postalCode()}) {
+                String normalized = value == null ? "" : value.strip();
+                canonical.append('|').append(normalized.length()).append(':').append(normalized);
+            }
+        }
         try {
             return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
                     .digest(canonical.toString().getBytes(StandardCharsets.UTF_8)));

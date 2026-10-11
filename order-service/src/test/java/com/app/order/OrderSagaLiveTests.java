@@ -250,7 +250,8 @@ class OrderSagaLiveTests {
     private void docker(String... arguments) throws Exception {
         List<String> command = new ArrayList<>(List.of("docker", "compose"));
         command.addAll(List.of(arguments));
-        var process = new ProcessBuilder(command).directory(Path.of("..").toFile())
+        var process = new ProcessBuilder(command).directory(Path.of(
+                System.getenv().getOrDefault("ORDER_SMOKE_PROJECT_DIR", "..")).toFile())
                 .redirectErrorStream(true).redirectOutput(ProcessBuilder.Redirect.DISCARD).start();
         if (!process.waitFor(210, java.util.concurrent.TimeUnit.SECONDS)) {
             process.destroyForcibly();

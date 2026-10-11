@@ -7,6 +7,7 @@ import com.app.order.dto.response.OrderResponse;
 import com.app.order.dto.response.ProductSnapshot;
 import com.app.order.entity.PurchaseOrder;
 import com.app.order.mapper.OrderMapper;
+import com.app.order.mapper.ShippingAddressMapper;
 import com.app.order.repository.OrderRepository;
 import com.app.order.repository.StockRepository;
 import com.app.order.service.OrderTransactions;
@@ -28,17 +29,20 @@ public class OrderTransactionsImpl implements OrderTransactions {
     private final StockRepository stockRepository;
     private final OrderMapper orderMapper;
     private final OutboxService outboxService;
+    private final ShippingAddressMapper addresses;
 
     public OrderTransactionsImpl(
         OrderRepository orderRepository,
         StockRepository stockRepository,
         OrderMapper orderMapper,
-        OutboxService outboxService
+        OutboxService outboxService,
+        ShippingAddressMapper addresses
     ) {
         this.orderRepository = orderRepository;
         this.stockRepository = stockRepository;
         this.orderMapper = orderMapper;
         this.outboxService = outboxService;
+        this.addresses = addresses;
     }
 
     @Override
@@ -65,6 +69,7 @@ public class OrderTransactionsImpl implements OrderTransactions {
     ) {
         PurchaseOrder order = new PurchaseOrder(userId, request.idempotencyKey(), request.channel());
         order.setRequestFingerprint(fingerprint);
+        order.setShippingAddress(addresses.toEntity(request.shippingAddress()));
         for (int index = 0; index < request.items().size(); index++) {
             var product = products.get(index);
             order.addItem(product.id(), product.sku(), product.name(), product.unitPrice(), request.items().get(index).quantity());
