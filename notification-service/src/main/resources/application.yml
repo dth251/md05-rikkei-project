@@ -1,0 +1,46 @@
+server:
+  port: 8084
+  error:
+    include-message: never
+    include-stacktrace: never
+spring:
+  application:
+    name: notification-service
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:15432/notification_db}
+    username: ${DB_USERNAME:notification_user}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 3
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: true
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:15673}
+    username: ${RABBITMQ_USER:commerce_app}
+    password: ${RABBITMQ_PASSWORD:}
+    connection-timeout: 3s
+    listener:
+      simple:
+        prefetch: 1
+        missing-queues-fatal: false
+        default-requeue-rejected: true
+management:
+  health:
+    rabbit:
+      enabled: false
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+logging:
+  level:
+    org.hibernate.engine.jdbc.spi.SqlExceptionHelper: OFF

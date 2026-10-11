@@ -14,6 +14,7 @@ case "$service" in
     product-service) tag_variable=PRODUCT_IMAGE_TAG; port=8082 ;;
     order-service) tag_variable=ORDER_IMAGE_TAG; port=8083 ;;
     payment-service) tag_variable=PAYMENT_IMAGE_TAG; port=8085 ;;
+    notification-service) tag_variable=NOTIFICATION_IMAGE_TAG; port=8084 ;;
     *) echo 'Unsupported deployment service' >&2; exit 1 ;;
 esac
 exec 9>"$DEPLOY_ROOT/.deploy.lock"
@@ -21,7 +22,7 @@ flock -w 300 9
 tags_file="$DEPLOY_ROOT/.image-tags"
 if [[ -f "$tags_file" ]]; then
     while IFS='=' read -r name value; do
-        [[ "$name" =~ ^(AUTH|GATEWAY|PRODUCT|ORDER|PAYMENT)_IMAGE_TAG$ && "$value" =~ ^[0-9a-f]{40}$ ]] \
+        [[ "$name" =~ ^(AUTH|GATEWAY|PRODUCT|ORDER|PAYMENT|NOTIFICATION)_IMAGE_TAG$ && "$value" =~ ^[0-9a-f]{40}$ ]] \
             || { echo 'Invalid deployed image manifest' >&2; exit 1; }
         export "$name=$value"
     done < "$tags_file"
@@ -58,7 +59,7 @@ if "${compose[@]}" up -d --no-deps --no-build --wait --wait-timeout 240 "$servic
         && verify_service; then
     umask 077
     {
-        for name in AUTH_IMAGE_TAG GATEWAY_IMAGE_TAG PRODUCT_IMAGE_TAG ORDER_IMAGE_TAG PAYMENT_IMAGE_TAG; do
+        for name in AUTH_IMAGE_TAG GATEWAY_IMAGE_TAG PRODUCT_IMAGE_TAG ORDER_IMAGE_TAG PAYMENT_IMAGE_TAG NOTIFICATION_IMAGE_TAG; do
             value="${!name:-}"
             [[ -z "$value" ]] || printf '%s=%s\n' "$name" "$value"
         done

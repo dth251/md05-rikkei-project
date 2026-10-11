@@ -48,3 +48,13 @@ Sửa Compose giữ `hostname: ${RABBITMQ_HOSTNAME:-rabbitmq}`. Local và VPS đ
 - Tắt Payment local: Order vẫn PENDING_PAYMENT, route Payment 503. Bật lại Payment healthy, consumer nhận message durable, simulate SUCCESS hoàn tất Saga. Tắt/bật RabbitMQ cũng giữ Order Outbox và publish sau recovery; hostname cố định giữ node dữ liệu.
 - USER token Saga tests là fixture ký bằng secret local; E2E Notification tiếp theo dùng USER token thật do Auth phát. Những test stop/start container chỉ bật bằng flags explicit và chạy trên local/CI runner; không ghi là đã thử failure trên VPS.
 - Mốc 29 Payment credential logging: `7e5349d6133c1e53bf917da6d5a9ab4745f71a6a`, 20:25:27 +07:00; 7 unit tests/build đạt và current reports không có generated credential. [PR #9](https://github.com/dth251/md05-rikkei-project/pull/9) chờ CI head cuối; Saga tích hợp sau Payment qua PR riêng.
+
+## Notification/E2E: local 2026-10-11 khoảng 20:25–20:34 +07:00
+
+- Notification có Wrapper riêng, `notification_db`/`notification_user`, security và DTO/mapper/service interface+impl riêng. Không có route Gateway/public API; chỉ health loopback. MVP ghi notification log, chưa gửi email/SMS.
+- 4 unit tests + 4 live tests đạt. Claim event ID và insert log UNIQUE order ID trong cùng transaction; consumer ACK sau commit. Mất kết nối/DB lỗi tạm thời requeue; payload sai bị reject, chưa có DLQ/replay tool cho malformed message.
+- E2E qua Gateway dùng USER token thật nhận từ Auth register/login/me; ADMIN operations dùng fixture ký trong process kiểm thử. WEB SUCCESS → CONFIRMED/log `order.confirmed`; POS FAILED → CANCELLED/hoàn kho/log `order.cancelled`.
+- Cùng event hai lần và event ID khác cho cùng order vẫn một notification; processed event IDs được kiểm tra trong PostgreSQL thật.
+- Tắt Notification local: Order vẫn CONFIRMED/kho đúng, log chưa có. Bật lại consumer healthy, notification được ghi từ message đang chờ. Không gọi public port business service cho E2E; race kho riêng dùng Order loopback như mô tả trên.
+- Bộ source hiện có tổng 63 unit tests và 18 live tests Java; toàn bộ reports local tương ứng đều 0 failures/errors khi bật các recovery flags. CI chạy lại trên mỗi head PR trước merge.
+- Payment mốc 31 `ae93d718a5c2a42da27fe245f550b6d2ffc5bfed`, 20:30:49 +07:00, merge sau [CI head cuối](https://github.com/dth251/md05-rikkei-project/actions/runs/38143119704) success lúc 13:29:59 UTC. Saga mốc 30 `bea24d243aa221a61551c0d696579813a20bf0a3`, 20:30:20 +07:00, [PR #10](https://github.com/dth251/md05-rikkei-project/pull/10) chờ CI; Notification tích hợp qua PR riêng sau Saga. Chưa ghi Notification/Saga deployed ở mốc local này.

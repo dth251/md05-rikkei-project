@@ -9,3 +9,5 @@ services:
     image: ghcr.io/dth251/md05-rikkei-project/order-service:${ORDER_IMAGE_TAG:-${IMAGE_TAG:?Set a tested full commit SHA}}
   payment-service:
     image: ghcr.io/dth251/md05-rikkei-project/payment-service:${PAYMENT_IMAGE_TAG:-${IMAGE_TAG:?Set a tested full commit SHA}}
+  notification-service:
+    image: ghcr.io/dth251/md05-rikkei-project/notification-service:${NOTIFICATION_IMAGE_TAG:-${IMAGE_TAG:?Set a tested full commit SHA}}

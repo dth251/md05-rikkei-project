@@ -98,6 +98,9 @@ jobs:
             docker compose run --rm --no-deps rabbitmq-topology
             JWT_SECRET="$(sed -n 's/^JWT_SECRET=//p' .env)" PAYMENT_LIVE_DB_PASSWORD="$(sed -n 's/^PAYMENT_DB_PASSWORD=//p' .env)" RABBITMQ_LIVE_USER="$(sed -n 's/^RABBITMQ_DEFAULT_USER=//p' .env)" RABBITMQ_LIVE_PASSWORD="$(sed -n 's/^RABBITMQ_DEFAULT_PASS=//p' .env)" payment-service/gradlew -p payment-service liveTest --no-daemon
           fi
+          if [[ -f notification-service/build.gradle ]]; then
+            JWT_SECRET="$(sed -n 's/^JWT_SECRET=//p' .env)" NOTIFICATION_LIVE_DB_PASSWORD="$(sed -n 's/^NOTIFICATION_DB_PASSWORD=//p' .env)" RABBITMQ_LIVE_USER="$(sed -n 's/^RABBITMQ_DEFAULT_USER=//p' .env)" RABBITMQ_LIVE_PASSWORD="$(sed -n 's/^RABBITMQ_DEFAULT_PASS=//p' .env)" NOTIFICATION_RECOVERY_TEST=true notification-service/gradlew -p notification-service liveTest --no-daemon
+          fi
       - name: Save Java reports
         if: always()
         uses: actions/upload-artifact@v4
