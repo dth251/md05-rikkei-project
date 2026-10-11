@@ -18,7 +18,7 @@ class GatewayRouteTests {
     @Test
     void routesUseIndependentBackendsAndPreserveControllerPrefixes() {
         var definitions = routes.getRouteDefinitions().collectList().block();
-        assertEquals(List.of("auth-login", "auth-service", "product-service", "order-service", "payment-service"),
+        assertEquals(List.of("auth-login", "auth-service", "product-service", "order-service", "inventory-service", "payment-service"),
                 definitions.stream().map(route -> route.getId()).toList());
         definitions.forEach(route -> {
             assertEquals("http", route.getUri().getScheme());
