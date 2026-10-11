@@ -24,4 +24,6 @@ Artifact local: `auth-service/build/reports/tests/test/index.html`, `auth-servic
 
 Run đầu tiên: [03-devops: add auth ci and selective vps deployment](https://github.com/dth251/md05-rikkei-project/actions/runs/38130511299), SHA `4139c73ad156772c94fd6db229812c08c50375b6`. Trạng thái CI được đối chiếu trực tiếp và cập nhật trong [nhật ký commit/deploy](commits-and-deployments.md).
 
+[Run trên mốc 04-devops](https://github.com/dth251/md05-rikkei-project/actions/runs/38130745804), SHA `c694454e8687d608cecc78f6d6257eb671c18462`: verify và GHCR publish đều success; deploy skipped. [PR verify](https://github.com/dth251/md05-rikkei-project/actions/runs/38130766520) trên cùng head cũng success. Bộ kiểm thử Java với PostgreSQL thực đã chạy trên runner Ubuntu, không chỉ local Windows.
+
 VPS `42.96.2.60` chưa deploy: SSH bootstrap trả `Permission denied (publickey,password)` với khóa máy hiện tại. Actions variables/secrets đã cấu hình; `DEPLOY_ENABLED=false` cho đến khi kiểm chứng SSH user deploy và `.env` VPS. Chưa xác nhận API online hoặc HTTPS. Không coi local tests hoặc GHCR publish là bằng chứng VPS đã chạy.
