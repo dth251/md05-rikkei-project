@@ -1,0 +1,716 @@
+{
+    "variable":  [
+                     {
+                         "key":  "baseUrl",
+                         "type":  "string",
+                         "value":  "https://md05-rikkei-project.duckdns.org"
+                     },
+                     {
+                         "key":  "email",
+                         "type":  "string",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "password",
+                         "type":  "string",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "userToken",
+                         "type":  "string",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "adminEmail",
+                         "type":  "string",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "adminPassword",
+                         "type":  "string",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "adminToken",
+                         "type":  "string",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "productId",
+                         "type":  "string",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "paymentId",
+                         "type":  "string",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "orderId",
+                         "type":  "string",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "orderKey",
+                         "type":  "string",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "sku",
+                         "type":  "string",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "invalidToken",
+                         "type":  "string",
+                         "value":  "invalid"
+                     }
+                 ],
+    "info":  {
+                 "description":  "Run folders sequentially. Configure ADMIN credentials privately after assigning role on server. Retry async payment/final-order requests; login quota may return 429. Notification/Prometheus remain private. Clear credentials/tokens before exporting. Runner polls asynchronous payment/final order up to 30 times; use delay-request 1000ms.",
+                 "name":  "MD05 six apps - Gateway Auth Product Order Payment Saga",
+                 "schema":  "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+             },
+    "item":  [
+                 {
+                     "name":  "Auth and security",
+                     "item":  [
+                                  {
+                                      "request":  {
+                                                      "body":  {
+                                                                   "raw":  "{\"fullName\":\"Postman Demo\",\"email\":\"{{email}}\",\"password\":\"{{password}}\"}",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               },
+                                                                   "mode":  "raw"
+                                                               },
+                                                      "method":  "POST",
+                                                      "url":  "{{baseUrl}}/api/auth/register",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ]
+                                                  },
+                                      "name":  "Register isolated USER",
+                                      "event":  [
+                                                    {
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027HTTP 201\u0027, () =\u003e pm.response.to.have.status(201));"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   },
+                                                        "listen":  "test"
+                                                    },
+                                                    {
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.collectionVariables.set(\"email\", \"postman-\" + pm.variables.replaceIn(\"{{$randomUUID}}\") + \"@example.com\");",
+                                                                                    "pm.collectionVariables.set(\"password\", pm.variables.replaceIn(\"{{$randomUUID}}\"));"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   },
+                                                        "listen":  "prerequest"
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "request":  {
+                                                      "body":  {
+                                                                   "raw":  "{\"email\":\"{{email}}\",\"password\":\"{{password}}\"}",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               },
+                                                                   "mode":  "raw"
+                                                               },
+                                                      "method":  "POST",
+                                                      "url":  "{{baseUrl}}/api/auth/login",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ]
+                                                  },
+                                      "name":  "Login USER",
+                                      "event":  [
+                                                    {
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027HTTP 200\u0027, () =\u003e pm.response.to.have.status(200));",
+                                                                                    "if(pm.response.code===200) pm.collectionVariables.set(\"userToken\",pm.response.json().data.accessToken);"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   },
+                                                        "listen":  "test"
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "url":  "{{baseUrl}}/api/auth/me",
+                                                      "header":  [
+
+                                                                 ]
+                                                  },
+                                      "name":  "JWT missing 401",
+                                      "event":  [
+                                                    {
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027HTTP 401\u0027, () =\u003e pm.response.to.have.status(401));"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   },
+                                                        "listen":  "test"
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "url":  "{{baseUrl}}/api/auth/me",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{invalidToken}}"
+                                                                     }
+                                                                 ]
+                                                  },
+                                      "name":  "JWT invalid 401",
+                                      "event":  [
+                                                    {
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027HTTP 401\u0027, () =\u003e pm.response.to.have.status(401));"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   },
+                                                        "listen":  "test"
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "url":  "{{baseUrl}}/api/auth/me",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{userToken}}"
+                                                                     }
+                                                                 ]
+                                                  },
+                                      "name":  "Current user",
+                                      "event":  [
+                                                    {
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027HTTP 200\u0027, () =\u003e pm.response.to.have.status(200));"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   },
+                                                        "listen":  "test"
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "request":  {
+                                                      "body":  {
+                                                                   "raw":  "{\"sku\":\"RBAC-DEMO\",\"name\":\"Denied\",\"unitPrice\":12.5}",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               },
+                                                                   "mode":  "raw"
+                                                               },
+                                                      "method":  "POST",
+                                                      "url":  "{{baseUrl}}/api/products",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{userToken}}"
+                                                                     }
+                                                                 ]
+                                                  },
+                                      "name":  "USER cannot create Product 403",
+                                      "event":  [
+                                                    {
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027HTTP 403\u0027, () =\u003e pm.response.to.have.status(403));"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   },
+                                                        "listen":  "test"
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "request":  {
+                                                      "body":  {
+                                                                   "raw":  "{\"email\":\"{{adminEmail}}\",\"password\":\"{{adminPassword}}\"}",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               },
+                                                                   "mode":  "raw"
+                                                               },
+                                                      "method":  "POST",
+                                                      "url":  "{{baseUrl}}/api/auth/login",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ]
+                                                  },
+                                      "name":  "Login ADMIN (configure private admin credentials)",
+                                      "event":  [
+                                                    {
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027HTTP 200\u0027, () =\u003e pm.response.to.have.status(200));",
+                                                                                    "if(pm.response.code===200) pm.collectionVariables.set(\"adminToken\",pm.response.json().data.accessToken);"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   },
+                                                        "listen":  "test"
+                                                    }
+                                                ]
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "Product and inventory",
+                     "item":  [
+                                  {
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "url":  "{{baseUrl}}/api/products?page=0\u0026size=20",
+                                                      "header":  [
+
+                                                                 ]
+                                                  },
+                                      "name":  "Public catalog",
+                                      "event":  [
+                                                    {
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027HTTP 200\u0027, () =\u003e pm.response.to.have.status(200));",
+                                                                                    "pm.test(\"Gateway route\",()=\u003epm.expect(pm.response.headers.get(\"X-Gateway\")).to.eql(\"api-gateway\"));"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   },
+                                                        "listen":  "test"
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "request":  {
+                                                      "body":  {
+                                                                   "raw":  "{\"sku\":\"{{sku}}\",\"name\":\"Postman fixture\",\"unitPrice\":12.5}",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               },
+                                                                   "mode":  "raw"
+                                                               },
+                                                      "method":  "POST",
+                                                      "url":  "{{baseUrl}}/api/products",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{adminToken}}"
+                                                                     }
+                                                                 ]
+                                                  },
+                                      "name":  "Create product ADMIN",
+                                      "event":  [
+                                                    {
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027HTTP 201\u0027, () =\u003e pm.response.to.have.status(201));",
+                                                                                    "if(pm.response.code===201) pm.collectionVariables.set(\"productId\",pm.response.json().data.id);"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   },
+                                                        "listen":  "test"
+                                                    },
+                                                    {
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.collectionVariables.set(\"sku\",\"POSTMAN-\"+pm.variables.replaceIn(\"{{$randomUUID}}\"));",
+                                                                                    "pm.collectionVariables.set(\"orderKey\",pm.variables.replaceIn(\"{{$randomUUID}}\"));"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   },
+                                                        "listen":  "prerequest"
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "request":  {
+                                                      "body":  {
+                                                                   "raw":  "{\"productId\":{{productId}},\"quantity\":1}",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               },
+                                                                   "mode":  "raw"
+                                                               },
+                                                      "method":  "POST",
+                                                      "url":  "{{baseUrl}}/api/inventory/stocks",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{adminToken}}"
+                                                                     }
+                                                                 ]
+                                                  },
+                                      "name":  "Receive stock ADMIN",
+                                      "event":  [
+                                                    {
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027HTTP 200\u0027, () =\u003e pm.response.to.have.status(200));"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   },
+                                                        "listen":  "test"
+                                                    }
+                                                ]
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "Order and failed payment compensation",
+                     "item":  [
+                                  {
+                                      "request":  {
+                                                      "body":  {
+                                                                   "raw":  "{\"channel\":\"WEB\",\"idempotencyKey\":\"{{orderKey}}\",\"items\":[{\"productId\":{{productId}},\"quantity\":1}]}",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               },
+                                                                   "mode":  "raw"
+                                                               },
+                                                      "method":  "POST",
+                                                      "url":  "{{baseUrl}}/api/orders",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{userToken}}"
+                                                                     }
+                                                                 ]
+                                                  },
+                                      "name":  "Create WEB order",
+                                      "event":  [
+                                                    {
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027HTTP 201\u0027, () =\u003e pm.response.to.have.status(201));",
+                                                                                    "if(pm.response.code===201) pm.collectionVariables.set(\"orderId\",pm.response.json().data.id);"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   },
+                                                        "listen":  "test"
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "request":  {
+                                                      "body":  {
+                                                                   "raw":  "{\"channel\":\"WEB\",\"idempotencyKey\":\"{{orderKey}}\",\"items\":[{\"productId\":{{productId}},\"quantity\":1}]}",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               },
+                                                                   "mode":  "raw"
+                                                               },
+                                                      "method":  "POST",
+                                                      "url":  "{{baseUrl}}/api/orders",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{userToken}}"
+                                                                     }
+                                                                 ]
+                                                  },
+                                      "name":  "Replay same key (no second reservation)",
+                                      "event":  [
+                                                    {
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027HTTP 200\u0027, () =\u003e pm.response.to.have.status(200));",
+                                                                                    "pm.test(\"Same order\",()=\u003epm.expect(pm.response.json().data.id).to.eql(Number(pm.collectionVariables.get(\"orderId\"))));"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   },
+                                                        "listen":  "test"
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "url":  "{{baseUrl}}/api/orders/{{orderId}}",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{userToken}}"
+                                                                     }
+                                                                 ]
+                                                  },
+                                      "name":  "Get pending order",
+                                      "event":  [
+                                                    {
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027HTTP 200\u0027, () =\u003e pm.response.to.have.status(200));"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   },
+                                                        "listen":  "test"
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "url":  "{{baseUrl}}/api/payments/by-order/{{orderId}}",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{userToken}}"
+                                                                     }
+                                                                 ]
+                                                  },
+                                      "name":  "Await payment (retry after 404)",
+                                      "event":  [
+                                                    {
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "const attempts = Number(pm.collectionVariables.get(\"paymentPollAttempts\") || 0);",
+                                                                                    "if (pm.response.code === 404 \u0026\u0026 attempts \u003c 30) {",
+                                                                                    "  pm.collectionVariables.set(\"paymentPollAttempts\", attempts + 1);",
+                                                                                    "  pm.execution.setNextRequest(pm.info.requestName);",
+                                                                                    "} else {",
+                                                                                    "  pm.test(\"HTTP 200\", () =\u003e pm.response.to.have.status(200));",
+                                                                                    "  pm.collectionVariables.set(\"paymentPollAttempts\", 0);",
+                                                                                    "  if (pm.response.code === 200) pm.collectionVariables.set(\"paymentId\", pm.response.json().data.id);",
+                                                                                    "}"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   },
+                                                        "listen":  "test"
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "request":  {
+                                                      "body":  {
+                                                                   "raw":  "{\"status\":\"FAILED\"}",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               },
+                                                                   "mode":  "raw"
+                                                               },
+                                                      "method":  "POST",
+                                                      "url":  "{{baseUrl}}/api/payments/{{paymentId}}/simulate",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{userToken}}"
+                                                                     }
+                                                                 ]
+                                                  },
+                                      "name":  "USER cannot simulate 403",
+                                      "event":  [
+                                                    {
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027HTTP 403\u0027, () =\u003e pm.response.to.have.status(403));"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   },
+                                                        "listen":  "test"
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "request":  {
+                                                      "body":  {
+                                                                   "raw":  "{\"status\":\"FAILED\"}",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               },
+                                                                   "mode":  "raw"
+                                                               },
+                                                      "method":  "POST",
+                                                      "url":  "{{baseUrl}}/api/payments/{{paymentId}}/simulate",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{adminToken}}"
+                                                                     }
+                                                                 ]
+                                                  },
+                                      "name":  "Simulate FAILED ADMIN",
+                                      "event":  [
+                                                    {
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027HTTP 200\u0027, () =\u003e pm.response.to.have.status(200));"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   },
+                                                        "listen":  "test"
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "request":  {
+                                                      "body":  {
+                                                                   "raw":  "{\"status\":\"FAILED\"}",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               },
+                                                                   "mode":  "raw"
+                                                               },
+                                                      "method":  "POST",
+                                                      "url":  "{{baseUrl}}/api/payments/{{paymentId}}/simulate",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{adminToken}}"
+                                                                     }
+                                                                 ]
+                                                  },
+                                      "name":  "Replay FAILED ADMIN",
+                                      "event":  [
+                                                    {
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027HTTP 200\u0027, () =\u003e pm.response.to.have.status(200));"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   },
+                                                        "listen":  "test"
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "url":  "{{baseUrl}}/api/orders/{{orderId}}",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{userToken}}"
+                                                                     }
+                                                                 ]
+                                                  },
+                                      "name":  "Order CANCELLED (retry until consumer finishes)",
+                                      "event":  [
+                                                    {
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\"HTTP 200\", () =\u003e pm.response.to.have.status(200));",
+                                                                                    "const status = pm.response.code === 200 ? pm.response.json().data.status : \"ERROR\";",
+                                                                                    "const attempts = Number(pm.collectionVariables.get(\"orderPollAttempts\") || 0);",
+                                                                                    "if (status === \"PENDING_PAYMENT\" \u0026\u0026 attempts \u003c 30) {",
+                                                                                    "  pm.collectionVariables.set(\"orderPollAttempts\", attempts + 1);",
+                                                                                    "  pm.execution.setNextRequest(pm.info.requestName);",
+                                                                                    "} else {",
+                                                                                    "  pm.collectionVariables.set(\"orderPollAttempts\", 0);",
+                                                                                    "  pm.test(\"Cancelled\", () =\u003e pm.expect(status).to.eql(\"CANCELLED\"));",
+                                                                                    "}"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   },
+                                                        "listen":  "test"
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "url":  "{{baseUrl}}/api/inventory/{{productId}}",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{userToken}}"
+                                                                     }
+                                                                 ]
+                                                  },
+                                      "name":  "Stock restored once",
+                                      "event":  [
+                                                    {
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027HTTP 200\u0027, () =\u003e pm.response.to.have.status(200));",
+                                                                                    "pm.test(\"Stock restored\",()=\u003e{const d=pm.response.json().data;pm.expect(d.available).to.eql(1);pm.expect(d.reserved).to.eql(0);});"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   },
+                                                        "listen":  "test"
+                                                    }
+                                                ]
+                                  }
+                              ]
+                 }
+             ]
+}
