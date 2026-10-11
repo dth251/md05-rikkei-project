@@ -205,7 +205,9 @@ class NotificationLiveTests {
 
     private String adminToken() {
         var key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(System.getenv("JWT_SECRET")));
-        return Jwts.builder().subject("999333").issuer("omnichannel-auth").issuedAt(new Date())
+        // The test client and VPS can differ slightly in time; the API rejects future iat.
+        return Jwts.builder().subject("999333").issuer("omnichannel-auth")
+                .issuedAt(Date.from(Instant.now().minusSeconds(5)))
                 .expiration(Date.from(Instant.now().plusSeconds(600))).claim("roles", List.of("ADMIN"))
                 .signWith(key, Jwts.SIG.HS256).compact();
     }
