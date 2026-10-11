@@ -67,7 +67,10 @@ Phát triển `feature/...`, commit từng phần đã kiểm thử với số n
 - [Quy ước code](docs/coding-conventions.md)
 - [Kết quả ngày 2](docs/day2-test-results.md)
 - [Kết quả ngày 3](docs/day3-test-results.md)
+- [Video backend và bằng chứng](docs/evidence/README.md)
 - [Nhật ký SHA/CI/deploy](docs/commits-and-deployments.md)
 - [CI/CD và VPS](docs/ci-cd.md)
 
 Không commit `.env`, private key, JWT hoặc `.verification`. Giữ dữ liệu fixture audit và không thay đổi ứng dụng ngoài dự án.
+
+Checkpoint ngày 3: 69 unit/20 live tests CI đạt; VPS sáu app UP, 46 đơn load/race hoàn tất Saga và reserved=0. **VPS hiện chưa đáp ứng catalog 50 RPS**; burst race VPS có 36 response khác ngoài 201/409, dù SQL xác nhận chỉ một order/không âm kho. Report giữ các lần lỗi, dropped iterations và giới hạn; không tuyên bố 500–1000 RPS.

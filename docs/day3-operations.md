@@ -29,9 +29,15 @@ Mỗi stage 20 giây, target 50→100→250→500→1000 RPS, max 100 VUs. Dừn
 
 Set `FIXTURE_FILE`, `BASE_URL`, `SUMMARY_FILE`; chạy `k6 run tests/k6/order-load.js` (2 Order/s ×20s), sau đó `k6 run tests/k6/gateway-rate-limit.js` riêng (30 login/20 VUs). Order load đo write/Saga admission, chưa simulate payment trong vòng tải.
 
+Giảm tải bằng `RATE=1` khi cần. Mỗi lần đo Order tạo mới phải dùng `runId` UUID mới trong một bản sao fixture **private**; giữ product IDs/tokens. Nếu dùng lại runId, server trả replay 200, không phải đo tạo mới 201. Không reset stock hoặc xóa orders để chạy lại. `finish` chọn theo hai product IDs nên bao gồm orders của các runId khác nhau. Báo cáo dropped iterations và actual RPS kể cả khi HTTP checks/exit code đạt; arrival boundary và VUs có thể khiến tổng request khác target × duration.
+
+Mốc 55 thêm counters 2xx/4xx/5xx/429/status=0 cho Order/race. `http_req_failed` mặc định tính 409/401/429 là failed; trong bài race/quota chúng có thể là kết quả mong đợi. Kết luận theo custom thresholds đúng mục tiêu và SQL, không dùng tỷ lệ này như production error budget. Không nới thresholds sau khi đo lỗi. Ghi rõ sampler bắt đầu muộn hoặc bao gồm recovery; CSV không tự chứng minh toàn bộ cửa sổ load.
+
 Để race đúng inventory, mở **foreground SSH tunnel** local `18083` tới VPS `127.0.0.1:8083`, và PostgreSQL `15433` tới địa chỉ Docker private đã inspect. Không public DB/Order, không bỏ security/rate limit production. Set `ORDER_URL=http://127.0.0.1:18083`; chạy `k6 run tests/k6/race-condition.js`: 100 VUs ×1 iteration, keys khác nhau, đúng một 201 và 99×409. Thử Gateway quota không phải chứng minh chống âm kho.
 
 Set process env `ORDER_LIVE_DB_URL`, `ORDER_LIVE_DB_PASSWORD`, giữ fixture env; chạy Java `loadFixture -PfixtureAction=verify-race` để kiểm tra SQL available=0/reserved=1/orders=1. Cuối cùng set `LOAD_RESULT_FILE` và chạy `loadFixture -PfixtureAction=finish`: simulate SUCCESS cho đúng orders của hai product fixture, chờ CONFIRMED, reserved=0, lưu JSON chỉ chứa IDs/số liệu. Tool không xóa dữ liệu; giữ fixture rows phục vụ audit. Đóng tunnel và xóa env/token files sau kiểm chứng.
+
+Đợi rollout xong rồi đo/finalize; phối hợp bằng cùng `.deploy.lock` nếu cần tránh recreate trong cửa sổ kiểm chứng. Không giữ verification lock quá thời hạn chờ deploy. Tool không tự bỏ qua 503/504: ghi nhận failure, quan sát stack, rồi có thể chạy lại `finish` sau phục hồi vì SUCCESS idempotent; không dùng rerun để thay thế kết quả load đã lỗi. Token fixture một giờ, hoàn tất trước expiry. Chỉ đóng đúng tunnel của phiên kiểm chứng và chỉ xóa token files do harness này tạo.
 
 ## Postman và demo
 

@@ -1,0 +1,402 @@
+{
+    "source":  "Actual Newman VPS HTTPS API responses, credentials and request headers removed",
+    "timeStartUtc":  "2026-10-11T17:08:31.5900000Z",
+    "timeEndUtc":  "2026-10-11T17:09:20.2080000Z",
+    "requests":  14,
+    "assertions":  17,
+    "failures":  0,
+    "executions":  [
+                       {
+                           "name":  "Public catalog",
+                           "method":  "GET",
+                           "url":  "https://md05-rikkei-project.duckdns.org/api/products",
+                           "status":  200,
+                           "responseTimeMs":  2275,
+                           "gateway":  "api-gateway",
+                           "success":  true,
+                           "data":  {
+                                        "content":  [
+                                                        {
+                                                            "id":  3,
+                                                            "sku":  "RACE-F7E53E6A-EDF1-49E3-9F05-F5B89138F32C",
+                                                            "name":  "Concurrent Product",
+                                                            "description":  null,
+                                                            "unitPrice":  1.00,
+                                                            "category":  null,
+                                                            "brand":  null,
+                                                            "active":  true,
+                                                            "createdAt":  "2026-10-11T11:47:49.789567Z",
+                                                            "updatedAt":  "2026-10-11T11:47:49.789567Z"
+                                                        },
+                                                        {
+                                                            "id":  9,
+                                                            "sku":  "E2E-E01E81F6-F787-4FC1-A2A2-B93B276950BC",
+                                                            "name":  "Notification fixture",
+                                                            "description":  null,
+                                                            "unitPrice":  12.50,
+                                                            "category":  null,
+                                                            "brand":  null,
+                                                            "active":  true,
+                                                            "createdAt":  "2026-10-11T14:12:49.519552Z",
+                                                            "updatedAt":  "2026-10-11T14:12:49.519552Z"
+                                                        },
+                                                        {
+                                                            "id":  10,
+                                                            "sku":  "E2E-52E090B7-DCC8-46F4-A277-95C794E74E71",
+                                                            "name":  "Notification fixture",
+                                                            "description":  null,
+                                                            "unitPrice":  12.50,
+                                                            "category":  null,
+                                                            "brand":  null,
+                                                            "active":  true,
+                                                            "createdAt":  "2026-10-11T14:13:47.210143Z",
+                                                            "updatedAt":  "2026-10-11T14:13:47.210143Z"
+                                                        },
+                                                        {
+                                                            "id":  11,
+                                                            "sku":  "E2E-EA212EE5-E0C1-48F9-88EF-A3A6AD00D5E2",
+                                                            "name":  "Notification fixture",
+                                                            "description":  null,
+                                                            "unitPrice":  12.50,
+                                                            "category":  null,
+                                                            "brand":  null,
+                                                            "active":  true,
+                                                            "createdAt":  "2026-10-11T14:13:49.511084Z",
+                                                            "updatedAt":  "2026-10-11T14:13:49.511084Z"
+                                                        },
+                                                        {
+                                                            "id":  12,
+                                                            "sku":  "E2E-F25E897B-AC31-4EA2-8731-760EB46406D9",
+                                                            "name":  "Notification fixture",
+                                                            "description":  null,
+                                                            "unitPrice":  12.50,
+                                                            "category":  null,
+                                                            "brand":  null,
+                                                            "active":  true,
+                                                            "createdAt":  "2026-10-11T14:16:53.308753Z",
+                                                            "updatedAt":  "2026-10-11T14:16:53.308753Z"
+                                                        },
+                                                        {
+                                                            "id":  13,
+                                                            "sku":  "E2E-FE183F11-B496-4BDA-A484-5063B6F92354",
+                                                            "name":  "Notification fixture",
+                                                            "description":  null,
+                                                            "unitPrice":  12.50,
+                                                            "category":  null,
+                                                            "brand":  null,
+                                                            "active":  true,
+                                                            "createdAt":  "2026-10-11T14:17:09.462898Z",
+                                                            "updatedAt":  "2026-10-11T14:17:09.462898Z"
+                                                        },
+                                                        {
+                                                            "id":  14,
+                                                            "sku":  "E2E-8519782A-097F-4503-BAC8-85229602D40A",
+                                                            "name":  "Notification fixture",
+                                                            "description":  null,
+                                                            "unitPrice":  12.50,
+                                                            "category":  null,
+                                                            "brand":  null,
+                                                            "active":  true,
+                                                            "createdAt":  "2026-10-11T14:17:27.440160Z",
+                                                            "updatedAt":  "2026-10-11T14:17:27.440160Z"
+                                                        },
+                                                        {
+                                                            "id":  15,
+                                                            "sku":  "DAY3-EE57DA98-C05B-4305-9FC5-6DE8A2EBC81D",
+                                                            "name":  "Day3 load fixture",
+                                                            "description":  null,
+                                                            "unitPrice":  12.50,
+                                                            "category":  null,
+                                                            "brand":  null,
+                                                            "active":  true,
+                                                            "createdAt":  "2026-10-11T17:00:23.619472Z",
+                                                            "updatedAt":  "2026-10-11T17:00:23.619472Z"
+                                                        },
+                                                        {
+                                                            "id":  16,
+                                                            "sku":  "DAY3-871B7A0C-302E-41EF-897A-5ABEB730941A",
+                                                            "name":  "Day3 race fixture",
+                                                            "description":  null,
+                                                            "unitPrice":  12.50,
+                                                            "category":  null,
+                                                            "brand":  null,
+                                                            "active":  true,
+                                                            "createdAt":  "2026-10-11T17:00:31.019662Z",
+                                                            "updatedAt":  "2026-10-11T17:00:31.019662Z"
+                                                        }
+                                                    ],
+                                        "page":  0,
+                                        "size":  20,
+                                        "totalElements":  9,
+                                        "totalPages":  1
+                                    },
+                           "message":  "Products retrieved"
+                       },
+                       {
+                           "name":  "Create product ADMIN",
+                           "method":  "POST",
+                           "url":  "https://md05-rikkei-project.duckdns.org/api/products",
+                           "status":  201,
+                           "responseTimeMs":  8687,
+                           "gateway":  "api-gateway",
+                           "success":  true,
+                           "data":  {
+                                        "id":  17,
+                                        "sku":  "POSTMAN-1C07D2B1-5B2A-44F9-A6E5-837B9C074BDF",
+                                        "name":  "Postman fixture",
+                                        "description":  null,
+                                        "unitPrice":  12.5,
+                                        "category":  null,
+                                        "brand":  null,
+                                        "active":  true,
+                                        "createdAt":  "2026-10-11T17:08:43.485986739Z",
+                                        "updatedAt":  "2026-10-11T17:08:43.485986739Z"
+                                    },
+                           "message":  "Product created"
+                       },
+                       {
+                           "name":  "Receive stock ADMIN",
+                           "method":  "POST",
+                           "url":  "https://md05-rikkei-project.duckdns.org/api/inventory/stocks",
+                           "status":  200,
+                           "responseTimeMs":  7765,
+                           "gateway":  "api-gateway",
+                           "success":  true,
+                           "data":  {
+                                        "productId":  17,
+                                        "available":  1,
+                                        "reserved":  0
+                                    },
+                           "message":  "Stock received"
+                       },
+                       {
+                           "name":  "Create WEB order",
+                           "method":  "POST",
+                           "url":  "https://md05-rikkei-project.duckdns.org/api/orders",
+                           "status":  201,
+                           "responseTimeMs":  1983,
+                           "gateway":  "api-gateway",
+                           "success":  true,
+                           "data":  {
+                                        "id":  5,
+                                        "userId":  31,
+                                        "channel":  "WEB",
+                                        "status":  "PENDING_PAYMENT",
+                                        "totalAmount":  12.5,
+                                        "items":  [
+                                                      {
+                                                          "productId":  17,
+                                                          "sku":  "POSTMAN-1C07D2B1-5B2A-44F9-A6E5-837B9C074BDF",
+                                                          "name":  "Postman fixture",
+                                                          "unitPrice":  12.5,
+                                                          "quantity":  1
+                                                      }
+                                                  ],
+                                        "createdAt":  "2026-10-11T17:08:55.674371163Z"
+                                    },
+                           "message":  "Order created"
+                       },
+                       {
+                           "name":  "Replay same key (no second reservation)",
+                           "method":  "POST",
+                           "url":  "https://md05-rikkei-project.duckdns.org/api/orders",
+                           "status":  200,
+                           "responseTimeMs":  257,
+                           "gateway":  "api-gateway",
+                           "success":  true,
+                           "data":  {
+                                        "id":  5,
+                                        "userId":  31,
+                                        "channel":  "WEB",
+                                        "status":  "PENDING_PAYMENT",
+                                        "totalAmount":  12.50,
+                                        "items":  [
+                                                      {
+                                                          "productId":  17,
+                                                          "sku":  "POSTMAN-1C07D2B1-5B2A-44F9-A6E5-837B9C074BDF",
+                                                          "name":  "Postman fixture",
+                                                          "unitPrice":  12.50,
+                                                          "quantity":  1
+                                                      }
+                                                  ],
+                                        "createdAt":  "2026-10-11T17:08:55.674371Z"
+                                    },
+                           "message":  "Order replayed"
+                       },
+                       {
+                           "name":  "Get pending order",
+                           "method":  "GET",
+                           "url":  "https://md05-rikkei-project.duckdns.org/api/orders/5",
+                           "status":  200,
+                           "responseTimeMs":  905,
+                           "gateway":  "api-gateway",
+                           "success":  true,
+                           "data":  {
+                                        "id":  5,
+                                        "userId":  31,
+                                        "channel":  "WEB",
+                                        "status":  "PENDING_PAYMENT",
+                                        "totalAmount":  12.50,
+                                        "items":  [
+                                                      {
+                                                          "productId":  17,
+                                                          "sku":  "POSTMAN-1C07D2B1-5B2A-44F9-A6E5-837B9C074BDF",
+                                                          "name":  "Postman fixture",
+                                                          "unitPrice":  12.50,
+                                                          "quantity":  1
+                                                      }
+                                                  ],
+                                        "createdAt":  "2026-10-11T17:08:55.674371Z"
+                                    },
+                           "message":  "Order retrieved"
+                       },
+                       {
+                           "name":  "Await payment (retry after 404)",
+                           "method":  "GET",
+                           "url":  "https://md05-rikkei-project.duckdns.org/api/payments/by-order/5",
+                           "status":  404,
+                           "responseTimeMs":  2690,
+                           "gateway":  "api-gateway",
+                           "success":  false,
+                           "data":  null,
+                           "message":  "Payment not found"
+                       },
+                       {
+                           "name":  "Await payment (retry after 404)",
+                           "method":  "GET",
+                           "url":  "https://md05-rikkei-project.duckdns.org/api/payments/by-order/5",
+                           "status":  200,
+                           "responseTimeMs":  250,
+                           "gateway":  "api-gateway",
+                           "success":  true,
+                           "data":  {
+                                        "id":  5,
+                                        "orderId":  5,
+                                        "userId":  31,
+                                        "amount":  12.50,
+                                        "status":  "PENDING",
+                                        "createdAt":  "2026-10-11T17:09:00.095816Z",
+                                        "completedAt":  null
+                                    },
+                           "message":  "Payment retrieved"
+                       },
+                       {
+                           "name":  "USER cannot simulate 403",
+                           "method":  "POST",
+                           "url":  "https://md05-rikkei-project.duckdns.org/api/payments/5/simulate",
+                           "status":  403,
+                           "responseTimeMs":  146,
+                           "gateway":  "api-gateway",
+                           "success":  false,
+                           "data":  null,
+                           "message":  "Access denied"
+                       },
+                       {
+                           "name":  "Simulate FAILED ADMIN",
+                           "method":  "POST",
+                           "url":  "https://md05-rikkei-project.duckdns.org/api/payments/5/simulate",
+                           "status":  200,
+                           "responseTimeMs":  888,
+                           "gateway":  "api-gateway",
+                           "success":  true,
+                           "data":  {
+                                        "id":  5,
+                                        "orderId":  5,
+                                        "userId":  31,
+                                        "amount":  12.50,
+                                        "status":  "FAILED",
+                                        "createdAt":  "2026-10-11T17:09:00.095816Z",
+                                        "completedAt":  "2026-10-11T17:09:07.540052798Z"
+                                    },
+                           "message":  "Payment simulated"
+                       },
+                       {
+                           "name":  "Replay FAILED ADMIN",
+                           "method":  "POST",
+                           "url":  "https://md05-rikkei-project.duckdns.org/api/payments/5/simulate",
+                           "status":  200,
+                           "responseTimeMs":  375,
+                           "gateway":  "api-gateway",
+                           "success":  true,
+                           "data":  {
+                                        "id":  5,
+                                        "orderId":  5,
+                                        "userId":  31,
+                                        "amount":  12.50,
+                                        "status":  "FAILED",
+                                        "createdAt":  "2026-10-11T17:09:00.095816Z",
+                                        "completedAt":  "2026-10-11T17:09:07.540053Z"
+                                    },
+                           "message":  "Payment simulated"
+                       },
+                       {
+                           "name":  "Order CANCELLED (retry until consumer finishes)",
+                           "method":  "GET",
+                           "url":  "https://md05-rikkei-project.duckdns.org/api/orders/5",
+                           "status":  200,
+                           "responseTimeMs":  1047,
+                           "gateway":  "api-gateway",
+                           "success":  true,
+                           "data":  {
+                                        "id":  5,
+                                        "userId":  31,
+                                        "channel":  "WEB",
+                                        "status":  "PENDING_PAYMENT",
+                                        "totalAmount":  12.50,
+                                        "items":  [
+                                                      {
+                                                          "productId":  17,
+                                                          "sku":  "POSTMAN-1C07D2B1-5B2A-44F9-A6E5-837B9C074BDF",
+                                                          "name":  "Postman fixture",
+                                                          "unitPrice":  12.50,
+                                                          "quantity":  1
+                                                      }
+                                                  ],
+                                        "createdAt":  "2026-10-11T17:08:55.674371Z"
+                                    },
+                           "message":  "Order retrieved"
+                       },
+                       {
+                           "name":  "Order CANCELLED (retry until consumer finishes)",
+                           "method":  "GET",
+                           "url":  "https://md05-rikkei-project.duckdns.org/api/orders/5",
+                           "status":  200,
+                           "responseTimeMs":  5616,
+                           "gateway":  "api-gateway",
+                           "success":  true,
+                           "data":  {
+                                        "id":  5,
+                                        "userId":  31,
+                                        "channel":  "WEB",
+                                        "status":  "CANCELLED",
+                                        "totalAmount":  12.50,
+                                        "items":  [
+                                                      {
+                                                          "productId":  17,
+                                                          "sku":  "POSTMAN-1C07D2B1-5B2A-44F9-A6E5-837B9C074BDF",
+                                                          "name":  "Postman fixture",
+                                                          "unitPrice":  12.50,
+                                                          "quantity":  1
+                                                      }
+                                                  ],
+                                        "createdAt":  "2026-10-11T17:08:55.674371Z"
+                                    },
+                           "message":  "Order retrieved"
+                       },
+                       {
+                           "name":  "Stock restored once",
+                           "method":  "GET",
+                           "url":  "https://md05-rikkei-project.duckdns.org/api/inventory/17",
+                           "status":  200,
+                           "responseTimeMs":  256,
+                           "gateway":  "api-gateway",
+                           "success":  true,
+                           "data":  {
+                                        "productId":  17,
+                                        "available":  1,
+                                        "reserved":  0
+                                    },
+                           "message":  "Inventory retrieved"
+                       }
+                   ]
+}

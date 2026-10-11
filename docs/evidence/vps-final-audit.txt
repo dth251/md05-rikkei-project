@@ -1,0 +1,51 @@
+﻿2026-10-11T17:41:02Z
+               total        used        free      shared  buff/cache   available
+Mem:             969         717          76          11         175          95
+Swap:           2047        1218         829
+ 00:41:02 up  9:31,  0 users,  load average: 2.78, 1.95, 1.83
+omnichannel-day1-api-gateway-1 CPU=3.67% RAM=76.4MiB / 256MiB
+omnichannel-day1-order-service-1 CPU=0.17% RAM=103.7MiB / 288MiB
+omnichannel-day1-notification-service-1 CPU=0.11% RAM=94.66MiB / 256MiB
+omnichannel-day1-payment-service-1 CPU=5.38% RAM=85.53MiB / 288MiB
+omnichannel-day1-product-service-1 CPU=0.08% RAM=35.04MiB / 288MiB
+omnichannel-day1-auth-service-1 CPU=0.08% RAM=34MiB / 969.5MiB
+omnichannel-day1-rabbitmq-1 CPU=0.35% RAM=24.2MiB / 969.5MiB
+omnichannel-day1-redis-1 CPU=3.26% RAM=5.543MiB / 96MiB
+omnichannel-day1-postgres-1 CPU=1.54% RAM=25MiB / 969.5MiB
+name	messages_ready	messages_unacknowledged	consumers
+payment.order-created.q	0	0	1
+order.payment-result.q	0	0	1
+notification.order.q	0	0	1
+order_db pending_outbox=0
+payment_db pending_outbox=0
+health_8080={"status":"UP"}
+health_8081={"status":"UP"}
+health_8082={"status":"UP"}
+health_8083={"status":"UP"}
+health_8084={"status":"UP"}
+health_8085={"status":"UP"}
+AUTH_IMAGE_TAG=8ece1e0a5d2b0da16e83369facad1815803746f6
+GATEWAY_IMAGE_TAG=06340098eae04131a8e8da856f746f27109916d2
+PRODUCT_IMAGE_TAG=8ece1e0a5d2b0da16e83369facad1815803746f6
+ORDER_IMAGE_TAG=fb348bd1bc12d208d8ddef5d3373fb235d7a2567
+PAYMENT_IMAGE_TAG=8ece1e0a5d2b0da16e83369facad1815803746f6
+NOTIFICATION_IMAGE_TAG=8ece1e0a5d2b0da16e83369facad1815803746f6
+current_release=/opt/omnichannel-ecommerce/releases/06340098eae04131a8e8da856f746f27109916d2
+actual_images
+[{"ID":"sha256:ca6879afe077c05c56b70b1d81e9167a63d6b6f90de240ed2ce657564f2d5d41","ContainerName":"omnichannel-day1-order-service-1","Repository":"ghcr.io/dth251/md05-rikkei-project/order-service","Tag":"fb348bd1bc12d208d8ddef5d3373fb235d7a2567","Platform":"linux/amd64","Size":410893327,"Created":"2026-10-11T17:17:57.985255288Z","LastTagTime":"2026-10-11T17:18:36.975898647Z"},{"ID":"sha256:7406597b0a9850df766c5794abcd64f31737327d16989c0217901ca9f8b5e245","ContainerName":"omnichannel-day1-notification-service-1","Repository":"ghcr.io/dth251/md05-rikkei-project/notification-service","Tag":"8ece1e0a5d2b0da16e83369facad1815803746f6","Platform":"linux/amd64","Size":406999253,"Created":"2026-10-11T16:59:18.618952827Z","LastTagTime":"2026-10-11T17:07:24.585941087Z"},{"ID":"sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499","ContainerName":"omnichannel-day1-redis-1","Repository":"redis","Tag":"7-alpine","Platform":"linux/amd64","Size":57300241,"Created":"2026-09-17T21:32:46.989770417Z","LastTagTime":"2026-10-11T11:37:57.472811275Z"},{"ID":"sha256:e9cff6076bb7b87e311e426e0ad9e749aa14764cc950801393ddaa31d4877dbc","ContainerName":"omnichannel-day1-payment-service-1","Repository":"ghcr.io/dth251/md05-rikkei-project/payment-service","Tag":"8ece1e0a5d2b0da16e83369facad1815803746f6","Platform":"linux/amd64","Size":410839589,"Created":"2026-10-11T16:59:16.751284152Z","LastTagTime":"2026-10-11T17:06:05.457085483Z"},{"ID":"sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24","ContainerName":"omnichannel-day1-postgres-1","Repository":"postgres","Tag":"17-alpine","Platform":"linux/amd64","Size":423189986,"Created":"2026-09-17T21:31:32.987011508Z","LastTagTime":"2026-10-11T10:42:00.407822384Z"},{"ID":"sha256:b586ea9784425774ac56f3d4919e4f723edb3287ef8a6c4c8f0df8fe569747c3","ContainerName":"omnichannel-day1-rabbitmq-1","Repository":"rabbitmq","Tag":"4.1-management-alpine","Platform":"linux/amd64","Size":270354720,"Created":"2026-09-29T22:07:17.358465391Z","LastTagTime":"2026-10-11T10:39:52.001542039Z"},{"ID":"sha256:62dbd1e16b216b6abfd2ee5d81971c7fbc2fe9d8ae2203fc2e6e438f785bb025","ContainerName":"omnichannel-day1-product-service-1","Repository":"ghcr.io/dth251/md05-rikkei-project/product-service","Tag":"8ece1e0a5d2b0da16e83369facad1815803746f6","Platform":"linux/amd64","Size":406516720,"Created":"2026-10-11T16:59:11.716965471Z","LastTagTime":"2026-10-11T17:03:13.931202601Z"},{"ID":"sha256:8ea88c848c7108f51780340f1342fbe7ce394da81731a1997c99cbd2b4f33bef","ContainerName":"omnichannel-day1-api-gateway-1","Repository":"ghcr.io/dth251/md05-rikkei-project/api-gateway","Tag":"06340098eae04131a8e8da856f746f27109916d2","Platform":"linux/amd64","Size":386005940,"Created":"2026-10-11T17:27:27.252298558Z","LastTagTime":"2026-10-11T17:30:08.16924298Z"},{"ID":"sha256:04ee7ef60261aa5aea73522ea7d5b0f9517e7224a5f045400848ded761367d16","ContainerName":"omnichannel-day1-auth-service-1","Repository":"ghcr.io/dth251/md05-rikkei-project/auth-service","Tag":"8ece1e0a5d2b0da16e83369facad1815803746f6","Platform":"linux/amd64","Size":406516996,"Created":"2026-10-11T16:59:05.189187234Z","LastTagTime":"2026-10-11T17:00:04.887514168Z"}]
+
+fixture_order_states
+CONFIRMED|46
+16|0|0
+15|955|0
+public_metrics_status=404
+public_gateway_health={"status":"UP"}
+notification_fixture_counts_total_distinct_min_max
+46|46|1|1
+PASS final private JVM metrics 8080
+PASS final private JVM metrics 8081
+PASS final private JVM metrics 8082
+PASS final private JVM metrics 8083
+PASS final private JVM metrics 8084
+PASS final private JVM metrics 8085
+2026-10-11T17:41:28Z

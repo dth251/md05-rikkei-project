@@ -818,11 +818,13 @@ Bằng chứng SHA, UTC, CI và deploy thực tế: [nhật ký](docs/commits-an
 
 ### Ngày 3: VPS/CI/CD/Test/Docs
 
-- [ ] `22`: Nginx HTTPS, UFW, Compose production, loopback binding, rollback.
-- [ ] `23`: CI/CD Gradle Groovy hỗ trợ 6 apps và selective deploy.
-- [ ] `24`: Gateway JWT/routing/rate limiting test.
-- [ ] `25`: k6 race, payment fail/compensation, Notification failure/recovery, load results.
-- [ ] `26`: Sơ đồ, API contracts, Git SHAs, screenshot, video, báo cáo thực tế.
+- [x] Mốc thực tế `39`, `44`: HTTPS/UFW/private Compose và rollback image thật sau forced smoke failure, không xóa dữ liệu.
+- [x] Mốc `40–46`, `49`, `51`, `53–54`: CI Gradle sáu apps, 69 unit/20 live tests; selective deploy Order rồi Gateway đã đối chiếu image thực, private Prometheus.
+- [x] Mốc `46`, `52`, `54`: Gateway JWT/routing/401/403/429 và Product/Redis recovery; concurrent HTTPS quota fixture đạt.
+- [x] Mốc `47–48`, `55`: Java fixture, k6/Postman race/Saga/recovery/load đã chạy và báo cáo. Local/CI race 1/99 đạt; VPS strict response race **chưa đạt** (1 created/63 conflict/36 khác), SQL vẫn một order/không âm kho. Catalog target 50/s thất bại nên dừng/throttle, chưa đo 100–1000; không đánh dấu capacity đạt.
+- [x] Sơ đồ Mermaid/PNG, API contracts, nhật ký SHA/CI/deploy, screenshot/video backend và [báo cáo thực tế](docs/day3-test-results.md). 46 orders fixture CONFIRMED/reserved=0; head/merge/CI hoàn tất trong PR tương ứng.
+
+Các số `22–26` ở checklist gốc chỉ là tham khảo; thực thi cấp số theo Git. Hoàn tất việc triển khai/đo/báo cáo ngày 3 không có nghĩa mọi SLO tải đã đạt. Bằng chứng và giới hạn: [day3-test-results.md](docs/day3-test-results.md), [evidence](docs/evidence/README.md).
 
 ---
 
