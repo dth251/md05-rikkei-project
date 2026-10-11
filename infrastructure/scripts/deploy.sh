@@ -47,12 +47,12 @@ if [[ "$service" == api-gateway ]]; then
 fi
 verify_service() {
     curl --fail --silent --show-error --max-time 15 "http://127.0.0.1:$port/actuator/health" \
-        | jq -e '.status == "UP"' > /dev/null
+        | jq -e '.status == "UP"' > /dev/null || return 1
     if [[ "$service" == auth-service || "$service" == api-gateway ]]; then
-        bash infrastructure/scripts/smoke-auth.sh "http://127.0.0.1:$port"
+        bash infrastructure/scripts/smoke-auth.sh "http://127.0.0.1:$port" || return 1
     elif [[ "$service" == product-service ]]; then
         curl --fail --silent --show-error --max-time 15 "http://127.0.0.1:$port/api/products" \
-            | jq -e '.success == true' > /dev/null
+            | jq -e '.success == true' > /dev/null || return 1
     fi
 }
 if "${compose[@]}" up -d --no-deps --no-build --wait --wait-timeout 240 "$service" \
