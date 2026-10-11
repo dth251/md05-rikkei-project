@@ -35,6 +35,9 @@ jwt:
   issuer: omnichannel-auth
   ttl: PT1H
 
+product:
+  base-url: ${PRODUCT_URL:http://product-service:8082}
+
 logging:
   level:
     org.hibernate.engine.jdbc.spi.SqlExceptionHelper: OFF
