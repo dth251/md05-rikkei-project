@@ -7,6 +7,10 @@ import com.app.order.mapper.ProductRpcMapper;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.app.order.grpc.generated.CatalogGrpc;
 import com.app.order.grpc.generated.ProductsRequest;
+import com.app.order.grpc.generated.ProductsReply;
+import com.app.order.grpc.generated.CatalogProduct;
+import org.springframework.boot.actuate.health.Health;
+import org.springframework.boot.actuate.health.HealthIndicator;
 import io.grpc.ManagedChannel;
 import io.grpc.ConnectivityState;
 import io.grpc.Metadata;
@@ -34,7 +38,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.HttpClientErrorException;
 
 @Service
-public class ProductCatalogImpl implements ProductCatalog {
+public class ProductCatalogImpl implements ProductCatalog, HealthIndicator {
 
     private final RestClient client;
     private final ManagedChannel channel;
@@ -76,16 +80,56 @@ public class ProductCatalogImpl implements ProductCatalog {
                     Thread.ofPlatform().daemon(true).name("order-product-rpc-", 0).factory());
             channel = NettyChannelBuilder.forAddress(host, port).usePlaintext()
                     .eventLoopGroup(rpcEvents).channelType(NioSocketChannel.class)
-                    .executor(rpcExecutor).maxInboundMessageSize(128 * 1024).disableRetry().build();
+                    .executor(rpcExecutor).maxInboundMessageSize(128 * 1024)
+                    .disableServiceConfigLookUp().disableRetry().build();
             Metadata headers = new Metadata();
             headers.put(Metadata.Key.of("x-product-rpc-key", Metadata.ASCII_STRING_MARSHALLER), credential);
             rpc = CatalogGrpc.newBlockingStub(channel).withInterceptors(MetadataUtils.newAttachHeadersInterceptor(headers));
+            prewarmCodec();
+            channel.getState(true);
         } else {
             rpcEvents = null;
             rpcExecutor = null;
             channel = null;
             rpc = null;
         }
+    }
+
+    private void prewarmCodec() {
+        try {
+            var product = CatalogProduct.newBuilder().setId(1).setSku("CODEC")
+                    .setName("Codec initialization").setUnitPrice("0.01").setActive(true).build();
+            var reply = ProductsReply.newBuilder().addProducts(product).build();
+            ProductsReply.parseFrom(reply.toByteArray());
+            ProductsRequest.parseFrom(ProductsRequest.getDefaultInstance().toByteArray());
+        } catch (com.google.protobuf.InvalidProtocolBufferException exception) {
+            throw new IllegalStateException("Product RPC codec initialization failed");
+        }
+    }
+
+    @Override
+    public synchronized Health health() {
+        if (channel == null) {
+            return Health.up().build();
+        }
+        if (channel.isShutdown()) {
+            return Health.down().build();
+        }
+        var state = channel.getState(true);
+        if (state == ConnectivityState.TRANSIENT_FAILURE) {
+            channel.resetConnectBackoff();
+        }
+        boolean ready = false;
+        try {
+            // The authenticated empty batch must fail validation without reading/writing business data.
+            rpc.withWaitForReady().withDeadlineAfter(2, TimeUnit.SECONDS)
+                    .getProducts(ProductsRequest.getDefaultInstance());
+        } catch (StatusRuntimeException exception) {
+            ready = exception.getStatus().getCode() == Status.Code.INVALID_ARGUMENT;
+        } catch (RuntimeException exception) {
+            ready = false;
+        }
+        return ready && channel.getState(false) == ConnectivityState.READY ? Health.up().build() : Health.down().build();
     }
 
     @Override
@@ -113,8 +157,9 @@ public class ProductCatalogImpl implements ProductCatalog {
             if (channel.getState(true) == ConnectivityState.TRANSIENT_FAILURE) {
                 channel.resetConnectBackoff();
             }
+            var request = ProductsRequest.newBuilder().addAllProductIds(productIds).build();
             var reply = rpc.withWaitForReady().withDeadlineAfter(deadlineMs, TimeUnit.MILLISECONDS)
-                    .getProducts(ProductsRequest.newBuilder().addAllProductIds(productIds).build());
+                    .getProducts(request);
             return mapper.toSnapshots(reply, productIds);
         } catch (StatusRuntimeException exception) {
             status = exception.getStatus().getCode();

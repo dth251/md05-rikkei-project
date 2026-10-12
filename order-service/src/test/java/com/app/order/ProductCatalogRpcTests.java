@@ -124,6 +124,23 @@ class ProductCatalogRpcTests {
         assertEquals(1, calls.get(), "Only the recovered read is executed; no RPC replay");
     }
 
+    @Test
+    void readinessRequiresAuthenticatedValidationProbeBeforeAcceptingTraffic() throws Exception {
+        start((request, observer) -> {
+            assertTrue(request.getProductIdsList().isEmpty());
+            observer.onError(Status.INVALID_ARGUMENT.asRuntimeException());
+        }, TEST_KEY, 1000);
+        assertEquals(org.springframework.boot.actuate.health.Status.UP, client.health().getStatus());
+        server.shutdownNow().awaitTermination(3, TimeUnit.SECONDS);
+        assertEquals(org.springframework.boot.actuate.health.Status.DOWN, client.health().getStatus());
+    }
+
+    @Test
+    void readinessRejectsWrongInternalCredential() throws Exception {
+        start((request, observer) -> fail("Unauthenticated probe reached service"), "b".repeat(64), 1000);
+        assertEquals(org.springframework.boot.actuate.health.Status.DOWN, client.health().getStatus());
+    }
+
     private void start(BiConsumer<ProductsRequest, StreamObserver<ProductsReply>> handler,
                        String credential, long deadline) throws Exception {
         ServerInterceptor authentication = new ServerInterceptor() {

@@ -322,3 +322,31 @@ protobuf-java 3.25.9. Verifier loopback đạt trên topology thật; unpublishe
 container fixture với HostIp trống tạo giá trị non-loopback bị từ chối,
 container fixture đã remove, không chạy/open port hay gắn volume.
 Chi tiết API/giới hạn: [product-order-grpc.md](product-order-grpc.md).
+
+## RPC recovery và readiness
+
+Shipping main 86 CI 38187261497 success; SSH 2026-10-12 00:33:05 UTC
+xác nhận sáu image 86 healthy. RPC PR #25 head 90 CI 38187929374
+success, merge 91 `356fa9e16014cfe7c796324af71a00f8839b9ce8`
+(07:33:51 +07). Main 91 CI 38188486613 thất bại ở Product live (503
+nhận kho), chưa publish/deploy RPC. PR #26 head 98 CI 38189342703
+success sau thêm kiểm thử recovery, merge 103
+`37f6e7ba150ae1549bc723ee4d4d5436ede5e88b` (07:59:09 +07).
+Main 103 CI 38190107701 verify/publish Product–Order/deploy success.
+
+SSH 2026-10-12 01:09:30 UTC: Product/Order image 103 healthy;
+Auth/Gateway/Payment/Notification vẫn image 86 healthy. Không ghi sáu
+image 103. Luồng mua variant VPS lỗi 504 rồi 503 tại nhận kho dù health
+UP; probe gRPC trực tiếp qua SSH đạt. Chạy lại cùng case bằng fixture
+mới đạt lúc 08:44 +07: nhận kho, đặt hàng, capture mô phỏng, CONFIRMED,
+reserved về 0 và snapshot giữ đúng sau ẩn parent. Không phải VNPay thật.
+
+| Mốc | SHA | Thời gian +07:00, 2026-10-12 | Kiểm chứng / deploy tại checkpoint |
+|---|---|---|---|
+| 107-order-service | `a0f60bb1e3fcb6a866bf3b76f54691aebcc7b98b` | 08:47:35 | 42 unit/bootJar đạt; 4 Product live local với Order vừa recreate đạt; chưa VPS bản readiness |
+| 108-product-service | `8e2d5b0da0ddd32de5977bdac0c5dfda327c7684` | 08:48:05 | task probe VPS riêng đạt 1 test, không ghi nghiệp vụ; không thay runtime Product |
+
+Readiness không coi TCP/socket hoặc một probe thành công trong quá khứ
+là đủ: phải có RPC có xác thực hiện tại. Không tăng deadline nghiệp vụ
+hay thêm replay để che lỗi. Full Order live/recovery, CI exact head và
+deploy bản readiness còn chờ kết quả tại checkpoint này.
