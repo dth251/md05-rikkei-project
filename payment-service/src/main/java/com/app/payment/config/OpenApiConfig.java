@@ -45,26 +45,22 @@ public class OpenApiConfig {
                     .addProperty("data", new Schema<>()).addProperty("errors", new ObjectSchema())
                     .addProperty("timestamp", new StringSchema().format("date-time")));
             api.getPaths().forEach((path, item) -> item.readOperationsMap().forEach((method, operation) -> {
-                boolean anonymous = false;
+                boolean anonymous = method.name().equals("GET") && Set.of(
+                        "/api/payments/vnpay/ipn", "/api/payments/vnpay/return").contains(path);
                 boolean admin = path.endsWith("/simulate");
                 if (anonymous) {
                     operation.setSecurity(new ArrayList<>());
                 }
                 operation.addExtension("x-required-role", anonymous ? "PUBLIC" : admin ? "ADMIN" : "USER");
+                if (path.equals("/api/payments/vnpay/ipn")) {
+                    return;
+                }
                 for (var status : Map.of("400", "Invalid request", "401", "Authentication required",
                         "403", "Access denied", "404", "Not found", "409", "Conflict",
                         "503", "Dependency unavailable").entrySet()) {
                     operation.getResponses().addApiResponse(status.getKey(), new ApiResponse().description(status.getValue())
                             .content(new Content().addMediaType("application/json", new MediaType()
                                     .schema(new Schema<>().$ref("#/components/schemas/ApiError")))));
-                }
-                boolean created = method.name().equals("POST") && false;
-                if (created && operation.getResponses().containsKey("200")) {
-                    operation.getResponses().addApiResponse("201", operation.getResponses().remove("200"));
-                }
-                if (path.equals("/api/auth/logout")) {
-                    operation.getResponses().remove("200");
-                    operation.getResponses().addApiResponse("204", new ApiResponse().description("Refresh family revoked"));
                 }
             }));
         };

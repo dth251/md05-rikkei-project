@@ -61,3 +61,10 @@ springdoc:
   override-with-generic-response: false
   swagger-ui:
     enabled: false
+
+payment:
+  vnpay:
+    enabled: ${VNPAY_ENABLED:false}
+    tmn-code: ${VNPAY_TMN_CODE:}
+    hash-secret: ${VNPAY_HASH_SECRET:}
+    return-url: ${VNPAY_RETURN_URL:https://md05-rikkei-project.duckdns.org/api/payments/vnpay/return}
