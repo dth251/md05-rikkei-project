@@ -26,6 +26,16 @@
           "required" : true
         },
         "responses" : {
+          "503" : {
+            "description" : "Dependency unavailable",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
           "404" : {
             "description" : "Not found",
             "content" : {
@@ -68,16 +78,6 @@
           },
           "409" : {
             "description" : "Conflict",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiError"
-                }
-              }
-            }
-          },
-          "503" : {
-            "description" : "Dependency unavailable",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -134,6 +134,16 @@
               }
             }
           },
+          "503" : {
+            "description" : "Dependency unavailable",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
           "404" : {
             "description" : "Not found",
             "content" : {
@@ -176,16 +186,6 @@
           },
           "409" : {
             "description" : "Conflict",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiError"
-                }
-              }
-            }
-          },
-          "503" : {
-            "description" : "Dependency unavailable",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -222,6 +222,16 @@
               }
             }
           },
+          "503" : {
+            "description" : "Dependency unavailable",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
           "404" : {
             "description" : "Not found",
             "content" : {
@@ -264,16 +274,6 @@
           },
           "409" : {
             "description" : "Conflict",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiError"
-                }
-              }
-            }
-          },
-          "503" : {
-            "description" : "Dependency unavailable",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -311,6 +311,16 @@
               }
             }
           },
+          "503" : {
+            "description" : "Dependency unavailable",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
           "404" : {
             "description" : "Not found",
             "content" : {
@@ -353,16 +363,6 @@
           },
           "409" : {
             "description" : "Conflict",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiError"
-                }
-              }
-            }
-          },
-          "503" : {
-            "description" : "Dependency unavailable",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -399,6 +399,16 @@
               }
             }
           },
+          "503" : {
+            "description" : "Dependency unavailable",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
           "404" : {
             "description" : "Not found",
             "content" : {
@@ -441,16 +451,6 @@
           },
           "409" : {
             "description" : "Conflict",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiError"
-                }
-              }
-            }
-          },
-          "503" : {
-            "description" : "Dependency unavailable",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -487,6 +487,16 @@
               }
             }
           },
+          "503" : {
+            "description" : "Dependency unavailable",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
           "404" : {
             "description" : "Not found",
             "content" : {
@@ -529,16 +539,6 @@
           },
           "409" : {
             "description" : "Conflict",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiError"
-                }
-              }
-            }
-          },
-          "503" : {
-            "description" : "Dependency unavailable",
             "content" : {
               "application/json" : {
                 "schema" : {

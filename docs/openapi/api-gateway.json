@@ -1775,6 +1775,16 @@
                                                                        "required":  true
                                                                    },
                                                    "responses":  {
+                                                                     "503":  {
+                                                                                 "description":  "Dependency unavailable",
+                                                                                 "content":  {
+                                                                                                 "application/json":  {
+                                                                                                                          "schema":  {
+                                                                                                                                         "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                     }
+                                                                                                                      }
+                                                                                             }
+                                                                             },
                                                                      "404":  {
                                                                                  "description":  "Not found",
                                                                                  "content":  {
@@ -1817,16 +1827,6 @@
                                                                              },
                                                                      "409":  {
                                                                                  "description":  "Conflict",
-                                                                                 "content":  {
-                                                                                                 "application/json":  {
-                                                                                                                          "schema":  {
-                                                                                                                                         "$ref":  "#/components/schemas/ApiError"
-                                                                                                                                     }
-                                                                                                                      }
-                                                                                             }
-                                                                             },
-                                                                     "503":  {
-                                                                                 "description":  "Dependency unavailable",
                                                                                  "content":  {
                                                                                                  "application/json":  {
                                                                                                                           "schema":  {
@@ -1888,6 +1888,16 @@
                                                                                                                    }
                                                                                                        }
                                                                                        },
+                                                                               "503":  {
+                                                                                           "description":  "Dependency unavailable",
+                                                                                           "content":  {
+                                                                                                           "application/json":  {
+                                                                                                                                    "schema":  {
+                                                                                                                                                   "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                               }
+                                                                                                                                }
+                                                                                                       }
+                                                                                       },
                                                                                "404":  {
                                                                                            "description":  "Not found",
                                                                                            "content":  {
@@ -1937,16 +1947,6 @@
                                                                                                                                                }
                                                                                                                                 }
                                                                                                        }
-                                                                                       },
-                                                                               "503":  {
-                                                                                           "description":  "Dependency unavailable",
-                                                                                           "content":  {
-                                                                                                           "application/json":  {
-                                                                                                                                    "schema":  {
-                                                                                                                                                   "$ref":  "#/components/schemas/ApiError"
-                                                                                                                                               }
-                                                                                                                                }
-                                                                                                       }
                                                                                        }
                                                                            },
                                                              "x-required-role":  "ADMIN",
@@ -1979,6 +1979,16 @@
                                                                                                                                           "$ref":  "#/components/schemas/ApiResponseOrderResponse"
                                                                                                                                       }
                                                                                                                        }
+                                                                                                           }
+                                                                                           },
+                                                                                   "503":  {
+                                                                                               "description":  "Dependency unavailable",
+                                                                                               "content":  {
+                                                                                                               "application/json":  {
+                                                                                                                                        "schema":  {
+                                                                                                                                                       "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                                   }
+                                                                                                                                    }
                                                                                                            }
                                                                                            },
                                                                                    "404":  {
@@ -2030,16 +2040,6 @@
                                                                                                                                                    }
                                                                                                                                     }
                                                                                                            }
-                                                                                           },
-                                                                                   "503":  {
-                                                                                               "description":  "Dependency unavailable",
-                                                                                               "content":  {
-                                                                                                               "application/json":  {
-                                                                                                                                        "schema":  {
-                                                                                                                                                       "$ref":  "#/components/schemas/ApiError"
-                                                                                                                                                   }
-                                                                                                                                    }
-                                                                                                           }
                                                                                            }
                                                                                },
                                                                  "x-required-role":  "ADMIN",
@@ -2071,6 +2071,16 @@
                                                                                                                                       "$ref":  "#/components/schemas/ApiResponseInventoryResponse"
                                                                                                                                   }
                                                                                                                    }
+                                                                                                       }
+                                                                                       },
+                                                                               "503":  {
+                                                                                           "description":  "Dependency unavailable",
+                                                                                           "content":  {
+                                                                                                           "application/json":  {
+                                                                                                                                    "schema":  {
+                                                                                                                                                   "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                               }
+                                                                                                                                }
                                                                                                        }
                                                                                        },
                                                                                "404":  {
@@ -2122,16 +2132,6 @@
                                                                                                                                                }
                                                                                                                                 }
                                                                                                        }
-                                                                                       },
-                                                                               "503":  {
-                                                                                           "description":  "Dependency unavailable",
-                                                                                           "content":  {
-                                                                                                           "application/json":  {
-                                                                                                                                    "schema":  {
-                                                                                                                                                   "$ref":  "#/components/schemas/ApiError"
-                                                                                                                                               }
-                                                                                                                                }
-                                                                                                       }
                                                                                        }
                                                                            },
                                                              "x-required-role":  "ADMIN",
@@ -2164,6 +2164,16 @@
                                                                                                                                 "$ref":  "#/components/schemas/ApiResponseOrderResponse"
                                                                                                                             }
                                                                                                              }
+                                                                                                 }
+                                                                                 },
+                                                                         "503":  {
+                                                                                     "description":  "Dependency unavailable",
+                                                                                     "content":  {
+                                                                                                     "application/json":  {
+                                                                                                                              "schema":  {
+                                                                                                                                             "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                         }
+                                                                                                                          }
                                                                                                  }
                                                                                  },
                                                                          "404":  {
@@ -2215,16 +2225,6 @@
                                                                                                                                          }
                                                                                                                           }
                                                                                                  }
-                                                                                 },
-                                                                         "503":  {
-                                                                                     "description":  "Dependency unavailable",
-                                                                                     "content":  {
-                                                                                                     "application/json":  {
-                                                                                                                              "schema":  {
-                                                                                                                                             "$ref":  "#/components/schemas/ApiError"
-                                                                                                                                         }
-                                                                                                                          }
-                                                                                                 }
                                                                                  }
                                                                      },
                                                        "x-required-role":  "USER",
@@ -2257,6 +2257,16 @@
                                                                                                                                           "$ref":  "#/components/schemas/ApiResponseInventoryResponse"
                                                                                                                                       }
                                                                                                                        }
+                                                                                                           }
+                                                                                           },
+                                                                                   "503":  {
+                                                                                               "description":  "Dependency unavailable",
+                                                                                               "content":  {
+                                                                                                               "application/json":  {
+                                                                                                                                        "schema":  {
+                                                                                                                                                       "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                                   }
+                                                                                                                                    }
                                                                                                            }
                                                                                            },
                                                                                    "404":  {
@@ -2301,16 +2311,6 @@
                                                                                            },
                                                                                    "409":  {
                                                                                                "description":  "Conflict",
-                                                                                               "content":  {
-                                                                                                               "application/json":  {
-                                                                                                                                        "schema":  {
-                                                                                                                                                       "$ref":  "#/components/schemas/ApiError"
-                                                                                                                                                   }
-                                                                                                                                    }
-                                                                                                           }
-                                                                                           },
-                                                                                   "503":  {
-                                                                                               "description":  "Dependency unavailable",
                                                                                                "content":  {
                                                                                                                "application/json":  {
                                                                                                                                         "schema":  {
