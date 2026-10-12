@@ -47,7 +47,8 @@ public class OpenApiConfig {
             api.getPaths().forEach((path, item) -> item.readOperationsMap().forEach((method, operation) -> {
                 boolean anonymous = method.name().equals("GET") && Set.of(
                         "/api/payments/vnpay/ipn", "/api/payments/vnpay/return").contains(path);
-                boolean admin = path.endsWith("/simulate");
+                boolean admin = path.endsWith("/simulate") || path.endsWith("/vnpay/refund")
+                        || path.endsWith("/vnpay/reconcile");
                 if (anonymous) {
                     operation.setSecurity(new ArrayList<>());
                 }

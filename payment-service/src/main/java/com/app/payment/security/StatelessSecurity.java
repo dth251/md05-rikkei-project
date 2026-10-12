@@ -28,6 +28,8 @@ public class StatelessSecurity {
                         .requestMatchers(HttpMethod.GET, "/api/payments/vnpay/ipn", "/api/payments/vnpay/return").permitAll()
                         .requestMatchers("/error").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/payments/*/simulate").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/payments/*/vnpay/refund",
+                                "/api/payments/*/vnpay/reconcile").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(exceptions -> exceptions

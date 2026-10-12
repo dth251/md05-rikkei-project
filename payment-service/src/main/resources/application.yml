@@ -67,4 +67,5 @@ payment:
     enabled: ${VNPAY_ENABLED:false}
     tmn-code: ${VNPAY_TMN_CODE:}
     hash-secret: ${VNPAY_HASH_SECRET:}
+    server-ip: ${VNPAY_SERVER_IP:}
     return-url: ${VNPAY_RETURN_URL:https://md05-rikkei-project.duckdns.org/api/payments/vnpay/return}

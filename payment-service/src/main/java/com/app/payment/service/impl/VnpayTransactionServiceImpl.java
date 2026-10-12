@@ -66,7 +66,8 @@ public class VnpayTransactionServiceImpl implements VnpayTransactionService {
             throw new ApiException(HttpStatus.CONFLICT, "Payment is no longer payable");
         }
         var existing = attempts.findById(paymentId);
-        Instant now = Instant.now();
+        // VNPay signs seconds; matching database precision also keeps checkout replay DTOs identical.
+        Instant now = Instant.now().truncatedTo(java.time.temporal.ChronoUnit.SECONDS);
         if (existing.isPresent()) {
             if (!existing.get().getExpiresAt().isAfter(now)) {
                 throw new ApiException(HttpStatus.CONFLICT, "Checkout expired");
@@ -96,7 +97,7 @@ public class VnpayTransactionServiceImpl implements VnpayTransactionService {
         parameters.put("vnp_TxnRef", reference);
         String query = VnpaySignature.canonicalQuery(parameters);
         String url = settings.paymentUrl() + "?" + query + "&vnp_SecureHash=" + VnpaySignature.hmac(query, settings.secret());
-        var attempt = new VnpayPayment(paymentId, reference, amount, now, expires, address, url);
+        var attempt = new VnpayPayment(paymentId, reference, amount, settings.terminal(), now, expires, address, url);
         return mapper.toCheckout(attempts.saveAndFlush(attempt));
     }
 
@@ -110,6 +111,9 @@ public class VnpayTransactionServiceImpl implements VnpayTransactionService {
         // Lock Payment first, then load the attempt to avoid a stale entity after a concurrent IPN waits.
         var payment = payments.findLockedById(paymentId.get()).orElseThrow();
         var attempt = attempts.findById(paymentId.get()).orElseThrow();
+        if (!settings.terminal().equals(attempt.getTerminal())) {
+            return new VnpayIpnResponse("99", "Merchant configuration changed");
+        }
         if (!attempt.getAmountMinor().equals(callback.amountMinor())) {
             return new VnpayIpnResponse("04", "Invalid amount");
         }

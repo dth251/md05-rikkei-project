@@ -19,6 +19,9 @@ public class VnpayPayment {
     @Column(nullable = false, length = 12)
     private String amountMinor;
 
+    @Column(nullable = false, length = 8)
+    private String terminal;
+
     @Column(nullable = false)
     private Instant createdAt;
 
@@ -46,6 +49,7 @@ public class VnpayPayment {
             Long paymentId,
             String reference,
             String amountMinor,
+            String terminal,
             Instant createdAt,
             Instant expiresAt,
             String clientIp,
@@ -54,6 +58,7 @@ public class VnpayPayment {
         this.paymentId = paymentId;
         this.reference = reference;
         this.amountMinor = amountMinor;
+        this.terminal = terminal;
         this.createdAt = createdAt;
         this.expiresAt = expiresAt;
         this.clientIp = clientIp;
@@ -82,6 +87,10 @@ public class VnpayPayment {
 
     public String getAmountMinor() {
         return amountMinor;
+    }
+
+    public String getTerminal() {
+        return terminal;
     }
 
     public Instant getCreatedAt() {

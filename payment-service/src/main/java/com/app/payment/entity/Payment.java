@@ -139,4 +139,11 @@ public class Payment {
             refundStatus = RefundStatus.REQUIRED;
         }
     }
+
+    public void recordRefund() {
+        if (status != PaymentStatus.SUCCESS || refundStatus != RefundStatus.REQUIRED) {
+            throw new IllegalStateException("Captured payment requiring refund expected");
+        }
+        refundStatus = RefundStatus.REFUNDED;
+    }
 }
