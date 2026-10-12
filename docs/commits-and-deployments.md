@@ -385,3 +385,35 @@ Merge 115 `37e8173df2863991fe20e2e7a160e3b5a132f813`, 08:56:08 +07.
 Main CI 38193814101 đang kiểm thử tích hợp tại checkpoint, chưa có
 image/health VPS của mốc 115. Nhánh OpenAPI đã merge origin/main qua
 116 `598ed87d939f20108c724c95f3b9ab11482b5cba`, 08:56:23 +07.
+
+## Checkpoint VNPay, OpenAPI VPS và xóa README
+
+| Mốc | SHA | Thời gian +07:00, 2026-10-12 | Kiểm tra / deploy thực tế |
+|---|---|---|---|
+| 117-payment-service | `009a193c380bb70e6788891e5d16674541c6d9a3` | 08:56:35 | 6 signature tests gồm RFC vector/bootJar đạt; chưa deploy VNPay |
+| 119-infrastructure | `b253c9528c764fc24dded222ee464dc4ba99b206` | 09:11:00 | PR #28 CI 38194092002 đạt; main CI 38194787693 success, deploy sáu service |
+| 120-payment-service | `428752f84a31a8191e9b4c826072788bedb4c8c8` | 09:15:43 | 33 unit/bootJar, thêm 2 facade tests đạt riêng; checkout/IPN vẫn feature |
+| 121-api-gateway | `9c594971f9f88fe2a76f7893d8b7b8b97201bc36` | 09:15:43 | 20 unit/bootJar, thêm 3 routing tests đạt riêng; chưa deploy VNPay route |
+| 122-payment-service | `448ac52483096653f7a1dbef5982f4ebe52d92dd` | 09:16:44 | Merge main 119 vào feature; chưa deploy VNPay |
+| 123-infrastructure | `0454c406a70aed28ef464985f6b5fedc7ea514bf` | 09:18:41 | Compose config/bâsh syntax đạt; provider mặc định disabled |
+| 124-docs | `99ff0d1b49884cf9e67d374f25759b60b1c3c939` | 09:28:13 | Chỉ xóa README gốc, diff check đạt; PR #29 CI 38195920870 Java/live/recovery success |
+| 125-docs | `f7c5e8b0dc411482e38edb64b8141c8531240217` | 09:36:44 | Merge PR #29 sau CI; origin/main không còn README.md; không chọn service deploy |
+| 126-payment-service | `254e43ffdc1f7322d68a157d02ddca2a1af9ffed` | 09:40:13 | 42/42 unit zero fail/error/skip và bootJar đạt; HTTP fixture refund, chưa sandbox/PG live/CI/deploy VNPay |
+| 127-payment-service | `8800ee1840752fd231d78b0ad49c871901ae2121` | 09:40:13 | Merge main 125; feature giữ việc xóa README; chưa deploy VNPay |
+| 128-infrastructure | `e342b1572fce18b206a670915d4a3458b72cc047` | 09:41:05 | Compose config/syntax Bash/diff check đạt; server IP private cho ledger; chưa rollout |
+
+Readiness main 115 CI 38193814101 success; SSH 02:06:24 UTC xác nhận
+Product/Order image 115 healthy, bốn ứng dụng khác image 86. Smoke mua biến
+thể thực qua HTTPS VPS sau rollout đạt 1/1, gồm stock/order/payment mô phỏng/
+CONFIRMED/snapshot. Không ghi đây là giao dịch VNPay.
+
+OpenAPI main 119 SSH 02:34:49 UTC: cả sáu image 119 healthy. Probe read-only
+qua SSH 02:40:20 UTC: bốn service docs anonymous 401, USER 403, ADMIN 200,
+title đúng và ApiError schema tồn tại; Auth/Product/Order/Payment có 8/3/6/3
+paths. PR #28 đã cập nhật bằng chứng rollout cuối cùng.
+
+Full Payment lần đầu sau refund có 42 tests/1 fail: checkout trả expiry theo
+nanosecond khác giá trị reload database. Chuẩn hóa timestamp theo giây đúng
+protocol; full chạy lại 09:38:44 +07 đạt 42/42, không bỏ test hoặc bỏ assert.
+VNPay vẫn ở feature; không có cấu hình merchant/SMTP private hoặc giao dịch
+thực với provider. Phần việc còn lại được ghi tại `remediation-plan.md`.
