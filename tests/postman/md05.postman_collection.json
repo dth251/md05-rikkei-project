@@ -412,7 +412,7 @@
                                   {
                                       "request":  {
                                                       "body":  {
-                                                                   "raw":  "{\"channel\":\"WEB\",\"idempotencyKey\":\"{{orderKey}}\",\"items\":[{\"productId\":{{productId}},\"quantity\":1,\"idempotencyKey\":\"receipt-{{orderKey}}\"}]}",
+                                                                   "raw":  "{\"channel\":\"WEB\",\"idempotencyKey\":\"{{orderKey}}\",\"items\":[{\"productId\":{{productId}},\"quantity\":1}]}",
                                                                    "options":  {
                                                                                    "raw":  {
                                                                                                "language":  "json"
@@ -450,7 +450,7 @@
                                   {
                                       "request":  {
                                                       "body":  {
-                                                                   "raw":  "{\"channel\":\"WEB\",\"idempotencyKey\":\"{{orderKey}}\",\"items\":[{\"productId\":{{productId}},\"quantity\":1,\"idempotencyKey\":\"receipt-{{orderKey}}\"}]}",
+                                                                   "raw":  "{\"channel\":\"WEB\",\"idempotencyKey\":\"{{orderKey}}\",\"items\":[{\"productId\":{{productId}},\"quantity\":1}]}",
                                                                    "options":  {
                                                                                    "raw":  {
                                                                                                "language":  "json"
