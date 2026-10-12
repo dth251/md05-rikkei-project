@@ -39,7 +39,12 @@ public class OpenApiConfig {
 
     @Bean
     OpenApiCustomizer operationSecurityAndResponses() {
-        return api -> api.getPaths().forEach((path, item) -> item.readOperationsMap().forEach((method, operation) -> {
+        return api -> {
+            api.getComponents().addSchemas("ApiError", new ObjectSchema()
+                    .addProperty("success", new BooleanSchema()).addProperty("message", new StringSchema())
+                    .addProperty("data", new Schema<>()).addProperty("errors", new ObjectSchema())
+                    .addProperty("timestamp", new StringSchema().format("date-time")));
+            api.getPaths().forEach((path, item) -> item.readOperationsMap().forEach((method, operation) -> {
             boolean anonymous = false;
             boolean admin = path.equals("/api/inventory/stocks") || path.endsWith("/ship") || path.endsWith("/complete");
             if (anonymous) {
@@ -62,5 +67,6 @@ public class OpenApiConfig {
                 operation.getResponses().addApiResponse("204", new ApiResponse().description("Refresh family revoked"));
             }
         }));
+        };
     }
 }
