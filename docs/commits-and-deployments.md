@@ -385,3 +385,21 @@ Merge 115 `37e8173df2863991fe20e2e7a160e3b5a132f813`, 08:56:08 +07.
 Main CI 38193814101 đang kiểm thử tích hợp tại checkpoint, chưa có
 image/health VPS của mốc 115. Nhánh OpenAPI đã merge origin/main qua
 116 `598ed87d939f20108c724c95f3b9ab11482b5cba`, 08:56:23 +07.
+
+## Tài liệu checklist và hướng dẫn Postman
+
+| Mốc | SHA | Thời gian +07:00, 2026-10-12 | Kiểm tra / deploy thực tế |
+|---|---|---|---|
+| 130-docs | `e3289e590a937cd8edaa0f95624940c5fa72e0d2` | 10:02:25 | 55 checklist items, relative links/diff check đạt; PR #30 head 130 CI 38198221287 completed success; chưa merge/deploy từ PR này |
+| 131-tests | `0baaa6984d048b620fb42bfdb23257f45249eac9` | 10:32:11 | Sửa hai body Order trong collection: bỏ key phiếu nhập kho khỏi item; JSON/21 scripts parse đạt, 19 requests/2 body Order khớp fields DTO; chưa chạy lại collection qua HTTP |
+
+Hướng dẫn `postman-testing-guide.md` đối chiếu controller/DTO của main 125
+và API VNPay trên feature riêng. Kiểm tra tài liệu lúc 10:40 +07: relative
+links tồn tại, 6 JavaScript blocks/10 JSON examples/1 PowerShell block parse
+đạt. Phân biệt hướng dẫn/expected với kết quả API đã thực thi; không ghi
+Postman, load hoặc failure demo đã PASS từ các kiểm tra cú pháp này.
+
+Không đổi runtime hoặc deploy trong các mốc tài liệu/collection trên. Bản
+ứng dụng VPS kiểm chứng gần nhất vẫn image main 119; README đã xóa ở main
+125. Nhánh VNPay head 129 CI 38196864016 completed success, chưa merge/deploy
+VNPay. PR #30 cần kiểm tra lại ở head mới trước khi tích hợp các thay đổi tiếp.
