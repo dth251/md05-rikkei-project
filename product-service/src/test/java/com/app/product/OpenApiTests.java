@@ -43,6 +43,12 @@ class OpenApiTests {
         assertTrue(contract.path("openapi").asText().startsWith("3."));
         assertEquals("product-service", contract.path("info").path("title").asText());
         assertTrue(contract.path("paths").has("/api/products"));
+        assertTrue(contract.path("components").path("schemas").has("ApiError"));
+        var references = java.util.regex.Pattern.compile("\\\"\\$ref\\\"\\s*:\\s*\\\"#/components/schemas/([^\\\"]+)\\\"").matcher(document);
+        while (references.find()) {
+            assertTrue(contract.path("components").path("schemas").has(references.group(1)),
+                    "Missing schema reference: " + references.group(1));
+        }
         assertFalse(contract.path("paths").has("/actuator/prometheus"));
         assertFalse(contract.path("paths").has("/v3/api-docs"));
         assertEquals("bearer", contract.path("components").path("securitySchemes").path("bearerAuth").path("scheme").asText());
