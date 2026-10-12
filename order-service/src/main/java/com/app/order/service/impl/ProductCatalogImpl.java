@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.app.order.grpc.generated.CatalogGrpc;
 import com.app.order.grpc.generated.ProductsRequest;
 import io.grpc.ManagedChannel;
+import io.grpc.ConnectivityState;
 import io.grpc.Metadata;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
@@ -107,7 +108,12 @@ public class ProductCatalogImpl implements ProductCatalog {
         Timer.Sample sample = Timer.start(metrics);
         Status.Code status = Status.Code.OK;
         try {
-            var reply = rpc.withDeadlineAfter(deadlineMs, TimeUnit.MILLISECONDS)
+            // A previous Product outage may leave the shared channel in reconnect backoff.
+            // Resume connection now, then wait only within the existing per-call deadline.
+            if (channel.getState(true) == ConnectivityState.TRANSIENT_FAILURE) {
+                channel.resetConnectBackoff();
+            }
+            var reply = rpc.withWaitForReady().withDeadlineAfter(deadlineMs, TimeUnit.MILLISECONDS)
                     .getProducts(ProductsRequest.newBuilder().addAllProductIds(productIds).build());
             return mapper.toSnapshots(reply, productIds);
         } catch (StatusRuntimeException exception) {

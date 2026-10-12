@@ -110,6 +110,18 @@ jobs:
           if [[ -f notification-service/build.gradle ]]; then
             JWT_SECRET="$(sed -n 's/^JWT_SECRET=//p' .env)" NOTIFICATION_LIVE_DB_PASSWORD="$(sed -n 's/^NOTIFICATION_DB_PASSWORD=//p' .env)" RABBITMQ_LIVE_USER="$(sed -n 's/^RABBITMQ_DEFAULT_USER=//p' .env)" RABBITMQ_LIVE_PASSWORD="$(sed -n 's/^RABBITMQ_DEFAULT_PASS=//p' .env)" NOTIFICATION_RECOVERY_TEST=true notification-service/gradlew -p notification-service liveTest --no-daemon
           fi
+      - name: Save bounded failure diagnostics
+        if: failure()
+        run: |
+          mkdir -p ci-diagnostics
+          docker compose ps > ci-diagnostics/containers.txt
+          for entry in 'gateway:8080' 'product:8082' 'order:8083'; do
+            name="${entry%%:*}"
+            port="${entry#*:}"
+            curl --fail --silent --show-error --max-time 5 "http://127.0.0.1:$port/actuator/prometheus" \
+              | grep -E '^(commerce_(order_product_rpc|product_rpc)|spring_cloud_gateway_requests)' \
+              > "ci-diagnostics/$name-metrics.txt" || true
+          done
       - name: Save Java reports
         if: always()
         uses: actions/upload-artifact@v4
@@ -118,6 +130,7 @@ jobs:
           path: |
             */build/reports/tests/
             */build/test-results/
+            ci-diagnostics/
       - name: Save tested artifacts
         uses: actions/upload-artifact@v4
         with:

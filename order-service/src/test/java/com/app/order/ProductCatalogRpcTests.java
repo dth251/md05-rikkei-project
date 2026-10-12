@@ -105,6 +105,25 @@ class ProductCatalogRpcTests {
         }
     }
 
+    @Test
+    void sameChannelRecoversWithinDeadlineAfterCatalogRestarts() throws Exception {
+        start((request, observer) -> { }, TEST_KEY, 1000);
+        int port = server.getPort();
+        server.shutdownNow().awaitTermination(3, TimeUnit.SECONDS);
+        assertFailure(HttpStatus.SERVICE_UNAVAILABLE);
+        server = NettyServerBuilder.forAddress(new InetSocketAddress("127.0.0.1", port))
+                .addService(new CatalogGrpc.CatalogImplBase() {
+                    @Override
+                    public void getProducts(ProductsRequest request, StreamObserver<ProductsReply> observer) {
+                        calls.incrementAndGet();
+                        observer.onNext(ProductsReply.newBuilder().addProducts(product(1, "12.50")).build());
+                        observer.onCompleted();
+                    }
+                }).build().start();
+        assertEquals(1L, client.get(1L).id());
+        assertEquals(1, calls.get(), "Only the recovered read is executed; no RPC replay");
+    }
+
     private void start(BiConsumer<ProductsRequest, StreamObserver<ProductsReply>> handler,
                        String credential, long deadline) throws Exception {
         ServerInterceptor authentication = new ServerInterceptor() {
