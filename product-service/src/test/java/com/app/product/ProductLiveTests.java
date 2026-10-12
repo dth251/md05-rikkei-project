@@ -126,8 +126,9 @@ class ProductLiveTests {
                 "attributes", Map.of("color", "blue", "size", "m")), admin);
         assertEquals(201, childResponse.statusCode());
         long child = json.readTree(childResponse.body()).path("data").path("id").asLong();
-        assertEquals(200, send("POST", "/api/inventory/stocks", Map.of("productId", child, "quantity", 2,
-                "idempotencyKey", UUID.randomUUID().toString()), admin).statusCode());
+        var received = send("POST", "/api/inventory/stocks", Map.of("productId", child, "quantity", 2,
+                "idempotencyKey", UUID.randomUUID().toString()), admin);
+        assertEquals(200, received.statusCode(), received.body());
         var orderResponse = send("POST", "/api/orders", Map.of("channel", "POS",
                 "idempotencyKey", UUID.randomUUID().toString(),
                 "items", List.of(Map.of("productId", child, "quantity", 1))), user);
