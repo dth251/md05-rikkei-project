@@ -71,6 +71,7 @@ jobs:
           done
           for script in infrastructure/scripts/*.sh infrastructure/postgres/*.sh; do bash -n "$script"; done
           bash infrastructure/scripts/verify-rpc-contract.sh
+          pwsh -File infrastructure/scripts/export-openapi.ps1
       - name: Verify infrastructure and real service integration
         id: live
         run: |
@@ -131,6 +132,7 @@ jobs:
             */build/reports/tests/
             */build/test-results/
             */build/openapi/*.json
+            docs/openapi/*.json
             ci-diagnostics/
       - name: Save tested artifacts
         uses: actions/upload-artifact@v4
