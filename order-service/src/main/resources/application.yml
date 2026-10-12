@@ -68,3 +68,9 @@ product:
 logging:
   level:
     org.hibernate.engine.jdbc.spi.SqlExceptionHelper: OFF
+
+springdoc:
+  paths-to-match: /api/**
+  override-with-generic-response: false
+  swagger-ui:
+    enabled: false
