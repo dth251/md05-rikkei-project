@@ -33,6 +33,7 @@ public class ProductController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<ProductPageResponse>> list(
+            @org.springdoc.core.annotations.ParameterObject
             @Valid @ModelAttribute ProductSearchRequest request
     ) {
         return ResponseEntity.ok(ApiResponse.success(productService.search(request), "Products retrieved"));
