@@ -322,3 +322,66 @@ protobuf-java 3.25.9. Verifier loopback đạt trên topology thật; unpublishe
 container fixture với HostIp trống tạo giá trị non-loopback bị từ chối,
 container fixture đã remove, không chạy/open port hay gắn volume.
 Chi tiết API/giới hạn: [product-order-grpc.md](product-order-grpc.md).
+
+## RPC recovery và readiness
+
+Shipping main 86 CI 38187261497 success; SSH 2026-10-12 00:33:05 UTC
+xác nhận sáu image 86 healthy. RPC PR #25 head 90 CI 38187929374
+success, merge 91 `356fa9e16014cfe7c796324af71a00f8839b9ce8`
+(07:33:51 +07). Main 91 CI 38188486613 thất bại ở Product live (503
+nhận kho), chưa publish/deploy RPC. PR #26 head 98 CI 38189342703
+success sau thêm kiểm thử recovery, merge 103
+`37f6e7ba150ae1549bc723ee4d4d5436ede5e88b` (07:59:09 +07).
+Main 103 CI 38190107701 verify/publish Product–Order/deploy success.
+
+SSH 2026-10-12 01:09:30 UTC: Product/Order image 103 healthy;
+Auth/Gateway/Payment/Notification vẫn image 86 healthy. Không ghi sáu
+image 103. Luồng mua variant VPS lỗi 504 rồi 503 tại nhận kho dù health
+UP; probe gRPC trực tiếp qua SSH đạt. Chạy lại cùng case bằng fixture
+mới đạt lúc 08:44 +07: nhận kho, đặt hàng, capture mô phỏng, CONFIRMED,
+reserved về 0 và snapshot giữ đúng sau ẩn parent. Không phải VNPay thật.
+
+| Mốc | SHA | Thời gian +07:00, 2026-10-12 | Kiểm chứng / deploy tại checkpoint |
+|---|---|---|---|
+| 107-order-service | `a0f60bb1e3fcb6a866bf3b76f54691aebcc7b98b` | 08:47:35 | 42 unit/bootJar đạt; 4 Product live local với Order vừa recreate đạt; chưa VPS bản readiness |
+| 108-product-service | `8e2d5b0da0ddd32de5977bdac0c5dfda327c7684` | 08:48:05 | task probe VPS riêng đạt 1 test, không ghi nghiệp vụ; không thay runtime Product |
+
+Readiness không coi TCP/socket hoặc một probe thành công trong quá khứ
+là đủ: phải có RPC có xác thực hiện tại. Không tăng deadline nghiệp vụ
+hay thêm replay để che lỗi. Full Order live/recovery, CI exact head và
+deploy bản readiness còn chờ kết quả tại checkpoint này.
+
+## OpenAPI va checkpoints CI
+
+| Moc | SHA | Thoi gian +07:00, 2026-10-12 | Kiem chung / deploy tai checkpoint |
+|---|---|---|---|
+| 92-auth-service | `b73601e6b000ebf17d96e60e5cf72bbb8e168b16` | 07:36:21 | OpenApiTests/bootJar local dat; chua merge/deploy OpenAPI tai commit |
+| 93-product-service | `34cfb62c8ac07e3fb5b2bcbc8ea572d896c3a76e` | 07:36:22 | OpenApiTests/bootJar local dat; chua merge/deploy OpenAPI tai commit |
+| 94-order-service | `530cda53c35d0026151b64ab120f55c9e65cf390` | 07:36:22 | OpenApiTests/bootJar local dat; chua merge/deploy OpenAPI tai commit |
+| 95-payment-service | `ee40c3b16951d94a94299ef971b50eb26c66525f` | 07:36:23 | OpenApiTests/bootJar local dat; chua merge/deploy OpenAPI tai commit |
+| 99-auth-service | `8312cc00f9fb399c64d6f00104d7c95b5ea3d0f1` | 07:51:52 | OpenApiTests/bootJar local dat; chua merge/deploy OpenAPI tai commit |
+| 100-product-service | `804d4ee4aad48b112d2a87c2a6018ea2bed5790f` | 07:51:53 | OpenApiTests/bootJar local dat; chua merge/deploy OpenAPI tai commit |
+| 101-order-service | `f0aec601e225ea0b595f620c8336ec550159640c` | 07:52:31 | OpenApiTests/bootJar local dat; chua merge/deploy OpenAPI tai commit |
+| 102-payment-service | `64423edbbd3047a6ac7aed66e8b2ae64df711aa4` | 07:54:38 | OpenApiTests/bootJar local dat; chua merge/deploy OpenAPI tai commit |
+| 104-auth-service | `e9fa69aa3fa7ba780fb4ad782a50396d8e7f9da9` | 08:07:41 | 1 live docs tren bon container dat sau schema fix; chua VPS |
+| 105-infrastructure | `e4a8fa12e30806a442c5392acb2ce6a1287fb043` | 08:07:41 | Local memory 290/292/292/266 MiB; budget 320 MiB; export dat; chua VPS |
+| 106-order-service | `731ef0780a1f61d8799e6855047360827a4930bf` | 08:10:09 | OpenApiTests/bootJar local dat; chua merge/deploy OpenAPI tai commit |
+| 110-auth-service | `7dc06e8c878b88b2cc2baf27889b39d1ccbc9b25` | 08:51:57 | OpenApiTests/bootJar local dat; chua merge/deploy OpenAPI tai commit |
+| 111-product-service | `bace07ad3ce8a0afb4c01c6ee9bf7568064c1d08` | 08:51:57 | OpenApiTests/bootJar local dat; chua merge/deploy OpenAPI tai commit |
+| 112-order-service | `a35c1b6ed0d32808f27b1b246ab5ef10bf437d53` | 08:51:58 | OpenApiTests/bootJar local dat; chua merge/deploy OpenAPI tai commit |
+| 113-payment-service | `3af628ea23f9cac66866aa4da36875bc6bf8a6e5` | 08:51:58 | OpenApiTests/bootJar local dat; chua merge/deploy OpenAPI tai commit |
+| 114-infrastructure | `d268b849832f710b7e9d2c337af117563182adf2` | 08:52:18 | 20 paths/27 operations, 27 operation IDs duy nhat; export/CI artifact; chua VPS |
+| 116-order-service | `598ed87d939f20108c724c95f3b9ab11482b5cba` | 08:56:23 | 43 Order unit/bootJar dat sau merge readiness; chua VPS OpenAPI |
+
+Bốn OpenApiTests sau sửa references/format đều đạt. Auth/Product/Payment
+baseline toàn bộ unit trước đó đạt 21/22/19; Order chạy toàn bộ lần cuối
+sau merge readiness đạt 43/43, zero fail/error/skip. Live docs đọc bốn
+container kiểm tra anonymous 401, USER 403, ADMIN 200 và đầy đủ schema.
+Không ghi OpenAPI VPS đã hoàn tất từ các kết quả local.
+
+Readiness PR #27 head 109 CI 38193360607 Java/live/recovery success.
+Order local cuối 11/11 live gồm broker outage và Payment recovery đạt.
+Merge 115 `37e8173df2863991fe20e2e7a160e3b5a132f813`, 08:56:08 +07.
+Main CI 38193814101 đang kiểm thử tích hợp tại checkpoint, chưa có
+image/health VPS của mốc 115. Nhánh OpenAPI đã merge origin/main qua
+116 `598ed87d939f20108c724c95f3b9ab11482b5cba`, 08:56:23 +07.
