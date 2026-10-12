@@ -31,3 +31,11 @@ Checkpoint Shipping tiếp theo: Product được merge main 81 sau CI PR #23
 đạt local Order 33 unit + 11 live, Notification 10 unit + 5 live và schema
 apply/replay; feature chờ CI/PR, chưa ghi thành deploy VPS. Phần này là
 ADMIN ghi nhận vận đơn, chưa tích hợp hãng vận chuyển hoặc gửi SMTP thật.
+
+Checkpoint tiếp theo: Product main 81 đã qua CI 38172436422 và SSH
+2026-10-11 20:47:45 UTC: sáu image 81 healthy. Shipping PR #24 head 85
+CI 38173359619 đạt toàn bộ Java/live/recovery, merge main 86; rollout
+main 38187261497 đang chạy tại checkpoint. gRPC Product–Order đã có
+21/39 unit và 4 Product live local đạt; chưa merge/deploy RPC tại checkpoint.
+VNPay/SMTP, OpenAPI, monitoring/tracing, profiling/k6 nhiều tài khoản và
+demo sự cố VPS vẫn còn công việc trong bốn nhóm.
