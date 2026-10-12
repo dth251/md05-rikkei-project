@@ -58,6 +58,12 @@ jwt:
 
 product:
   base-url: ${PRODUCT_URL:http://product-service:8082}
+  rpc:
+    enabled: ${PRODUCT_RPC_ENABLED:false}
+    token: ${PRODUCT_RPC_TOKEN:}
+    host: ${PRODUCT_RPC_HOST:product-service}
+    port: ${PRODUCT_RPC_PORT:9002}
+    deadline-ms: ${PRODUCT_RPC_DEADLINE_MS:2500}
 
 logging:
   level:

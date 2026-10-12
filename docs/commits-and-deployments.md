@@ -298,3 +298,27 @@ Notification 5/5 zero fail/error/skip. Verifier default chạy trên local có
 port test từ chối đúng ở postgres; không ghi thành success. Chế độ explicit
 `--allow-loopback` đạt, chỉ nhận loopback và giữ default không publish cho
 CI/VPS. CI head cuối và rollout phát sinh sau checkpoint ghi trong PR.
+
+Product main 81: CI 38172436422 verify/publish/deploy success, SSH
+2026-10-11 20:47:45 UTC xác nhận sáu image 81 healthy. PR #23 đã cập nhật
+kết quả cuối. Shipping PR #24 head 85 `5c3c928a896eefe7157868256330ff46e0b506aa`
+(03:42:45) CI 38173359619 Java/live/recovery success. Merge
+86 `c1133bbca3ed1d0c72db7238a5feea8cc7c0d6bc` (07:14:43).
+Main 38187261497 verify/publish đủ sáu service success; deploy đang chạy
+tại checkpoint RPC. SSH 2026-10-12 00:23:44 UTC vẫn sáu image 81 healthy;
+không ghi rollout 86 thành công trước khi image/health được kiểm tra lại.
+
+## Product–Order gRPC
+
+| Mốc | SHA | Thời gian +07:00, 2026-10-12 | Kiểm chứng / deploy tại checkpoint |
+|---|---|---|---|
+| 87-product-service | `9f5bc62f7de7709b2b03e3d32071acf374390b23` | 07:20:10 | 21 unit/bootJar đạt, batch 50/authentication/retired; chưa VPS |
+| 88-order-service | `7e9e76b8ee255e8c1916761e8fa7a6f65fbf81d0` | 07:20:20 | 39 unit/bootJar đạt, Netty wire/deadline/no fallback/invalid reply; chưa VPS |
+| 89-infrastructure | `3d04ed08390334b045d06c033ce9ade432f5f0ae` | 07:24:26 | Compose/private env/contract/loopback guard đạt; local Product 4/4 live và Order 11/11 live RPC enabled đạt, zero fail/error/skip; chưa CI/VPS RPC |
+
+Hai private env local/VPS đã được thêm random RPC token, không overwrite
+secret khác và không commit. Gradle dependencyInsight xác nhận runtime
+protobuf-java 3.25.9. Verifier loopback đạt trên topology thật; unpublished
+container fixture với HostIp trống tạo giá trị non-loopback bị từ chối,
+container fixture đã remove, không chạy/open port hay gắn volume.
+Chi tiết API/giới hạn: [product-order-grpc.md](product-order-grpc.md).

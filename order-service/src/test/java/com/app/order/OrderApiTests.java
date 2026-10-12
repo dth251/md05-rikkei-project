@@ -2,6 +2,7 @@ package com.app.order;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -58,6 +59,8 @@ class OrderApiTests {
         when(products.get(anyLong())).thenAnswer(call -> new ProductSnapshot(
                 call.getArgument(0), "SNAPSHOT", "Product Snapshot", new BigDecimal("12.50")
         ));
+        when(products.getAll(anyList())).thenAnswer(call ->
+                call.<List<Long>>getArgument(0).stream().map(products::get).toList());
     }
 
     @Test

@@ -5,7 +5,7 @@ target="${1:-.env}"
 umask 077
 set -o noclobber
 lines=('POSTGRES_USER=postgres')
-for variable in POSTGRES_PASSWORD AUTH_DB_PASSWORD PRODUCT_DB_PASSWORD ORDER_DB_PASSWORD PAYMENT_DB_PASSWORD NOTIFICATION_DB_PASSWORD RABBITMQ_DEFAULT_PASS; do
+for variable in POSTGRES_PASSWORD AUTH_DB_PASSWORD PRODUCT_DB_PASSWORD ORDER_DB_PASSWORD PAYMENT_DB_PASSWORD NOTIFICATION_DB_PASSWORD RABBITMQ_DEFAULT_PASS PRODUCT_RPC_TOKEN; do
     value="$(openssl rand -hex 32)" || { echo 'Secret generation failed' >&2; exit 1; }
     [[ "$value" =~ ^[0-9a-f]{64}$ ]] || { echo 'Invalid generated secret' >&2; exit 1; }
     lines+=("$variable=$value")

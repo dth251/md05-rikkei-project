@@ -108,6 +108,10 @@ services:
       DB_URL: jdbc:postgresql://postgres:5432/order_db
       DB_USERNAME: order_user
       DB_PASSWORD: ${ORDER_DB_PASSWORD:?Set ORDER_DB_PASSWORD}
+      PRODUCT_RPC_ENABLED: ${PRODUCT_RPC_ENABLED:-true}
+      PRODUCT_RPC_TOKEN: ${PRODUCT_RPC_TOKEN:?Set private PRODUCT_RPC_TOKEN}
+      PRODUCT_RPC_HOST: product-service
+      PRODUCT_RPC_PORT: 9002
       JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET}
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_PORT: 5672
@@ -198,6 +202,9 @@ services:
       DB_URL: jdbc:postgresql://postgres:5432/product_db
       DB_USERNAME: product_user
       DB_PASSWORD: ${PRODUCT_DB_PASSWORD:?Set PRODUCT_DB_PASSWORD}
+      PRODUCT_RPC_ENABLED: ${PRODUCT_RPC_ENABLED:-true}
+      PRODUCT_RPC_TOKEN: ${PRODUCT_RPC_TOKEN:?Set private PRODUCT_RPC_TOKEN}
+      PRODUCT_RPC_PORT: 9002
       JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET}
       JAVA_TOOL_OPTIONS: -Xms32m -Xmx112m -XX:MaxMetaspaceSize=112m -XX:ReservedCodeCacheSize=32m -XX:ActiveProcessorCount=2 -Xss256k
     ports:

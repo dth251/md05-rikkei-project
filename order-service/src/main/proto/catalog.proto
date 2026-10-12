@@ -1,0 +1,24 @@
+syntax = "proto3";
+package commerce.catalog.v1;
+option java_package = "com.app.order.grpc.generated";
+option java_multiple_files = true;
+
+service Catalog {
+  rpc GetProducts (ProductsRequest) returns (ProductsReply);
+}
+
+message ProductsRequest {
+  repeated int64 product_ids = 1;
+}
+
+message ProductsReply {
+  repeated CatalogProduct products = 1;
+}
+
+message CatalogProduct {
+  int64 id = 1;
+  string sku = 2;
+  string name = 3;
+  string unit_price = 4;
+  bool active = 5;
+}

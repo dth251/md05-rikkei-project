@@ -44,7 +44,8 @@ for service in postgres rabbitmq; do
     if [[ "$port_mode" == private ]]; then
         [[ "$ports" == '{}' || "$ports" == null ]] || { echo "Unexpected published DB/MQ port: $service" >&2; exit 1; }
     else
-        addresses="$(docker inspect --format '{{range .HostConfig.PortBindings}}{{range .}}{{println .HostIp}}{{end}}{{end}}' "$container")"
+        # Empty HostIp means every interface; emit the binding object so it cannot be mistaken for no bindings.
+        addresses="$(docker inspect --format '{{range .HostConfig.PortBindings}}{{range .}}{{if .HostIp}}{{println .HostIp}}{{else}}{{println .}}{{end}}{{end}}{{end}}' "$container")"
         while IFS= read -r address; do
             [[ -z "$address" ]] && continue
             [[ "$address" == 127.0.0.1 || "$address" == ::1 ]] \

@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -85,6 +86,8 @@ class OrderFulfillmentTests {
         when(inbox.claim(anyString(), anyString())).thenReturn(true);
         when(catalog.get(anyLong())).thenAnswer(call ->
                 new ProductSnapshot(call.getArgument(0), "SHIP", "Shipment fixture", BigDecimal.TEN));
+        when(catalog.getAll(anyList())).thenAnswer(call ->
+                call.<List<Long>>getArgument(0).stream().map(catalog::get).toList());
     }
 
     @Test

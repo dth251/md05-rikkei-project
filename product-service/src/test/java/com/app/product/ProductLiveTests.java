@@ -28,6 +28,40 @@ import org.junit.jupiter.api.Test;
 @Tag("live")
 class ProductLiveTests {
 
+    @Test
+    @org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable(named = "PRODUCT_RPC_LIVE_TEST", matches = "true")
+    void realPrivateRpcAuthenticatesAndReturnsPostgresSnapshot() throws Exception {
+        String sku = "RPC-LIVE-" + UUID.randomUUID();
+        var created = send("POST", "/api/products", Map.of("sku", sku, "name", "RPC wire fixture", "unitPrice", "12.50"), token("ADMIN"));
+        assertEquals(201, created.statusCode());
+        long id = json.readTree(created.body()).path("data").path("id").asLong();
+        var channel = io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder.forAddress("127.0.0.1", 19002)
+                .usePlaintext().build();
+        try {
+            var request = com.app.product.grpc.generated.ProductsRequest.newBuilder().addProductIds(id).build();
+            var plain = com.app.product.grpc.generated.CatalogGrpc.newBlockingStub(channel)
+                    .withDeadlineAfter(5, java.util.concurrent.TimeUnit.SECONDS);
+            var denied = org.junit.jupiter.api.Assertions.assertThrows(io.grpc.StatusRuntimeException.class,
+                    () -> plain.getProducts(request));
+            assertEquals(io.grpc.Status.Code.UNAUTHENTICATED, denied.getStatus().getCode());
+            String credential = System.getenv("PRODUCT_RPC_TOKEN");
+            assertTrue(credential != null && credential.matches("[0-9a-f]{64}"), "Private RPC test credential required");
+            var headers = new io.grpc.Metadata();
+            headers.put(com.app.product.security.ProductRpcAuthentication.CREDENTIAL, credential);
+            var authenticated = plain.withInterceptors(io.grpc.stub.MetadataUtils.newAttachHeadersInterceptor(headers));
+            var product = authenticated.getProducts(request).getProducts(0);
+            assertEquals(id, product.getId());
+            assertEquals(sku.toUpperCase(java.util.Locale.ROOT), product.getSku());
+            assertEquals(0, new java.math.BigDecimal("12.50").compareTo(new java.math.BigDecimal(product.getUnitPrice())));
+            assertEquals(200, send("DELETE", "/api/products/" + id, null, token("ADMIN")).statusCode());
+            var missing = org.junit.jupiter.api.Assertions.assertThrows(io.grpc.StatusRuntimeException.class,
+                    () -> authenticated.getProducts(request));
+            assertEquals(io.grpc.Status.Code.NOT_FOUND, missing.getStatus().getCode());
+        } finally {
+            channel.shutdownNow().awaitTermination(3, java.util.concurrent.TimeUnit.SECONDS);
+        }
+    }
+
     private final HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build();
     private final ObjectMapper json = new ObjectMapper();
     private final String base = System.getenv().getOrDefault("PRODUCT_LIVE_URL", "http://127.0.0.1:8080");

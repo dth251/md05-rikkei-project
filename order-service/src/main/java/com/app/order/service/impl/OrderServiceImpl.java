@@ -43,7 +43,7 @@ public class OrderServiceImpl implements OrderService {
         if (existing.isPresent()) {
             return new OrderCreationResult(existing.get(), false);
         }
-        var products = request.items().stream().map(item -> productCatalog.get(item.productId())).toList();
+        var products = productCatalog.getAll(request.items().stream().map(item -> item.productId()).toList());
         try {
             return new OrderCreationResult(orderTransactions.create(userId, request, fingerprint, products), true);
         } catch (DataIntegrityViolationException exception) {

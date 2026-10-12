@@ -17,6 +17,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.util.Locale;
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
@@ -31,6 +34,22 @@ public class ProductServiceImpl implements ProductService {
     ) {
         this.productRepository = productRepository;
         this.productMapper = productMapper;
+    }
+
+    @Override
+    public List<ProductResponse> lookup(
+            List<Long> ids
+    ) {
+        if (ids == null || ids.isEmpty() || ids.size() > 50 || ids.stream().anyMatch(id -> id == null || id <= 0)
+                || ids.stream().distinct().count() != ids.size()) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Batch must contain one to fifty distinct positive product IDs");
+        }
+        var found = productRepository.findByIdInAndActiveTrue(ids).stream()
+                .collect(Collectors.toMap(Product::getId, Function.identity()));
+        if (found.size() != ids.size()) {
+            throw new ApiException(HttpStatus.NOT_FOUND, "Product not found");
+        }
+        return ids.stream().map(id -> productMapper.toResponse(found.get(id))).toList();
     }
 
     @Override

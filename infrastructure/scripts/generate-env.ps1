@@ -20,7 +20,8 @@ foreach ($variable in @(
     'ORDER_DB_PASSWORD',
     'PAYMENT_DB_PASSWORD',
     'NOTIFICATION_DB_PASSWORD',
-    'RABBITMQ_DEFAULT_PASS'
+    'RABBITMQ_DEFAULT_PASS',
+    'PRODUCT_RPC_TOKEN'
 )) {
     $value = [BitConverter]::ToString((New-RandomBytes)).Replace('-', '').ToLowerInvariant()
     $lines += "$variable=$value"
