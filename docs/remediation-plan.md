@@ -39,3 +39,10 @@ main 38187261497 đang chạy tại checkpoint. gRPC Product–Order đã có
 21/39 unit và 4 Product live local đạt; chưa merge/deploy RPC tại checkpoint.
 VNPay/SMTP, OpenAPI, monitoring/tracing, profiling/k6 nhiều tài khoản và
 demo sự cố VPS vẫn còn công việc trong bốn nhóm.
+
+Checkpoint RPC: Shipping main 86 đã deploy đủ sáu image healthy; main
+103 đã deploy riêng Product/Order. Health UP từng chưa phản ánh RPC
+sẵn sàng (hai lần lỗi nhận kho trên VPS); probe SSH private và lần mua
+tiếp theo đạt. Feature readiness có 42 unit Order và 4 Product live
+local đạt, chưa deploy tại checkpoint. VNPay/SMTP, monitoring/tracing,
+profiling/k6 và demo sự cố VPS vẫn còn; OpenAPI đang ở feature riêng.
