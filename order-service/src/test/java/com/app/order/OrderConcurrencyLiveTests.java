@@ -188,7 +188,8 @@ class OrderConcurrencyLiveTests {
     private void docker(String... arguments) throws Exception {
         List<String> command = new ArrayList<>(List.of("docker", "compose", "-f", "docker-compose.yml", "-f", "docker-compose.local.yml"));
         command.addAll(List.of(arguments));
-        var process = new ProcessBuilder(command).directory(Path.of("..").toFile())
+        var process = new ProcessBuilder(command).directory(Path.of(
+                System.getenv().getOrDefault("ORDER_SMOKE_PROJECT_DIR", "..")).toFile())
                 .redirectErrorStream(true).redirectOutput(ProcessBuilder.Redirect.DISCARD).start();
         if (!process.waitFor(150, java.util.concurrent.TimeUnit.SECONDS)) {
             process.destroyForcibly();

@@ -3,6 +3,7 @@ package com.app.order.entity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
@@ -26,6 +27,13 @@ import org.hibernate.annotations.Check;
         name = "uk_order_user_idempotency", columnNames = {"user_id", "idempotency_key"}
 ))
 @Check(constraints = "total_amount >= 0 AND user_id > 0")
+@Check(name = "ck_order_fulfillment_v1", constraints = "(status NOT IN ('SHIPPING','COMPLETED') "
+        + "AND carrier IS NULL AND tracking_number IS NULL AND shipped_at IS NULL AND completed_at IS NULL) OR "
+        + "(status IN ('SHIPPING','COMPLETED') AND carrier IS NOT NULL AND tracking_number IS NOT NULL "
+        + "AND shipped_at IS NOT NULL AND shipping_recipient IS NOT NULL AND shipping_phone IS NOT NULL "
+        + "AND shipping_street IS NOT NULL AND shipping_ward IS NOT NULL AND shipping_district IS NOT NULL "
+        + "AND shipping_province IS NOT NULL AND ((status='SHIPPING' AND completed_at IS NULL) OR "
+        + "(status='COMPLETED' AND completed_at IS NOT NULL AND completed_at>=shipped_at)))")
 public class PurchaseOrder {
 
     @Id
@@ -54,6 +62,21 @@ public class PurchaseOrder {
 
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
+
+    @Embedded
+    private ShippingAddress shippingAddress;
+
+    @Column(length = 100)
+    private String carrier;
+
+    @Column(name = "tracking_number", length = 128)
+    private String trackingNumber;
+
+    @Column(name = "shipped_at")
+    private Instant shippedAt;
+
+    @Column(name = "completed_at")
+    private Instant completedAt;
 
     @OneToMany(mappedBy = "purchaseOrder", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> items = new ArrayList<>();
@@ -142,5 +165,54 @@ public class PurchaseOrder {
             throw new IllegalStateException("Only pending reservations can expire");
         }
         status = OrderStatus.EXPIRED;
+    }
+
+    public ShippingAddress getShippingAddress() {
+        return shippingAddress;
+    }
+    public String getCarrier() {
+        return carrier;
+    }
+    public String getTrackingNumber() {
+        return trackingNumber;
+    }
+    public Instant getShippedAt() {
+        return shippedAt;
+    }
+    public Instant getCompletedAt() {
+        return completedAt;
+    }
+
+    public void setShippingAddress(
+            ShippingAddress address
+    ) {
+        if (shippingAddress != null && !shippingAddress.equals(address)) {
+            throw new IllegalStateException("Shipping address snapshot is immutable");
+        }
+        shippingAddress = address;
+    }
+
+    public void ship(
+            String carrier,
+            String trackingNumber,
+            Instant now
+    ) {
+        if (status != OrderStatus.CONFIRMED || shippingAddress == null) {
+            throw new IllegalStateException("Only confirmed orders with delivery address can ship");
+        }
+        this.carrier = carrier;
+        this.trackingNumber = trackingNumber;
+        shippedAt = now;
+        status = OrderStatus.SHIPPING;
+    }
+
+    public void complete(
+            Instant now
+    ) {
+        if (status != OrderStatus.SHIPPING) {
+            throw new IllegalStateException("Only shipped orders can complete");
+        }
+        completedAt = now.isBefore(shippedAt) ? shippedAt : now;
+        status = OrderStatus.COMPLETED;
     }
 }

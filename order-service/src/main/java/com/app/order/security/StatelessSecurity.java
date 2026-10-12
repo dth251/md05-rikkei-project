@@ -26,6 +26,7 @@ public class StatelessSecurity {
                         .requestMatchers(HttpMethod.GET, "/actuator/health", "/actuator/prometheus").permitAll()
                         .requestMatchers("/error").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/inventory/stocks").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/orders/*/ship", "/api/orders/*/complete").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(exceptions -> exceptions

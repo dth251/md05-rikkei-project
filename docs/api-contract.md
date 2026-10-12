@@ -104,10 +104,16 @@ Mỗi app có private `GET /actuator/prometheus` với JVM/process/HTTP metrics 
 
 ## Order và Inventory
 
+Đơn bổ sung snapshot `shippingAddress` và `shipment`. Hai bước ADMIN ghi nhận
+Shipping/Completed có row lock, replay không phát thêm Outbox hoặc trừ kho.
+Body, giới hạn, migration và notification stage: [order-fulfillment.md](order-fulfillment.md).
+
 | Method | Endpoint | Quyền | Thành công |
 |---|---|---|---|
 | POST | `/api/orders` | USER/ADMIN | 201 lần tạo đầu, 200 replay |
 | GET | `/api/orders/{id}` | Chủ đơn/ADMIN | 200; người khác 404 |
+| POST | `/api/orders/{id}/ship` | ADMIN | 200, CONFIRMED → SHIPPING, replay ổn định |
+| POST | `/api/orders/{id}/complete` | ADMIN | 200, SHIPPING → COMPLETED, replay ổn định |
 | GET | `/api/inventory/{productId}` | JWT | 200 |
 | POST | `/api/inventory/stocks` | ADMIN | 200, nhập thêm kho |
 

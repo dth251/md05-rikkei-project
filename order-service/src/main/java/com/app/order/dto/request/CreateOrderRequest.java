@@ -17,6 +17,17 @@ public record CreateOrderRequest(
 
         @NotNull
         @Size(min = 1, max = 50)
-        List<@NotNull @Valid OrderItemRequest> items
+        List<@NotNull @Valid OrderItemRequest> items,
+
+        @Valid
+        ShippingAddressRequest shippingAddress
 ) {
+
+    public CreateOrderRequest(
+            SalesChannel channel,
+            String idempotencyKey,
+            List<OrderItemRequest> items
+    ) {
+        this(channel, idempotencyKey, items, null);
+    }
 }
