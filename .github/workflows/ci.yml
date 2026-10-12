@@ -92,7 +92,7 @@ jobs:
           fi
           docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --wait --wait-timeout 180 postgres rabbitmq
           docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --no-deps --wait --wait-timeout 240 "${services[@]}"
-          bash infrastructure/scripts/test-auth-live.sh
+          OPENAPI_LIVE_TEST=true bash infrastructure/scripts/test-auth-live.sh
           if [[ -f api-gateway/build.gradle ]]; then
             (cd api-gateway && GATEWAY_FAILURE_TEST=true ./gradlew liveTest --no-daemon)
           fi
@@ -118,6 +118,7 @@ jobs:
           path: |
             */build/reports/tests/
             */build/test-results/
+            */build/openapi/*.json
       - name: Save tested artifacts
         uses: actions/upload-artifact@v4
         with:

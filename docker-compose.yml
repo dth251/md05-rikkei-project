@@ -103,7 +103,7 @@ services:
       context: ./order-service
       dockerfile: Dockerfile.runtime
     restart: unless-stopped
-    mem_limit: 288m
+    mem_limit: 320m
     environment:
       DB_URL: jdbc:postgresql://postgres:5432/order_db
       DB_USERNAME: order_user
@@ -117,7 +117,7 @@ services:
       RABBITMQ_PORT: 5672
       RABBITMQ_USER: ${RABBITMQ_DEFAULT_USER:-commerce_app}
       RABBITMQ_PASSWORD: ${RABBITMQ_DEFAULT_PASS:?Set RABBITMQ_DEFAULT_PASS}
-      JAVA_TOOL_OPTIONS: -Xms32m -Xmx112m -XX:MaxMetaspaceSize=112m -XX:ReservedCodeCacheSize=32m -XX:ActiveProcessorCount=2 -Xss256k
+      JAVA_TOOL_OPTIONS: -Xms32m -Xmx112m -XX:MaxMetaspaceSize=128m -XX:ReservedCodeCacheSize=32m -XX:ActiveProcessorCount=2 -Xss256k
     ports:
       - 127.0.0.1:8083:8083
     depends_on:
@@ -136,7 +136,7 @@ services:
       context: ./payment-service
       dockerfile: Dockerfile.runtime
     restart: unless-stopped
-    mem_limit: 288m
+    mem_limit: 320m
     environment:
       DB_URL: jdbc:postgresql://postgres:5432/payment_db
       DB_USERNAME: payment_user
@@ -146,7 +146,7 @@ services:
       RABBITMQ_PORT: 5672
       RABBITMQ_USER: ${RABBITMQ_DEFAULT_USER:-commerce_app}
       RABBITMQ_PASSWORD: ${RABBITMQ_DEFAULT_PASS:?Set RABBITMQ_DEFAULT_PASS}
-      JAVA_TOOL_OPTIONS: -Xms32m -Xmx112m -XX:MaxMetaspaceSize=112m -XX:ReservedCodeCacheSize=32m -XX:ActiveProcessorCount=2 -Xss256k
+      JAVA_TOOL_OPTIONS: -Xms32m -Xmx112m -XX:MaxMetaspaceSize=128m -XX:ReservedCodeCacheSize=32m -XX:ActiveProcessorCount=2 -Xss256k
     ports:
       - 127.0.0.1:8085:8085
     depends_on:
@@ -197,7 +197,7 @@ services:
       context: ./product-service
       dockerfile: Dockerfile.runtime
     restart: unless-stopped
-    mem_limit: 288m
+    mem_limit: 320m
     environment:
       DB_URL: jdbc:postgresql://postgres:5432/product_db
       DB_USERNAME: product_user
@@ -206,7 +206,7 @@ services:
       PRODUCT_RPC_TOKEN: ${PRODUCT_RPC_TOKEN:?Set private PRODUCT_RPC_TOKEN}
       PRODUCT_RPC_PORT: 9002
       JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET}
-      JAVA_TOOL_OPTIONS: -Xms32m -Xmx112m -XX:MaxMetaspaceSize=112m -XX:ReservedCodeCacheSize=32m -XX:ActiveProcessorCount=2 -Xss256k
+      JAVA_TOOL_OPTIONS: -Xms32m -Xmx112m -XX:MaxMetaspaceSize=128m -XX:ReservedCodeCacheSize=32m -XX:ActiveProcessorCount=2 -Xss256k
     ports:
       - 127.0.0.1:8082:8082
     depends_on:
@@ -225,10 +225,12 @@ services:
       context: ./auth-service
       dockerfile: Dockerfile.runtime
     restart: unless-stopped
+    mem_limit: 320m
     environment:
       DB_URL: jdbc:postgresql://postgres:5432/auth_db
       DB_USERNAME: auth_user
       DB_PASSWORD: ${AUTH_DB_PASSWORD:?Set AUTH_DB_PASSWORD}
+      JAVA_TOOL_OPTIONS: -Xms32m -Xmx112m -XX:MaxMetaspaceSize=128m -XX:ReservedCodeCacheSize=32m -XX:ActiveProcessorCount=2 -Xss256k
       JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET}
     ports:
       - 127.0.0.1:8081:8081

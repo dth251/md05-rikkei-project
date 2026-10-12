@@ -2,6 +2,7 @@ $ErrorActionPreference = 'Stop'
 $root = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 Get-Content -LiteralPath (Join-Path $root '.env') | ForEach-Object {
     if ($_ -match '^AUTH_DB_PASSWORD=(.*)$') { $env:AUTH_SMOKE_DB_PASSWORD = $matches[1] }
+    if ($_ -match '^JWT_SECRET=(.*)$') { $env:JWT_SECRET = $matches[1] }
 }
 $env:AUTH_SMOKE_DB_URL = 'jdbc:postgresql://localhost:15432/auth_db'
 $env:AUTH_SMOKE_URL = 'http://127.0.0.1:8081'
@@ -13,4 +14,5 @@ try {
 } finally {
     Pop-Location
     Remove-Item Env:\AUTH_SMOKE_DB_PASSWORD -ErrorAction SilentlyContinue
+    Remove-Item Env:\JWT_SECRET -ErrorAction SilentlyContinue
 }

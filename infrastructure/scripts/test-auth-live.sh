@@ -5,6 +5,9 @@ while IFS='=' read -r name value; do
     if [[ "$name" == AUTH_DB_PASSWORD ]]; then
         export AUTH_SMOKE_DB_PASSWORD="$value"
     fi
+    if [[ "$name" == JWT_SECRET ]]; then
+        export JWT_SECRET="$value"
+    fi
 done < .env
 export AUTH_SMOKE_DB_URL=jdbc:postgresql://localhost:15432/auth_db
 export AUTH_SMOKE_URL=http://127.0.0.1:8081
