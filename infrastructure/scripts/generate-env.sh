@@ -15,7 +15,7 @@ value="$(openssl rand -base64 32)" || { echo 'JWT key generation failed' >&2; ex
 lines+=('RABBITMQ_DEFAULT_USER=commerce_app' "JWT_SECRET=$value"
     'DOMAIN=md05-rikkei-project.duckdns.org'
     'AUTH_IMAGE=ghcr.io/dth251/md05-rikkei-project/auth-service'
-    'VNPAY_ENABLED=false' 'VNPAY_TMN_CODE=' 'VNPAY_HASH_SECRET='
+    'VNPAY_ENABLED=false' 'VNPAY_TMN_CODE=' 'VNPAY_HASH_SECRET=' 'VNPAY_SERVER_IP='
     'VNPAY_RETURN_URL=https://md05-rikkei-project.duckdns.org/api/payments/vnpay/return')
 printf '%s\n' "${lines[@]}" > "$target"
 printf 'Created private environment file: %s\n' "$target"

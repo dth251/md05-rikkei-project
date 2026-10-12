@@ -33,6 +33,7 @@ $lines += 'AUTH_IMAGE=ghcr.io/dth251/md05-rikkei-project/auth-service'
 $lines += 'VNPAY_ENABLED=false'
 $lines += 'VNPAY_TMN_CODE='
 $lines += 'VNPAY_HASH_SECRET='
+$lines += 'VNPAY_SERVER_IP='
 $lines += 'VNPAY_RETURN_URL=https://md05-rikkei-project.duckdns.org/api/payments/vnpay/return'
 [System.IO.File]::WriteAllText(
     [System.IO.Path]::GetFullPath($Target),
