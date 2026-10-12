@@ -23,6 +23,7 @@ public class StatelessSecurity {
                 .requestCache(cache -> cache.disable())
                 .formLogin(form -> form.disable()).httpBasic(basic -> basic.disable())
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/v3/api-docs", "/v3/api-docs/**", "/v3/api-docs.yaml").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/actuator/health", "/actuator/prometheus",
                                 "/api/products", "/api/products/**").permitAll()
                         .requestMatchers("/error").permitAll()

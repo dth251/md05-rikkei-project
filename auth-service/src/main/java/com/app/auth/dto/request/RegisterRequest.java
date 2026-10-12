@@ -16,6 +16,7 @@ public record RegisterRequest(
 
         @NotBlank
         @Size(min = 8, max = 72)
+        @io.swagger.v3.oas.annotations.media.Schema(accessMode = io.swagger.v3.oas.annotations.media.Schema.AccessMode.WRITE_ONLY)
         String password
 ) {
 }

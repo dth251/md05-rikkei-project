@@ -71,6 +71,7 @@ jobs:
           done
           for script in infrastructure/scripts/*.sh infrastructure/postgres/*.sh; do bash -n "$script"; done
           bash infrastructure/scripts/verify-rpc-contract.sh
+          pwsh -File infrastructure/scripts/export-openapi.ps1
       - name: Verify infrastructure and real service integration
         id: live
         run: |
@@ -92,7 +93,7 @@ jobs:
           fi
           docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --wait --wait-timeout 180 postgres rabbitmq
           docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --no-deps --wait --wait-timeout 240 "${services[@]}"
-          bash infrastructure/scripts/test-auth-live.sh
+          OPENAPI_LIVE_TEST=true bash infrastructure/scripts/test-auth-live.sh
           if [[ -f api-gateway/build.gradle ]]; then
             (cd api-gateway && GATEWAY_FAILURE_TEST=true ./gradlew liveTest --no-daemon)
           fi
@@ -130,6 +131,8 @@ jobs:
           path: |
             */build/reports/tests/
             */build/test-results/
+            */build/openapi/*.json
+            docs/openapi/*.json
             ci-diagnostics/
       - name: Save tested artifacts
         uses: actions/upload-artifact@v4

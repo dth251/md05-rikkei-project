@@ -350,3 +350,38 @@ Readiness không coi TCP/socket hoặc một probe thành công trong quá khứ
 là đủ: phải có RPC có xác thực hiện tại. Không tăng deadline nghiệp vụ
 hay thêm replay để che lỗi. Full Order live/recovery, CI exact head và
 deploy bản readiness còn chờ kết quả tại checkpoint này.
+
+## OpenAPI va checkpoints CI
+
+| Moc | SHA | Thoi gian +07:00, 2026-10-12 | Kiem chung / deploy tai checkpoint |
+|---|---|---|---|
+| 92-auth-service | `b73601e6b000ebf17d96e60e5cf72bbb8e168b16` | 07:36:21 | OpenApiTests/bootJar local dat; chua merge/deploy OpenAPI tai commit |
+| 93-product-service | `34cfb62c8ac07e3fb5b2bcbc8ea572d896c3a76e` | 07:36:22 | OpenApiTests/bootJar local dat; chua merge/deploy OpenAPI tai commit |
+| 94-order-service | `530cda53c35d0026151b64ab120f55c9e65cf390` | 07:36:22 | OpenApiTests/bootJar local dat; chua merge/deploy OpenAPI tai commit |
+| 95-payment-service | `ee40c3b16951d94a94299ef971b50eb26c66525f` | 07:36:23 | OpenApiTests/bootJar local dat; chua merge/deploy OpenAPI tai commit |
+| 99-auth-service | `8312cc00f9fb399c64d6f00104d7c95b5ea3d0f1` | 07:51:52 | OpenApiTests/bootJar local dat; chua merge/deploy OpenAPI tai commit |
+| 100-product-service | `804d4ee4aad48b112d2a87c2a6018ea2bed5790f` | 07:51:53 | OpenApiTests/bootJar local dat; chua merge/deploy OpenAPI tai commit |
+| 101-order-service | `f0aec601e225ea0b595f620c8336ec550159640c` | 07:52:31 | OpenApiTests/bootJar local dat; chua merge/deploy OpenAPI tai commit |
+| 102-payment-service | `64423edbbd3047a6ac7aed66e8b2ae64df711aa4` | 07:54:38 | OpenApiTests/bootJar local dat; chua merge/deploy OpenAPI tai commit |
+| 104-auth-service | `e9fa69aa3fa7ba780fb4ad782a50396d8e7f9da9` | 08:07:41 | 1 live docs tren bon container dat sau schema fix; chua VPS |
+| 105-infrastructure | `e4a8fa12e30806a442c5392acb2ce6a1287fb043` | 08:07:41 | Local memory 290/292/292/266 MiB; budget 320 MiB; export dat; chua VPS |
+| 106-order-service | `731ef0780a1f61d8799e6855047360827a4930bf` | 08:10:09 | OpenApiTests/bootJar local dat; chua merge/deploy OpenAPI tai commit |
+| 110-auth-service | `7dc06e8c878b88b2cc2baf27889b39d1ccbc9b25` | 08:51:57 | OpenApiTests/bootJar local dat; chua merge/deploy OpenAPI tai commit |
+| 111-product-service | `bace07ad3ce8a0afb4c01c6ee9bf7568064c1d08` | 08:51:57 | OpenApiTests/bootJar local dat; chua merge/deploy OpenAPI tai commit |
+| 112-order-service | `a35c1b6ed0d32808f27b1b246ab5ef10bf437d53` | 08:51:58 | OpenApiTests/bootJar local dat; chua merge/deploy OpenAPI tai commit |
+| 113-payment-service | `3af628ea23f9cac66866aa4da36875bc6bf8a6e5` | 08:51:58 | OpenApiTests/bootJar local dat; chua merge/deploy OpenAPI tai commit |
+| 114-infrastructure | `d268b849832f710b7e9d2c337af117563182adf2` | 08:52:18 | 20 paths/27 operations, 27 operation IDs duy nhat; export/CI artifact; chua VPS |
+| 116-order-service | `598ed87d939f20108c724c95f3b9ab11482b5cba` | 08:56:23 | 43 Order unit/bootJar dat sau merge readiness; chua VPS OpenAPI |
+
+Bốn OpenApiTests sau sửa references/format đều đạt. Auth/Product/Payment
+baseline toàn bộ unit trước đó đạt 21/22/19; Order chạy toàn bộ lần cuối
+sau merge readiness đạt 43/43, zero fail/error/skip. Live docs đọc bốn
+container kiểm tra anonymous 401, USER 403, ADMIN 200 và đầy đủ schema.
+Không ghi OpenAPI VPS đã hoàn tất từ các kết quả local.
+
+Readiness PR #27 head 109 CI 38193360607 Java/live/recovery success.
+Order local cuối 11/11 live gồm broker outage và Payment recovery đạt.
+Merge 115 `37e8173df2863991fe20e2e7a160e3b5a132f813`, 08:56:08 +07.
+Main CI 38193814101 đang kiểm thử tích hợp tại checkpoint, chưa có
+image/health VPS của mốc 115. Nhánh OpenAPI đã merge origin/main qua
+116 `598ed87d939f20108c724c95f3b9ab11482b5cba`, 08:56:23 +07.

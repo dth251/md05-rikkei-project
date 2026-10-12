@@ -12,6 +12,7 @@ public record LoginRequest(
 
         @NotBlank
         @Size(max = 72)
+        @io.swagger.v3.oas.annotations.media.Schema(accessMode = io.swagger.v3.oas.annotations.media.Schema.AccessMode.WRITE_ONLY)
         String password
 ) {
 }

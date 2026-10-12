@@ -20,6 +20,7 @@ repositories {
 }
 
 dependencies {
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-api:2.8.17'
     implementation enforcedPlatform('io.grpc:grpc-bom:1.84.1')
     implementation 'io.grpc:grpc-netty-shaded'
     implementation 'io.grpc:grpc-protobuf'
