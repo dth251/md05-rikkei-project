@@ -67,3 +67,29 @@ và [protobuf Gradle plugin](https://github.com/google/protobuf-gradle-plugin).
 Chạy Gradle dependencyInsight kiểm tra runtime thực tế; không suy ra từ
 chỉ version protoc. [Gradle Eclipse synchronizationTasks](https://docs.gradle.org/current/javadoc/org/gradle/plugins/ide/eclipse/model/EclipseModel.html)
 đảm bảo generated source có trước project synchronization.
+
+## Readiness và kiểm tra VPS
+
+Order mở kết nối ngay khi khởi tạo channel, khởi tạo codec trước khi áp
+dụng deadline cho request nghiệp vụ. Không lấy service config từ DNS vì
+channel dùng cấu hình private cố định; request vẫn không retry/fallback.
+Health Order gửi batch rỗng có xác thực, deadline 2 giây: chỉ
+INVALID_ARGUMENT cùng channel READY mới báo UP. Probe không đọc/ghi DB.
+Sai khóa hoặc server dừng báo DOWN, kể cả khi probe trước đã đạt.
+Product outage vì thế làm health tổng Order DOWN; liveness của process
+và readiness của dependency cần được phân biệt khi vận hành.
+
+Task `product-service/gradlew -p product-service vpsRpcProbe` chạy riêng,
+không nằm trong unit/live CI thường. Cần SSH tunnel loopback 19003 tới
+cổng 9002 private, `PRODUCT_RPC_VPS_TEST=true` và private
+`PRODUCT_RPC_TOKEN` qua environment. Probe xác nhận thiếu khóa bị
+UNAUTHENTICATED và batch rỗng hợp lệ bị INVALID_ARGUMENT; không tạo dữ liệu.
+Không đưa token lên CLI/log hoặc publish cổng RPC.
+
+Checkpoint 2026-10-12: CI main 103 và Docker health đạt, nhưng hai lần
+luồng mua variant qua HTTPS lỗi 504/503 tại nhận kho. Client ghi deadline,
+Product chưa ghi RPC được xử lý. DNS/TCP đúng, private key khớp; probe
+SSH trực tiếp đạt, lần mua tiếp theo cũng đạt. Chưa có bằng chứng xác
+định chính xác nguyên nhân khởi động chậm. Bản readiness được kiểm thử
+42 unit Order, 4 Product live với Order vừa recreate và probe VPS riêng
+đạt; CI/rollout của bản này phải được kiểm chứng riêng trước khi chốt.

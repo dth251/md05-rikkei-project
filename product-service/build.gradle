@@ -61,7 +61,7 @@ eclipse {
 
 tasks.named('test') {
     useJUnitPlatform {
-        excludeTags 'live'
+        excludeTags 'live', 'vps'
     }
 }
 
@@ -72,6 +72,17 @@ tasks.register('liveTest', Test) {
     classpath = sourceSets.test.runtimeClasspath
     useJUnitPlatform {
         includeTags 'live'
+    }
+    outputs.upToDateWhen { false }
+}
+
+tasks.register('vpsRpcProbe', Test) {
+    description = 'Explicitly verify private VPS RPC through an existing SSH tunnel without business writes'
+    group = 'verification'
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    useJUnitPlatform {
+        includeTags 'vps'
     }
     outputs.upToDateWhen { false }
 }
