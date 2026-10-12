@@ -41,3 +41,9 @@ jwt:
 logging:
   level:
     org.hibernate.engine.jdbc.spi.SqlExceptionHelper: OFF
+
+product:
+  rpc:
+    enabled: ${PRODUCT_RPC_ENABLED:false}
+    token: ${PRODUCT_RPC_TOKEN:}
+    port: ${PRODUCT_RPC_PORT:9002}

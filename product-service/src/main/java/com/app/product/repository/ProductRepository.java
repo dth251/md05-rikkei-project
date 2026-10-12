@@ -16,6 +16,10 @@ import org.springframework.data.repository.query.Param;
 
 public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpecificationExecutor<Product> {
 
+    List<Product> findByIdInAndActiveTrue(
+            List<Long> ids
+    );
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select product from Product product where product.id = :id and product.active = true")
     Optional<Product> findLockedActive(
