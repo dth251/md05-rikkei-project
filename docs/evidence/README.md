@@ -1,5 +1,9 @@
 # Bằng chứng ngày 3
 
+Các ảnh/sơ đồ/video trong bảng dưới là checkpoint ngày 3, chưa phản ánh SMTP/VNPay/
+observability bổ sung ngày 13/10. Sơ đồ nguồn hiện tại nằm ở `docs/architecture.md`.
+Bằng chứng mới: [CI head 140](remaining-ci-140/README.md); không thay thế số đo VPS cũ.
+
 Đọc [báo cáo đầy đủ](../day3-test-results.md) trước khi diễn giải các số đo. Timestamp UTC; commit/deploy dùng SHA thực, không suy ra image từ HEAD.
 
 | File | Nguồn / phạm vi |

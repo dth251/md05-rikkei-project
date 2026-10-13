@@ -1,0 +1,18 @@
+{
+  "note": "Agent-backed business fixture, including Outbox and delayed SMTP; no credential or raw span exported to evidence",
+  "timeUtc": "2026-10-13T10:06:01.5709920Z",
+  "traceId": "1b35d1754453512b36169501d8dccb00",
+  "services": [
+    "api-gateway",
+    "auth-service",
+    "notification-service",
+    "order-service",
+    "payment-service",
+    "product-service"
+  ],
+  "durableTraceRows": {
+    "notification_db": 5,
+    "payment_db": 5,
+    "order_db": 10
+  }
+}

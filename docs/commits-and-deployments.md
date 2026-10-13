@@ -481,3 +481,24 @@ kiểm tra tài nguyên trước Java fixture. Không ghi toàn bộ tải local
 VPS HTTPS smoke sau sửa giờ: register/login/me đạt, 401/403/409 đúng; actuator public
 và internal recipient public trả 404. RabbitMQ queues ready/unacked/DLQ đều 0, năm
 consumer hoạt động; hostname/Mnesia node được giữ bằng private `RABBITMQ_HOSTNAME`.
+
+### Mốc 140–141: CI đạt và tích hợp, checkpoint 17:11 +07 ngày 13/10
+
+| Mốc | SHA | Thời gian +07:00 | Kiểm tra / deploy thực tế |
+|---|---|---|---|
+| 140-infrastructure | `175095963f15aa23846dcce0673384e796758d90` | 16:53:12 | Bounded wait cho scrape history, guard trước Java fixture; PR CI 38379527058 và push CI 38379521378 success toàn bộ; chưa rollout ở checkpoint |
+| 141-infrastructure | `19d9fc6d797154dd15a296590a4c773b7eca08e1` | 17:11 | Merge PR #31 sau CI head 140 đạt; main CI/CD 38381634257 đang chạy, chưa ghi deploy mới |
+
+CI head 140 đã qua Java/build/live, 12 VNPay PostgreSQL tests, 3 SMTP tests,
+multi-account small load/reconciliation, monitoring/history/provisioning qua restart,
+persisted Tempo privacy, business trace đủ sáu service, durable context và collector outage,
+Docker audit/Loki privacy. Artifact `java-test-reports` chứa JSON/metrics đã loại credential.
+Tải hai tài khoản, target 1 iteration/s/phase 10s: tạo 10 đơn orders và 11 đơn E2E;
+đối chiếu 21 CONFIRMED, stock 39/40 từ 50 mỗi tài khoản, reserved 0. Không xác nhận
+capacity VPS từ kết quả Linux CI. Số đo p95/p99 nằm trong `remaining-implementation.md`.
+
+UTC và RTC đã sửa, RTC ghi lại lúc 09:58:32 UTC; NTP vẫn timeout cả pool Việt Nam,
+`NTPSynchronized=no`. Chưa deploy stack quan sát hoặc chạy dependency demo trên VPS.
+Merchant VNPay, SMTP ngoài và kênh alert chưa có cấu hình private. Theo dõi trạng thái
+rollout sau checkpoint ở [main CI/CD](https://github.com/dth251/md05-rikkei-project/actions/runs/38381634257)
+và [PR #31](https://github.com/dth251/md05-rikkei-project/pull/31).
