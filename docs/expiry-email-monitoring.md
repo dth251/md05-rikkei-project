@@ -91,6 +91,11 @@ VPS hiện có 1 CPU và khoảng 4,9 GiB RAM. Kịch bản đo không phải ca
 capacity 1.000 successful requests/s. So sánh k6/Grafana trên cùng cửa
 sổ; panel rate dùng cửa sổ 2–5 phút nên khác summary k6 10 giây.
 
+Access token Auth có hạn 15 phút: chuẩn bị fixture sát lúc đo, xác minh
+token còn hạn đủ cho cả hai mức tải và thử một request HTTPS trả 200 qua
+Gateway trước khi chạy. Kết quả thực tế, gồm threshold fail và giới hạn
+diễn giải, trong [báo cáo monitoring/tải VPS](capacity-monitoring-report.md).
+
 ## Kiểm thử
 
 Java Order kiểm tra lock race, thanh toán trước/sau hạn, scan đến muộn,
