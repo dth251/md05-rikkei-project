@@ -206,4 +206,13 @@ public class Payment {
         }
         refundStatus = RefundStatus.REFUNDED;
     }
+
+    public void requireReturnRefund() {
+        if (status != PaymentStatus.SUCCESS || reservationExpired) {
+            throw new IllegalArgumentException("Return refund requires a captured non-expired payment");
+        }
+        if (refundStatus == RefundStatus.NONE) {
+            refundStatus = RefundStatus.REQUIRED;
+        }
+    }
 }

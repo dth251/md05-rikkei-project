@@ -111,7 +111,7 @@ jobs:
           if [[ -f notification-service/build.gradle ]]; then
             JWT_SECRET="$(sed -n 's/^JWT_SECRET=//p' .env)" NOTIFICATION_LIVE_DB_PASSWORD="$(sed -n 's/^NOTIFICATION_DB_PASSWORD=//p' .env)" RABBITMQ_LIVE_USER="$(sed -n 's/^RABBITMQ_DEFAULT_USER=//p' .env)" RABBITMQ_LIVE_PASSWORD="$(sed -n 's/^RABBITMQ_DEFAULT_PASS=//p' .env)" NOTIFICATION_RECOVERY_TEST=true notification-service/gradlew -p notification-service liveTest --no-daemon
           fi
-      - name: Verify VNPay callbacks and durable refund recovery on PostgreSQL
+      - name: Verify VNPay callbacks, full-order returns and durable refund recovery on PostgreSQL
         run: |
           set -euo pipefail
           docker compose -f docker-compose.yml -f docker-compose.local.yml -f docker-compose.vnpay-test.yml up -d --no-deps --wait --wait-timeout 180 payment-service

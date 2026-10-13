@@ -30,6 +30,7 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -65,6 +66,7 @@ class VnpayRefundTests {
     protected static final AtomicInteger REQUESTS = new AtomicInteger();
     private static final AtomicReference<String> MODE = new AtomicReference<>("PROCESSING");
     private static final AtomicReference<Map<String, String>> LAST_REQUEST = new AtomicReference<>();
+    private static final Map<String, String> REFUND_AMOUNTS = new java.util.concurrent.ConcurrentHashMap<>();
     private static final ObjectMapper JSON = new ObjectMapper();
     private static final HttpServer SERVER = server();
     private static final List<String> REFUND_FIELDS = List.of("vnp_RequestId", "vnp_Version", "vnp_Command",
@@ -81,6 +83,12 @@ class VnpayRefundTests {
     @Autowired private VnpayRefundService refunds;
     @Autowired private MockMvc mvc;
     @Autowired private SecretKey key;
+    @Autowired private com.app.payment.service.ReturnRefundService returnRefunds;
+    @Autowired private org.springframework.jdbc.core.JdbcTemplate jdbc;
+    @org.springframework.test.context.bean.override.mockito.MockitoBean
+    private com.app.payment.repository.PaymentOrderLock orderLocks;
+    @org.springframework.test.context.bean.override.mockito.MockitoBean
+    private com.app.payment.repository.EventInbox inbox;
 
     @DynamicPropertySource
     static void provider(DynamicPropertyRegistry properties) {
@@ -89,9 +97,12 @@ class VnpayRefundTests {
 
     @BeforeEach
     void resetProvider() {
+        org.mockito.Mockito.when(inbox.claim(org.mockito.ArgumentMatchers.anyString(), org.mockito.ArgumentMatchers.anyString()))
+                .thenReturn(true);
         MODE.set("PROCESSING");
         REQUESTS.set(0);
         LAST_REQUEST.set(null);
+        REFUND_AMOUNTS.clear();
     }
 
     @AfterAll
@@ -202,6 +213,42 @@ class VnpayRefundTests {
         assertEquals(0, REQUESTS.get());
     }
 
+    @Test
+    void returnedOrderRefundWaitsForVerifiedProviderCompletionAndPublishesOneResult() {
+        var payment = payments.saveAndFlush(new Payment(IDS.incrementAndGet(), 10L, new BigDecimal("12.50")));
+        var attempt = checkout.checkout(payment.getId(), 10L, "203.0.113.50");
+        var values = new LinkedMultiValueMap<String, String>();
+        Map.of("vnp_TmnCode", "FIXTURE1", "vnp_TxnRef", attempt.reference(), "vnp_Amount", "1250",
+                "vnp_ResponseCode", "00", "vnp_TransactionStatus", "00", "vnp_TransactionNo", Long.toString(IDS.incrementAndGet()),
+                "vnp_PayDate", time(Instant.now())).forEach(values::set);
+        values.set("vnp_SecureHash", VnpaySignature.hmac(VnpaySignature.canonicalQuery(values.toSingleValueMap()), SECRET));
+        assertEquals("00", checkout.ipn(values).responseCode());
+        var receipt = new com.app.payment.dto.event.CommerceEvent(UUID.randomUUID().toString(), "order.return-received",
+                payment.getOrderId(), 10L, payment.getAmount(), null, Instant.now());
+        returnRefunds.accept(receipt);
+        assertThrows(com.app.payment.config.exception.ApiException.class, () -> returnRefunds.simulateRefund(payment.getId()));
+        MODE.set("DROP");
+        assertEquals(VnpayRefundState.UNKNOWN, refunds.submit(payment.getId(), 25L).state());
+        MODE.set("PAYMENT");
+        assertEquals(VnpayRefundState.UNKNOWN, refunds.reconcile(payment.getId()).state());
+        assertEquals(0, returnOutcomes(payment));
+        assertEquals(RefundStatus.REQUIRED, reload(payment).getRefundStatus());
+        MODE.set("COMPLETE");
+        assertEquals(VnpayRefundState.COMPLETED, refunds.reconcile(payment.getId()).state());
+        assertEquals(RefundStatus.REFUNDED, reload(payment).getRefundStatus());
+        refunds.submit(payment.getId(), 25L);
+        refunds.reconcile(payment.getId());
+        returnRefunds.accept(new com.app.payment.dto.event.CommerceEvent(UUID.randomUUID().toString(), "order.return-received",
+                payment.getOrderId(), 10L, payment.getAmount(), null, Instant.now()));
+        assertEquals(1, returnOutcomes(payment));
+        assertEquals(3, REQUESTS.get());
+    }
+
+    private int returnOutcomes(Payment payment) {
+        return jdbc.queryForObject("SELECT count(*) FROM outbox_events WHERE event_type='payment.return-refunded' AND payload LIKE ?",
+                Integer.class, "%\"orderId\":" + payment.getOrderId() + ",%");
+    }
+
     protected Payment lateCapture() {
         var payment = payments.saveAndFlush(new Payment(IDS.incrementAndGet(), 10L, new BigDecimal("12.50")));
         VnpayCheckoutResponse attempt = checkout.checkout(payment.getId(), 10L, "203.0.113.50");
@@ -214,6 +261,14 @@ class VnpayRefundTests {
         values.set("vnp_SecureHash", VnpaySignature.hmac(VnpaySignature.canonicalQuery(values.toSingleValueMap()), SECRET));
         assertEquals("00", checkout.ipn(values).responseCode());
         return payment;
+    }
+
+    protected static void completeProviderFixture() {
+        MODE.set("COMPLETE");
+    }
+
+    protected static void providerFixtureMode(String mode) {
+        MODE.set(mode);
     }
 
     private Payment reload(Payment payment) {
@@ -249,6 +304,9 @@ class VnpayRefundTests {
             node.properties().forEach(field -> request.put(field.getKey(), field.getValue().asText()));
             LAST_REQUEST.set(request);
             String command = request.get("vnp_Command");
+            if ("refund".equals(command)) {
+                REFUND_AMOUNTS.put(request.get("vnp_TxnRef"), request.get("vnp_Amount"));
+            }
             List<String> fields = "refund".equals(command) ? REFUND_FIELDS : QUERY_FIELDS;
             assertEquals(VnpaySignature.hmac(fields.stream().map(name -> request.getOrDefault(name, ""))
                     .collect(java.util.stream.Collectors.joining("|")), SECRET), request.get("vnp_SecureHash"));
@@ -264,7 +322,9 @@ class VnpayRefundTests {
             response.put("vnp_Message", "Fixture response");
             response.put("vnp_TmnCode", "FIXTURE1");
             response.put("vnp_TxnRef", request.get("vnp_TxnRef"));
-            response.put("vnp_Amount", mode.equals("WRONG_AMOUNT") ? "1251" : "1250");
+            String amount = REFUND_AMOUNTS.get(request.get("vnp_TxnRef"));
+            response.put("vnp_Amount", mode.equals("WRONG_AMOUNT")
+                    ? new java.math.BigInteger(amount).add(java.math.BigInteger.ONE).toString() : amount);
             response.put("vnp_BankCode", "NCB");
             response.put("vnp_PayDate", time(Instant.now()));
             response.put("vnp_TransactionNo", Integer.toString(Math.abs(request.get("vnp_TxnRef").hashCode())));

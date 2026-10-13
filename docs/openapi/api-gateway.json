@@ -1775,16 +1775,6 @@
                                                                        "required":  true
                                                                    },
                                                    "responses":  {
-                                                                     "409":  {
-                                                                                 "description":  "Conflict",
-                                                                                 "content":  {
-                                                                                                 "application/json":  {
-                                                                                                                          "schema":  {
-                                                                                                                                         "$ref":  "#/components/schemas/ApiError"
-                                                                                                                                     }
-                                                                                                                      }
-                                                                                             }
-                                                                             },
                                                                      "503":  {
                                                                                  "description":  "Dependency unavailable",
                                                                                  "content":  {
@@ -1795,8 +1785,8 @@
                                                                                                                       }
                                                                                              }
                                                                              },
-                                                                     "404":  {
-                                                                                 "description":  "Not found",
+                                                                     "409":  {
+                                                                                 "description":  "Conflict",
                                                                                  "content":  {
                                                                                                  "application/json":  {
                                                                                                                           "schema":  {
@@ -1805,8 +1795,8 @@
                                                                                                                       }
                                                                                              }
                                                                              },
-                                                                     "403":  {
-                                                                                 "description":  "Access denied",
+                                                                     "400":  {
+                                                                                 "description":  "Invalid request",
                                                                                  "content":  {
                                                                                                  "application/json":  {
                                                                                                                           "schema":  {
@@ -1825,8 +1815,18 @@
                                                                                                                       }
                                                                                              }
                                                                              },
-                                                                     "400":  {
-                                                                                 "description":  "Invalid request",
+                                                                     "403":  {
+                                                                                 "description":  "Access denied",
+                                                                                 "content":  {
+                                                                                                 "application/json":  {
+                                                                                                                          "schema":  {
+                                                                                                                                         "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                     }
+                                                                                                                      }
+                                                                                             }
+                                                                             },
+                                                                     "404":  {
+                                                                                 "description":  "Not found",
                                                                                  "content":  {
                                                                                                  "application/json":  {
                                                                                                                           "schema":  {
@@ -1888,16 +1888,6 @@
                                                                                                                    }
                                                                                                        }
                                                                                        },
-                                                                               "409":  {
-                                                                                           "description":  "Conflict",
-                                                                                           "content":  {
-                                                                                                           "application/json":  {
-                                                                                                                                    "schema":  {
-                                                                                                                                                   "$ref":  "#/components/schemas/ApiError"
-                                                                                                                                               }
-                                                                                                                                }
-                                                                                                       }
-                                                                                       },
                                                                                "503":  {
                                                                                            "description":  "Dependency unavailable",
                                                                                            "content":  {
@@ -1908,8 +1898,8 @@
                                                                                                                                 }
                                                                                                        }
                                                                                        },
-                                                                               "404":  {
-                                                                                           "description":  "Not found",
+                                                                               "409":  {
+                                                                                           "description":  "Conflict",
                                                                                            "content":  {
                                                                                                            "application/json":  {
                                                                                                                                     "schema":  {
@@ -1918,8 +1908,8 @@
                                                                                                                                 }
                                                                                                        }
                                                                                        },
-                                                                               "403":  {
-                                                                                           "description":  "Access denied",
+                                                                               "400":  {
+                                                                                           "description":  "Invalid request",
                                                                                            "content":  {
                                                                                                            "application/json":  {
                                                                                                                                     "schema":  {
@@ -1938,8 +1928,18 @@
                                                                                                                                 }
                                                                                                        }
                                                                                        },
-                                                                               "400":  {
-                                                                                           "description":  "Invalid request",
+                                                                               "403":  {
+                                                                                           "description":  "Access denied",
+                                                                                           "content":  {
+                                                                                                           "application/json":  {
+                                                                                                                                    "schema":  {
+                                                                                                                                                   "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                               }
+                                                                                                                                }
+                                                                                                       }
+                                                                                       },
+                                                                               "404":  {
+                                                                                           "description":  "Not found",
                                                                                            "content":  {
                                                                                                            "application/json":  {
                                                                                                                                     "schema":  {
@@ -1953,6 +1953,406 @@
                                                              "x-service":  "order-service"
                                                          }
                                             },
+                  "/api/orders/{id}/return":  {
+                                                  "get":  {
+                                                              "tags":  [
+                                                                           "order-return-controller"
+                                                                       ],
+                                                              "operationId":  "order-service_get",
+                                                              "parameters":  [
+                                                                                 {
+                                                                                     "name":  "id",
+                                                                                     "in":  "path",
+                                                                                     "required":  true,
+                                                                                     "schema":  {
+                                                                                                    "type":  "integer",
+                                                                                                    "format":  "int64"
+                                                                                                }
+                                                                                 }
+                                                                             ],
+                                                              "responses":  {
+                                                                                "200":  {
+                                                                                            "description":  "OK",
+                                                                                            "content":  {
+                                                                                                            "*/*":  {
+                                                                                                                        "schema":  {
+                                                                                                                                       "$ref":  "#/components/schemas/ApiResponseOrderReturnResponse"
+                                                                                                                                   }
+                                                                                                                    }
+                                                                                                        }
+                                                                                        },
+                                                                                "503":  {
+                                                                                            "description":  "Dependency unavailable",
+                                                                                            "content":  {
+                                                                                                            "application/json":  {
+                                                                                                                                     "schema":  {
+                                                                                                                                                    "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                                }
+                                                                                                                                 }
+                                                                                                        }
+                                                                                        },
+                                                                                "409":  {
+                                                                                            "description":  "Conflict",
+                                                                                            "content":  {
+                                                                                                            "application/json":  {
+                                                                                                                                     "schema":  {
+                                                                                                                                                    "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                                }
+                                                                                                                                 }
+                                                                                                        }
+                                                                                        },
+                                                                                "400":  {
+                                                                                            "description":  "Invalid request",
+                                                                                            "content":  {
+                                                                                                            "application/json":  {
+                                                                                                                                     "schema":  {
+                                                                                                                                                    "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                                }
+                                                                                                                                 }
+                                                                                                        }
+                                                                                        },
+                                                                                "401":  {
+                                                                                            "description":  "Authentication required",
+                                                                                            "content":  {
+                                                                                                            "application/json":  {
+                                                                                                                                     "schema":  {
+                                                                                                                                                    "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                                }
+                                                                                                                                 }
+                                                                                                        }
+                                                                                        },
+                                                                                "403":  {
+                                                                                            "description":  "Access denied",
+                                                                                            "content":  {
+                                                                                                            "application/json":  {
+                                                                                                                                     "schema":  {
+                                                                                                                                                    "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                                }
+                                                                                                                                 }
+                                                                                                        }
+                                                                                        },
+                                                                                "404":  {
+                                                                                            "description":  "Not found",
+                                                                                            "content":  {
+                                                                                                            "application/json":  {
+                                                                                                                                     "schema":  {
+                                                                                                                                                    "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                                }
+                                                                                                                                 }
+                                                                                                        }
+                                                                                        }
+                                                                            },
+                                                              "x-required-role":  "USER",
+                                                              "x-service":  "order-service"
+                                                          },
+                                                  "post":  {
+                                                               "tags":  [
+                                                                            "order-return-controller"
+                                                                        ],
+                                                               "operationId":  "order-service_request",
+                                                               "parameters":  [
+                                                                                  {
+                                                                                      "name":  "id",
+                                                                                      "in":  "path",
+                                                                                      "required":  true,
+                                                                                      "schema":  {
+                                                                                                     "type":  "integer",
+                                                                                                     "format":  "int64"
+                                                                                                 }
+                                                                                  }
+                                                                              ],
+                                                               "requestBody":  {
+                                                                                   "content":  {
+                                                                                                   "application/json":  {
+                                                                                                                            "schema":  {
+                                                                                                                                           "$ref":  "#/components/schemas/RequestReturnRequest"
+                                                                                                                                       }
+                                                                                                                        }
+                                                                                               },
+                                                                                   "required":  true
+                                                                               },
+                                                               "responses":  {
+                                                                                 "200":  {
+                                                                                             "description":  "OK",
+                                                                                             "content":  {
+                                                                                                             "*/*":  {
+                                                                                                                         "schema":  {
+                                                                                                                                        "$ref":  "#/components/schemas/ApiResponseOrderReturnResponse"
+                                                                                                                                    }
+                                                                                                                     }
+                                                                                                         }
+                                                                                         },
+                                                                                 "503":  {
+                                                                                             "description":  "Dependency unavailable",
+                                                                                             "content":  {
+                                                                                                             "application/json":  {
+                                                                                                                                      "schema":  {
+                                                                                                                                                     "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                                 }
+                                                                                                                                  }
+                                                                                                         }
+                                                                                         },
+                                                                                 "409":  {
+                                                                                             "description":  "Conflict",
+                                                                                             "content":  {
+                                                                                                             "application/json":  {
+                                                                                                                                      "schema":  {
+                                                                                                                                                     "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                                 }
+                                                                                                                                  }
+                                                                                                         }
+                                                                                         },
+                                                                                 "400":  {
+                                                                                             "description":  "Invalid request",
+                                                                                             "content":  {
+                                                                                                             "application/json":  {
+                                                                                                                                      "schema":  {
+                                                                                                                                                     "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                                 }
+                                                                                                                                  }
+                                                                                                         }
+                                                                                         },
+                                                                                 "401":  {
+                                                                                             "description":  "Authentication required",
+                                                                                             "content":  {
+                                                                                                             "application/json":  {
+                                                                                                                                      "schema":  {
+                                                                                                                                                     "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                                 }
+                                                                                                                                  }
+                                                                                                         }
+                                                                                         },
+                                                                                 "403":  {
+                                                                                             "description":  "Access denied",
+                                                                                             "content":  {
+                                                                                                             "application/json":  {
+                                                                                                                                      "schema":  {
+                                                                                                                                                     "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                                 }
+                                                                                                                                  }
+                                                                                                         }
+                                                                                         },
+                                                                                 "404":  {
+                                                                                             "description":  "Not found",
+                                                                                             "content":  {
+                                                                                                             "application/json":  {
+                                                                                                                                      "schema":  {
+                                                                                                                                                     "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                                 }
+                                                                                                                                  }
+                                                                                                         }
+                                                                                         }
+                                                                             },
+                                                               "x-required-role":  "USER",
+                                                               "x-service":  "order-service"
+                                                           }
+                                              },
+                  "/api/orders/{id}/return/receive":  {
+                                                          "post":  {
+                                                                       "tags":  [
+                                                                                    "order-return-controller"
+                                                                                ],
+                                                                       "operationId":  "order-service_receive",
+                                                                       "parameters":  [
+                                                                                          {
+                                                                                              "name":  "id",
+                                                                                              "in":  "path",
+                                                                                              "required":  true,
+                                                                                              "schema":  {
+                                                                                                             "type":  "integer",
+                                                                                                             "format":  "int64"
+                                                                                                         }
+                                                                                          }
+                                                                                      ],
+                                                                       "requestBody":  {
+                                                                                           "content":  {
+                                                                                                           "application/json":  {
+                                                                                                                                    "schema":  {
+                                                                                                                                                   "$ref":  "#/components/schemas/ReceiveReturnRequest"
+                                                                                                                                               }
+                                                                                                                                }
+                                                                                                       },
+                                                                                           "required":  true
+                                                                                       },
+                                                                       "responses":  {
+                                                                                         "200":  {
+                                                                                                     "description":  "OK",
+                                                                                                     "content":  {
+                                                                                                                     "*/*":  {
+                                                                                                                                 "schema":  {
+                                                                                                                                                "$ref":  "#/components/schemas/ApiResponseOrderReturnResponse"
+                                                                                                                                            }
+                                                                                                                             }
+                                                                                                                 }
+                                                                                                 },
+                                                                                         "503":  {
+                                                                                                     "description":  "Dependency unavailable",
+                                                                                                     "content":  {
+                                                                                                                     "application/json":  {
+                                                                                                                                              "schema":  {
+                                                                                                                                                             "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                                         }
+                                                                                                                                          }
+                                                                                                                 }
+                                                                                                 },
+                                                                                         "409":  {
+                                                                                                     "description":  "Conflict",
+                                                                                                     "content":  {
+                                                                                                                     "application/json":  {
+                                                                                                                                              "schema":  {
+                                                                                                                                                             "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                                         }
+                                                                                                                                          }
+                                                                                                                 }
+                                                                                                 },
+                                                                                         "400":  {
+                                                                                                     "description":  "Invalid request",
+                                                                                                     "content":  {
+                                                                                                                     "application/json":  {
+                                                                                                                                              "schema":  {
+                                                                                                                                                             "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                                         }
+                                                                                                                                          }
+                                                                                                                 }
+                                                                                                 },
+                                                                                         "401":  {
+                                                                                                     "description":  "Authentication required",
+                                                                                                     "content":  {
+                                                                                                                     "application/json":  {
+                                                                                                                                              "schema":  {
+                                                                                                                                                             "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                                         }
+                                                                                                                                          }
+                                                                                                                 }
+                                                                                                 },
+                                                                                         "403":  {
+                                                                                                     "description":  "Access denied",
+                                                                                                     "content":  {
+                                                                                                                     "application/json":  {
+                                                                                                                                              "schema":  {
+                                                                                                                                                             "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                                         }
+                                                                                                                                          }
+                                                                                                                 }
+                                                                                                 },
+                                                                                         "404":  {
+                                                                                                     "description":  "Not found",
+                                                                                                     "content":  {
+                                                                                                                     "application/json":  {
+                                                                                                                                              "schema":  {
+                                                                                                                                                             "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                                         }
+                                                                                                                                          }
+                                                                                                                 }
+                                                                                                 }
+                                                                                     },
+                                                                       "x-required-role":  "ADMIN",
+                                                                       "x-service":  "order-service"
+                                                                   }
+                                                      },
+                  "/api/orders/{id}/return/decision":  {
+                                                           "post":  {
+                                                                        "tags":  [
+                                                                                     "order-return-controller"
+                                                                                 ],
+                                                                        "operationId":  "order-service_decide",
+                                                                        "parameters":  [
+                                                                                           {
+                                                                                               "name":  "id",
+                                                                                               "in":  "path",
+                                                                                               "required":  true,
+                                                                                               "schema":  {
+                                                                                                              "type":  "integer",
+                                                                                                              "format":  "int64"
+                                                                                                          }
+                                                                                           }
+                                                                                       ],
+                                                                        "requestBody":  {
+                                                                                            "content":  {
+                                                                                                            "application/json":  {
+                                                                                                                                     "schema":  {
+                                                                                                                                                    "$ref":  "#/components/schemas/DecideReturnRequest"
+                                                                                                                                                }
+                                                                                                                                 }
+                                                                                                        },
+                                                                                            "required":  true
+                                                                                        },
+                                                                        "responses":  {
+                                                                                          "200":  {
+                                                                                                      "description":  "OK",
+                                                                                                      "content":  {
+                                                                                                                      "*/*":  {
+                                                                                                                                  "schema":  {
+                                                                                                                                                 "$ref":  "#/components/schemas/ApiResponseOrderReturnResponse"
+                                                                                                                                             }
+                                                                                                                              }
+                                                                                                                  }
+                                                                                                  },
+                                                                                          "503":  {
+                                                                                                      "description":  "Dependency unavailable",
+                                                                                                      "content":  {
+                                                                                                                      "application/json":  {
+                                                                                                                                               "schema":  {
+                                                                                                                                                              "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                                          }
+                                                                                                                                           }
+                                                                                                                  }
+                                                                                                  },
+                                                                                          "409":  {
+                                                                                                      "description":  "Conflict",
+                                                                                                      "content":  {
+                                                                                                                      "application/json":  {
+                                                                                                                                               "schema":  {
+                                                                                                                                                              "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                                          }
+                                                                                                                                           }
+                                                                                                                  }
+                                                                                                  },
+                                                                                          "400":  {
+                                                                                                      "description":  "Invalid request",
+                                                                                                      "content":  {
+                                                                                                                      "application/json":  {
+                                                                                                                                               "schema":  {
+                                                                                                                                                              "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                                          }
+                                                                                                                                           }
+                                                                                                                  }
+                                                                                                  },
+                                                                                          "401":  {
+                                                                                                      "description":  "Authentication required",
+                                                                                                      "content":  {
+                                                                                                                      "application/json":  {
+                                                                                                                                               "schema":  {
+                                                                                                                                                              "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                                          }
+                                                                                                                                           }
+                                                                                                                  }
+                                                                                                  },
+                                                                                          "403":  {
+                                                                                                      "description":  "Access denied",
+                                                                                                      "content":  {
+                                                                                                                      "application/json":  {
+                                                                                                                                               "schema":  {
+                                                                                                                                                              "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                                          }
+                                                                                                                                           }
+                                                                                                                  }
+                                                                                                  },
+                                                                                          "404":  {
+                                                                                                      "description":  "Not found",
+                                                                                                      "content":  {
+                                                                                                                      "application/json":  {
+                                                                                                                                               "schema":  {
+                                                                                                                                                              "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                                          }
+                                                                                                                                           }
+                                                                                                                  }
+                                                                                                  }
+                                                                                      },
+                                                                        "x-required-role":  "ADMIN",
+                                                                        "x-service":  "order-service"
+                                                                    }
+                                                       },
                   "/api/orders/{id}/complete":  {
                                                     "post":  {
                                                                  "tags":  [
@@ -1981,16 +2381,6 @@
                                                                                                                        }
                                                                                                            }
                                                                                            },
-                                                                                   "409":  {
-                                                                                               "description":  "Conflict",
-                                                                                               "content":  {
-                                                                                                               "application/json":  {
-                                                                                                                                        "schema":  {
-                                                                                                                                                       "$ref":  "#/components/schemas/ApiError"
-                                                                                                                                                   }
-                                                                                                                                    }
-                                                                                                           }
-                                                                                           },
                                                                                    "503":  {
                                                                                                "description":  "Dependency unavailable",
                                                                                                "content":  {
@@ -2001,8 +2391,8 @@
                                                                                                                                     }
                                                                                                            }
                                                                                            },
-                                                                                   "404":  {
-                                                                                               "description":  "Not found",
+                                                                                   "409":  {
+                                                                                               "description":  "Conflict",
                                                                                                "content":  {
                                                                                                                "application/json":  {
                                                                                                                                         "schema":  {
@@ -2011,8 +2401,8 @@
                                                                                                                                     }
                                                                                                            }
                                                                                            },
-                                                                                   "403":  {
-                                                                                               "description":  "Access denied",
+                                                                                   "400":  {
+                                                                                               "description":  "Invalid request",
                                                                                                "content":  {
                                                                                                                "application/json":  {
                                                                                                                                         "schema":  {
@@ -2031,8 +2421,18 @@
                                                                                                                                     }
                                                                                                            }
                                                                                            },
-                                                                                   "400":  {
-                                                                                               "description":  "Invalid request",
+                                                                                   "403":  {
+                                                                                               "description":  "Access denied",
+                                                                                               "content":  {
+                                                                                                               "application/json":  {
+                                                                                                                                        "schema":  {
+                                                                                                                                                       "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                                   }
+                                                                                                                                    }
+                                                                                                           }
+                                                                                           },
+                                                                                   "404":  {
+                                                                                               "description":  "Not found",
                                                                                                "content":  {
                                                                                                                "application/json":  {
                                                                                                                                         "schema":  {
@@ -2074,16 +2474,6 @@
                                                                                                                          }
                                                                                                              }
                                                                                              },
-                                                                                     "409":  {
-                                                                                                 "description":  "Conflict",
-                                                                                                 "content":  {
-                                                                                                                 "application/json":  {
-                                                                                                                                          "schema":  {
-                                                                                                                                                         "$ref":  "#/components/schemas/ApiError"
-                                                                                                                                                     }
-                                                                                                                                      }
-                                                                                                             }
-                                                                                             },
                                                                                      "503":  {
                                                                                                  "description":  "Dependency unavailable",
                                                                                                  "content":  {
@@ -2094,8 +2484,8 @@
                                                                                                                                       }
                                                                                                              }
                                                                                              },
-                                                                                     "404":  {
-                                                                                                 "description":  "Not found",
+                                                                                     "409":  {
+                                                                                                 "description":  "Conflict",
                                                                                                  "content":  {
                                                                                                                  "application/json":  {
                                                                                                                                           "schema":  {
@@ -2104,8 +2494,8 @@
                                                                                                                                       }
                                                                                                              }
                                                                                              },
-                                                                                     "403":  {
-                                                                                                 "description":  "Access denied",
+                                                                                     "400":  {
+                                                                                                 "description":  "Invalid request",
                                                                                                  "content":  {
                                                                                                                  "application/json":  {
                                                                                                                                           "schema":  {
@@ -2124,8 +2514,18 @@
                                                                                                                                       }
                                                                                                              }
                                                                                              },
-                                                                                     "400":  {
-                                                                                                 "description":  "Invalid request",
+                                                                                     "403":  {
+                                                                                                 "description":  "Access denied",
+                                                                                                 "content":  {
+                                                                                                                 "application/json":  {
+                                                                                                                                          "schema":  {
+                                                                                                                                                         "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                                     }
+                                                                                                                                      }
+                                                                                                             }
+                                                                                             },
+                                                                                     "404":  {
+                                                                                                 "description":  "Not found",
                                                                                                  "content":  {
                                                                                                                  "application/json":  {
                                                                                                                                           "schema":  {
@@ -2144,7 +2544,7 @@
                                                              "tags":  [
                                                                           "inventory-controller"
                                                                       ],
-                                                             "operationId":  "order-service_receive",
+                                                             "operationId":  "order-service_receive_1",
                                                              "requestBody":  {
                                                                                  "content":  {
                                                                                                  "application/json":  {
@@ -2166,16 +2566,6 @@
                                                                                                                    }
                                                                                                        }
                                                                                        },
-                                                                               "409":  {
-                                                                                           "description":  "Conflict",
-                                                                                           "content":  {
-                                                                                                           "application/json":  {
-                                                                                                                                    "schema":  {
-                                                                                                                                                   "$ref":  "#/components/schemas/ApiError"
-                                                                                                                                               }
-                                                                                                                                }
-                                                                                                       }
-                                                                                       },
                                                                                "503":  {
                                                                                            "description":  "Dependency unavailable",
                                                                                            "content":  {
@@ -2186,8 +2576,8 @@
                                                                                                                                 }
                                                                                                        }
                                                                                        },
-                                                                               "404":  {
-                                                                                           "description":  "Not found",
+                                                                               "409":  {
+                                                                                           "description":  "Conflict",
                                                                                            "content":  {
                                                                                                            "application/json":  {
                                                                                                                                     "schema":  {
@@ -2196,8 +2586,8 @@
                                                                                                                                 }
                                                                                                        }
                                                                                        },
-                                                                               "403":  {
-                                                                                           "description":  "Access denied",
+                                                                               "400":  {
+                                                                                           "description":  "Invalid request",
                                                                                            "content":  {
                                                                                                            "application/json":  {
                                                                                                                                     "schema":  {
@@ -2216,8 +2606,18 @@
                                                                                                                                 }
                                                                                                        }
                                                                                        },
-                                                                               "400":  {
-                                                                                           "description":  "Invalid request",
+                                                                               "403":  {
+                                                                                           "description":  "Access denied",
+                                                                                           "content":  {
+                                                                                                           "application/json":  {
+                                                                                                                                    "schema":  {
+                                                                                                                                                   "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                               }
+                                                                                                                                }
+                                                                                                       }
+                                                                                       },
+                                                                               "404":  {
+                                                                                           "description":  "Not found",
                                                                                            "content":  {
                                                                                                            "application/json":  {
                                                                                                                                     "schema":  {
@@ -2236,7 +2636,7 @@
                                                        "tags":  [
                                                                     "order-controller"
                                                                 ],
-                                                       "operationId":  "order-service_get",
+                                                       "operationId":  "order-service_get_1",
                                                        "parameters":  [
                                                                           {
                                                                               "name":  "id",
@@ -2259,16 +2659,6 @@
                                                                                                              }
                                                                                                  }
                                                                                  },
-                                                                         "409":  {
-                                                                                     "description":  "Conflict",
-                                                                                     "content":  {
-                                                                                                     "application/json":  {
-                                                                                                                              "schema":  {
-                                                                                                                                             "$ref":  "#/components/schemas/ApiError"
-                                                                                                                                         }
-                                                                                                                          }
-                                                                                                 }
-                                                                                 },
                                                                          "503":  {
                                                                                      "description":  "Dependency unavailable",
                                                                                      "content":  {
@@ -2279,8 +2669,8 @@
                                                                                                                           }
                                                                                                  }
                                                                                  },
-                                                                         "404":  {
-                                                                                     "description":  "Not found",
+                                                                         "409":  {
+                                                                                     "description":  "Conflict",
                                                                                      "content":  {
                                                                                                      "application/json":  {
                                                                                                                               "schema":  {
@@ -2289,8 +2679,8 @@
                                                                                                                           }
                                                                                                  }
                                                                                  },
-                                                                         "403":  {
-                                                                                     "description":  "Access denied",
+                                                                         "400":  {
+                                                                                     "description":  "Invalid request",
                                                                                      "content":  {
                                                                                                      "application/json":  {
                                                                                                                               "schema":  {
@@ -2309,8 +2699,18 @@
                                                                                                                           }
                                                                                                  }
                                                                                  },
-                                                                         "400":  {
-                                                                                     "description":  "Invalid request",
+                                                                         "403":  {
+                                                                                     "description":  "Access denied",
+                                                                                     "content":  {
+                                                                                                     "application/json":  {
+                                                                                                                              "schema":  {
+                                                                                                                                             "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                         }
+                                                                                                                          }
+                                                                                                 }
+                                                                                 },
+                                                                         "404":  {
+                                                                                     "description":  "Not found",
                                                                                      "content":  {
                                                                                                      "application/json":  {
                                                                                                                               "schema":  {
@@ -2329,7 +2729,7 @@
                                                                  "tags":  [
                                                                               "inventory-controller"
                                                                           ],
-                                                                 "operationId":  "order-service_get_1",
+                                                                 "operationId":  "order-service_get_2",
                                                                  "parameters":  [
                                                                                     {
                                                                                         "name":  "productId",
@@ -2352,16 +2752,6 @@
                                                                                                                        }
                                                                                                            }
                                                                                            },
-                                                                                   "409":  {
-                                                                                               "description":  "Conflict",
-                                                                                               "content":  {
-                                                                                                               "application/json":  {
-                                                                                                                                        "schema":  {
-                                                                                                                                                       "$ref":  "#/components/schemas/ApiError"
-                                                                                                                                                   }
-                                                                                                                                    }
-                                                                                                           }
-                                                                                           },
                                                                                    "503":  {
                                                                                                "description":  "Dependency unavailable",
                                                                                                "content":  {
@@ -2372,8 +2762,8 @@
                                                                                                                                     }
                                                                                                            }
                                                                                            },
-                                                                                   "404":  {
-                                                                                               "description":  "Not found",
+                                                                                   "409":  {
+                                                                                               "description":  "Conflict",
                                                                                                "content":  {
                                                                                                                "application/json":  {
                                                                                                                                         "schema":  {
@@ -2382,8 +2772,8 @@
                                                                                                                                     }
                                                                                                            }
                                                                                            },
-                                                                                   "403":  {
-                                                                                               "description":  "Access denied",
+                                                                                   "400":  {
+                                                                                               "description":  "Invalid request",
                                                                                                "content":  {
                                                                                                                "application/json":  {
                                                                                                                                         "schema":  {
@@ -2402,8 +2792,18 @@
                                                                                                                                     }
                                                                                                            }
                                                                                            },
-                                                                                   "400":  {
-                                                                                               "description":  "Invalid request",
+                                                                                   "403":  {
+                                                                                               "description":  "Access denied",
+                                                                                               "content":  {
+                                                                                                               "application/json":  {
+                                                                                                                                        "schema":  {
+                                                                                                                                                       "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                                   }
+                                                                                                                                    }
+                                                                                                           }
+                                                                                           },
+                                                                                   "404":  {
+                                                                                               "description":  "Not found",
                                                                                                "content":  {
                                                                                                                "application/json":  {
                                                                                                                                         "schema":  {
@@ -2443,6 +2843,16 @@
                                                                                                                                                 "$ref":  "#/components/schemas/ApiResponseVnpayRefundResponse"
                                                                                                                                             }
                                                                                                                              }
+                                                                                                                 }
+                                                                                                 },
+                                                                                         "409":  {
+                                                                                                     "description":  "Conflict",
+                                                                                                     "content":  {
+                                                                                                                     "application/json":  {
+                                                                                                                                              "schema":  {
+                                                                                                                                                             "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                                         }
+                                                                                                                                          }
                                                                                                                  }
                                                                                                  },
                                                                                          "503":  {
@@ -2494,16 +2904,6 @@
                                                                                                                                                          }
                                                                                                                                           }
                                                                                                                  }
-                                                                                                 },
-                                                                                         "409":  {
-                                                                                                     "description":  "Conflict",
-                                                                                                     "content":  {
-                                                                                                                     "application/json":  {
-                                                                                                                                              "schema":  {
-                                                                                                                                                             "$ref":  "#/components/schemas/ApiError"
-                                                                                                                                                         }
-                                                                                                                                          }
-                                                                                                                 }
                                                                                                  }
                                                                                      },
                                                                        "x-required-role":  "ADMIN",
@@ -2536,6 +2936,16 @@
                                                                                                                                                    "$ref":  "#/components/schemas/ApiResponseVnpayRefundResponse"
                                                                                                                                                }
                                                                                                                                 }
+                                                                                                                    }
+                                                                                                    },
+                                                                                            "409":  {
+                                                                                                        "description":  "Conflict",
+                                                                                                        "content":  {
+                                                                                                                        "application/json":  {
+                                                                                                                                                 "schema":  {
+                                                                                                                                                                "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                                            }
+                                                                                                                                             }
                                                                                                                     }
                                                                                                     },
                                                                                             "503":  {
@@ -2587,16 +2997,6 @@
                                                                                                                                                             }
                                                                                                                                              }
                                                                                                                     }
-                                                                                                    },
-                                                                                            "409":  {
-                                                                                                        "description":  "Conflict",
-                                                                                                        "content":  {
-                                                                                                                        "application/json":  {
-                                                                                                                                                 "schema":  {
-                                                                                                                                                                "$ref":  "#/components/schemas/ApiError"
-                                                                                                                                                            }
-                                                                                                                                             }
-                                                                                                                    }
                                                                                                     }
                                                                                         },
                                                                           "x-required-role":  "ADMIN",
@@ -2629,6 +3029,16 @@
                                                                                                                                                   "$ref":  "#/components/schemas/ApiResponseVnpayCheckoutResponse"
                                                                                                                                               }
                                                                                                                                }
+                                                                                                                   }
+                                                                                                   },
+                                                                                           "409":  {
+                                                                                                       "description":  "Conflict",
+                                                                                                       "content":  {
+                                                                                                                       "application/json":  {
+                                                                                                                                                "schema":  {
+                                                                                                                                                               "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                                           }
+                                                                                                                                            }
                                                                                                                    }
                                                                                                    },
                                                                                            "503":  {
@@ -2680,16 +3090,6 @@
                                                                                                                                                            }
                                                                                                                                             }
                                                                                                                    }
-                                                                                                   },
-                                                                                           "409":  {
-                                                                                                       "description":  "Conflict",
-                                                                                                       "content":  {
-                                                                                                                       "application/json":  {
-                                                                                                                                                "schema":  {
-                                                                                                                                                               "$ref":  "#/components/schemas/ApiError"
-                                                                                                                                                           }
-                                                                                                                                            }
-                                                                                                                   }
                                                                                                    }
                                                                                        },
                                                                          "x-required-role":  "USER",
@@ -2732,6 +3132,16 @@
                                                                                                                                             "$ref":  "#/components/schemas/ApiResponsePaymentResponse"
                                                                                                                                         }
                                                                                                                          }
+                                                                                                             }
+                                                                                             },
+                                                                                     "409":  {
+                                                                                                 "description":  "Conflict",
+                                                                                                 "content":  {
+                                                                                                                 "application/json":  {
+                                                                                                                                          "schema":  {
+                                                                                                                                                         "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                                     }
+                                                                                                                                      }
                                                                                                              }
                                                                                              },
                                                                                      "503":  {
@@ -2783,22 +3193,299 @@
                                                                                                                                                      }
                                                                                                                                       }
                                                                                                              }
-                                                                                             },
-                                                                                     "409":  {
-                                                                                                 "description":  "Conflict",
-                                                                                                 "content":  {
-                                                                                                                 "application/json":  {
-                                                                                                                                          "schema":  {
-                                                                                                                                                         "$ref":  "#/components/schemas/ApiError"
-                                                                                                                                                     }
-                                                                                                                                      }
-                                                                                                             }
                                                                                              }
                                                                                  },
                                                                    "x-required-role":  "ADMIN",
                                                                    "x-service":  "payment-service"
                                                                }
                                                   },
+                  "/api/payments/{id}/simulate-refund":  {
+                                                             "post":  {
+                                                                          "tags":  [
+                                                                                       "simulated-refund-controller"
+                                                                                   ],
+                                                                          "operationId":  "payment-service_simulateRefund",
+                                                                          "parameters":  [
+                                                                                             {
+                                                                                                 "name":  "id",
+                                                                                                 "in":  "path",
+                                                                                                 "required":  true,
+                                                                                                 "schema":  {
+                                                                                                                "type":  "integer",
+                                                                                                                "format":  "int64"
+                                                                                                            }
+                                                                                             }
+                                                                                         ],
+                                                                          "responses":  {
+                                                                                            "200":  {
+                                                                                                        "description":  "OK",
+                                                                                                        "content":  {
+                                                                                                                        "*/*":  {
+                                                                                                                                    "schema":  {
+                                                                                                                                                   "$ref":  "#/components/schemas/ApiResponsePaymentResponse"
+                                                                                                                                               }
+                                                                                                                                }
+                                                                                                                    }
+                                                                                                    },
+                                                                                            "409":  {
+                                                                                                        "description":  "Conflict",
+                                                                                                        "content":  {
+                                                                                                                        "application/json":  {
+                                                                                                                                                 "schema":  {
+                                                                                                                                                                "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                                            }
+                                                                                                                                             }
+                                                                                                                    }
+                                                                                                    },
+                                                                                            "503":  {
+                                                                                                        "description":  "Dependency unavailable",
+                                                                                                        "content":  {
+                                                                                                                        "application/json":  {
+                                                                                                                                                 "schema":  {
+                                                                                                                                                                "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                                            }
+                                                                                                                                             }
+                                                                                                                    }
+                                                                                                    },
+                                                                                            "404":  {
+                                                                                                        "description":  "Not found",
+                                                                                                        "content":  {
+                                                                                                                        "application/json":  {
+                                                                                                                                                 "schema":  {
+                                                                                                                                                                "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                                            }
+                                                                                                                                             }
+                                                                                                                    }
+                                                                                                    },
+                                                                                            "403":  {
+                                                                                                        "description":  "Access denied",
+                                                                                                        "content":  {
+                                                                                                                        "application/json":  {
+                                                                                                                                                 "schema":  {
+                                                                                                                                                                "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                                            }
+                                                                                                                                             }
+                                                                                                                    }
+                                                                                                    },
+                                                                                            "401":  {
+                                                                                                        "description":  "Authentication required",
+                                                                                                        "content":  {
+                                                                                                                        "application/json":  {
+                                                                                                                                                 "schema":  {
+                                                                                                                                                                "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                                            }
+                                                                                                                                             }
+                                                                                                                    }
+                                                                                                    },
+                                                                                            "400":  {
+                                                                                                        "description":  "Invalid request",
+                                                                                                        "content":  {
+                                                                                                                        "application/json":  {
+                                                                                                                                                 "schema":  {
+                                                                                                                                                                "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                                            }
+                                                                                                                                             }
+                                                                                                                    }
+                                                                                                    }
+                                                                                        },
+                                                                          "x-required-role":  "ADMIN",
+                                                                          "x-service":  "payment-service"
+                                                                      }
+                                                         },
+                  "/api/payments/{id}/cod/refund":  {
+                                                        "get":  {
+                                                                    "tags":  [
+                                                                                 "cash-refund-controller"
+                                                                             ],
+                                                                    "operationId":  "payment-service_get",
+                                                                    "parameters":  [
+                                                                                       {
+                                                                                           "name":  "id",
+                                                                                           "in":  "path",
+                                                                                           "required":  true,
+                                                                                           "schema":  {
+                                                                                                          "type":  "integer",
+                                                                                                          "format":  "int64"
+                                                                                                      }
+                                                                                       }
+                                                                                   ],
+                                                                    "responses":  {
+                                                                                      "200":  {
+                                                                                                  "description":  "OK",
+                                                                                                  "content":  {
+                                                                                                                  "*/*":  {
+                                                                                                                              "schema":  {
+                                                                                                                                             "$ref":  "#/components/schemas/ApiResponseCashRefundResponse"
+                                                                                                                                         }
+                                                                                                                          }
+                                                                                                              }
+                                                                                              },
+                                                                                      "409":  {
+                                                                                                  "description":  "Conflict",
+                                                                                                  "content":  {
+                                                                                                                  "application/json":  {
+                                                                                                                                           "schema":  {
+                                                                                                                                                          "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                                      }
+                                                                                                                                       }
+                                                                                                              }
+                                                                                              },
+                                                                                      "503":  {
+                                                                                                  "description":  "Dependency unavailable",
+                                                                                                  "content":  {
+                                                                                                                  "application/json":  {
+                                                                                                                                           "schema":  {
+                                                                                                                                                          "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                                      }
+                                                                                                                                       }
+                                                                                                              }
+                                                                                              },
+                                                                                      "404":  {
+                                                                                                  "description":  "Not found",
+                                                                                                  "content":  {
+                                                                                                                  "application/json":  {
+                                                                                                                                           "schema":  {
+                                                                                                                                                          "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                                      }
+                                                                                                                                       }
+                                                                                                              }
+                                                                                              },
+                                                                                      "403":  {
+                                                                                                  "description":  "Access denied",
+                                                                                                  "content":  {
+                                                                                                                  "application/json":  {
+                                                                                                                                           "schema":  {
+                                                                                                                                                          "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                                      }
+                                                                                                                                       }
+                                                                                                              }
+                                                                                              },
+                                                                                      "401":  {
+                                                                                                  "description":  "Authentication required",
+                                                                                                  "content":  {
+                                                                                                                  "application/json":  {
+                                                                                                                                           "schema":  {
+                                                                                                                                                          "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                                      }
+                                                                                                                                       }
+                                                                                                              }
+                                                                                              },
+                                                                                      "400":  {
+                                                                                                  "description":  "Invalid request",
+                                                                                                  "content":  {
+                                                                                                                  "application/json":  {
+                                                                                                                                           "schema":  {
+                                                                                                                                                          "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                                      }
+                                                                                                                                       }
+                                                                                                              }
+                                                                                              }
+                                                                                  },
+                                                                    "x-required-role":  "USER",
+                                                                    "x-service":  "payment-service"
+                                                                },
+                                                        "post":  {
+                                                                     "tags":  [
+                                                                                  "cash-refund-controller"
+                                                                              ],
+                                                                     "operationId":  "payment-service_refund_1",
+                                                                     "parameters":  [
+                                                                                        {
+                                                                                            "name":  "id",
+                                                                                            "in":  "path",
+                                                                                            "required":  true,
+                                                                                            "schema":  {
+                                                                                                           "type":  "integer",
+                                                                                                           "format":  "int64"
+                                                                                                       }
+                                                                                        }
+                                                                                    ],
+                                                                     "requestBody":  {
+                                                                                         "content":  {
+                                                                                                         "application/json":  {
+                                                                                                                                  "schema":  {
+                                                                                                                                                 "$ref":  "#/components/schemas/CashRefundRequest"
+                                                                                                                                             }
+                                                                                                                              }
+                                                                                                     },
+                                                                                         "required":  true
+                                                                                     },
+                                                                     "responses":  {
+                                                                                       "200":  {
+                                                                                                   "description":  "OK",
+                                                                                                   "content":  {
+                                                                                                                   "*/*":  {
+                                                                                                                               "schema":  {
+                                                                                                                                              "$ref":  "#/components/schemas/ApiResponseCashRefundResponse"
+                                                                                                                                          }
+                                                                                                                           }
+                                                                                                               }
+                                                                                               },
+                                                                                       "409":  {
+                                                                                                   "description":  "Conflict",
+                                                                                                   "content":  {
+                                                                                                                   "application/json":  {
+                                                                                                                                            "schema":  {
+                                                                                                                                                           "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                                       }
+                                                                                                                                        }
+                                                                                                               }
+                                                                                               },
+                                                                                       "503":  {
+                                                                                                   "description":  "Dependency unavailable",
+                                                                                                   "content":  {
+                                                                                                                   "application/json":  {
+                                                                                                                                            "schema":  {
+                                                                                                                                                           "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                                       }
+                                                                                                                                        }
+                                                                                                               }
+                                                                                               },
+                                                                                       "404":  {
+                                                                                                   "description":  "Not found",
+                                                                                                   "content":  {
+                                                                                                                   "application/json":  {
+                                                                                                                                            "schema":  {
+                                                                                                                                                           "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                                       }
+                                                                                                                                        }
+                                                                                                               }
+                                                                                               },
+                                                                                       "403":  {
+                                                                                                   "description":  "Access denied",
+                                                                                                   "content":  {
+                                                                                                                   "application/json":  {
+                                                                                                                                            "schema":  {
+                                                                                                                                                           "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                                       }
+                                                                                                                                        }
+                                                                                                               }
+                                                                                               },
+                                                                                       "401":  {
+                                                                                                   "description":  "Authentication required",
+                                                                                                   "content":  {
+                                                                                                                   "application/json":  {
+                                                                                                                                            "schema":  {
+                                                                                                                                                           "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                                       }
+                                                                                                                                        }
+                                                                                                               }
+                                                                                               },
+                                                                                       "400":  {
+                                                                                                   "description":  "Invalid request",
+                                                                                                   "content":  {
+                                                                                                                   "application/json":  {
+                                                                                                                                            "schema":  {
+                                                                                                                                                           "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                                       }
+                                                                                                                                        }
+                                                                                                               }
+                                                                                               }
+                                                                                   },
+                                                                     "x-required-role":  "ADMIN",
+                                                                     "x-service":  "payment-service"
+                                                                 }
+                                                    },
                   "/api/payments/{id}/cod/collect":  {
                                                          "post":  {
                                                                       "tags":  [
@@ -2835,6 +3522,16 @@
                                                                                                                                                "$ref":  "#/components/schemas/ApiResponsePaymentResponse"
                                                                                                                                            }
                                                                                                                             }
+                                                                                                                }
+                                                                                                },
+                                                                                        "409":  {
+                                                                                                    "description":  "Conflict",
+                                                                                                    "content":  {
+                                                                                                                    "application/json":  {
+                                                                                                                                             "schema":  {
+                                                                                                                                                            "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                                        }
+                                                                                                                                         }
                                                                                                                 }
                                                                                                 },
                                                                                         "503":  {
@@ -2886,16 +3583,6 @@
                                                                                                                                                         }
                                                                                                                                          }
                                                                                                                 }
-                                                                                                },
-                                                                                        "409":  {
-                                                                                                    "description":  "Conflict",
-                                                                                                    "content":  {
-                                                                                                                    "application/json":  {
-                                                                                                                                             "schema":  {
-                                                                                                                                                            "$ref":  "#/components/schemas/ApiError"
-                                                                                                                                                        }
-                                                                                                                                         }
-                                                                                                                }
                                                                                                 }
                                                                                     },
                                                                       "x-required-role":  "ADMIN",
@@ -2907,7 +3594,7 @@
                                                          "tags":  [
                                                                       "payment-controller"
                                                                   ],
-                                                         "operationId":  "payment-service_get",
+                                                         "operationId":  "payment-service_get_1",
                                                          "parameters":  [
                                                                             {
                                                                                 "name":  "id",
@@ -2928,6 +3615,16 @@
                                                                                                                                   "$ref":  "#/components/schemas/ApiResponsePaymentResponse"
                                                                                                                               }
                                                                                                                }
+                                                                                                   }
+                                                                                   },
+                                                                           "409":  {
+                                                                                       "description":  "Conflict",
+                                                                                       "content":  {
+                                                                                                       "application/json":  {
+                                                                                                                                "schema":  {
+                                                                                                                                               "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                           }
+                                                                                                                            }
                                                                                                    }
                                                                                    },
                                                                            "503":  {
@@ -2979,16 +3676,6 @@
                                                                                                                                            }
                                                                                                                             }
                                                                                                    }
-                                                                                   },
-                                                                           "409":  {
-                                                                                       "description":  "Conflict",
-                                                                                       "content":  {
-                                                                                                       "application/json":  {
-                                                                                                                                "schema":  {
-                                                                                                                                               "$ref":  "#/components/schemas/ApiError"
-                                                                                                                                           }
-                                                                                                                            }
-                                                                                                   }
                                                                                    }
                                                                        },
                                                          "x-required-role":  "USER",
@@ -3020,6 +3707,16 @@
                                                                                                                                           "$ref":  "#/components/schemas/ApiResponseVnpayReturnResponse"
                                                                                                                                       }
                                                                                                                        }
+                                                                                                           }
+                                                                                           },
+                                                                                   "409":  {
+                                                                                               "description":  "Conflict",
+                                                                                               "content":  {
+                                                                                                               "application/json":  {
+                                                                                                                                        "schema":  {
+                                                                                                                                                       "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                                   }
+                                                                                                                                    }
                                                                                                            }
                                                                                            },
                                                                                    "503":  {
@@ -3064,16 +3761,6 @@
                                                                                            },
                                                                                    "400":  {
                                                                                                "description":  "Invalid request",
-                                                                                               "content":  {
-                                                                                                               "application/json":  {
-                                                                                                                                        "schema":  {
-                                                                                                                                                       "$ref":  "#/components/schemas/ApiError"
-                                                                                                                                                   }
-                                                                                                                                    }
-                                                                                                           }
-                                                                                           },
-                                                                                   "409":  {
-                                                                                               "description":  "Conflict",
                                                                                                "content":  {
                                                                                                                "application/json":  {
                                                                                                                                         "schema":  {
@@ -3153,6 +3840,16 @@
                                                                                                                              }
                                                                                                                  }
                                                                                                  },
+                                                                                         "409":  {
+                                                                                                     "description":  "Conflict",
+                                                                                                     "content":  {
+                                                                                                                     "application/json":  {
+                                                                                                                                              "schema":  {
+                                                                                                                                                             "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                                         }
+                                                                                                                                          }
+                                                                                                                 }
+                                                                                                 },
                                                                                          "503":  {
                                                                                                      "description":  "Dependency unavailable",
                                                                                                      "content":  {
@@ -3195,16 +3892,6 @@
                                                                                                  },
                                                                                          "400":  {
                                                                                                      "description":  "Invalid request",
-                                                                                                     "content":  {
-                                                                                                                     "application/json":  {
-                                                                                                                                              "schema":  {
-                                                                                                                                                             "$ref":  "#/components/schemas/ApiError"
-                                                                                                                                                         }
-                                                                                                                                          }
-                                                                                                                 }
-                                                                                                 },
-                                                                                         "409":  {
-                                                                                                     "description":  "Conflict",
                                                                                                      "content":  {
                                                                                                                      "application/json":  {
                                                                                                                                               "schema":  {
@@ -4033,6 +4720,147 @@
                                                                                  "trackingNumber"
                                                                              ]
                                                             },
+                                       "RequestReturnRequest":  {
+                                                                    "type":  "object",
+                                                                    "properties":  {
+                                                                                       "idempotencyKey":  {
+                                                                                                              "type":  "string",
+                                                                                                              "maxLength":  128,
+                                                                                                              "minLength":  0
+                                                                                                          },
+                                                                                       "reason":  {
+                                                                                                      "type":  "string",
+                                                                                                      "maxLength":  500,
+                                                                                                      "minLength":  0
+                                                                                                  }
+                                                                                   },
+                                                                    "required":  [
+                                                                                     "idempotencyKey",
+                                                                                     "reason"
+                                                                                 ]
+                                                                },
+                                       "ApiResponseOrderReturnResponse":  {
+                                                                              "type":  "object",
+                                                                              "properties":  {
+                                                                                                 "success":  {
+                                                                                                                 "type":  "boolean"
+                                                                                                             },
+                                                                                                 "message":  {
+                                                                                                                 "type":  "string"
+                                                                                                             },
+                                                                                                 "data":  {
+                                                                                                              "$ref":  "#/components/schemas/OrderReturnResponse"
+                                                                                                          },
+                                                                                                 "errors":  {
+
+                                                                                                            },
+                                                                                                 "timestamp":  {
+                                                                                                                   "type":  "string",
+                                                                                                                   "format":  "date-time"
+                                                                                                               }
+                                                                                             }
+                                                                          },
+                                       "OrderReturnResponse":  {
+                                                                   "type":  "object",
+                                                                   "properties":  {
+                                                                                      "orderId":  {
+                                                                                                      "type":  "integer",
+                                                                                                      "format":  "int64"
+                                                                                                  },
+                                                                                      "userId":  {
+                                                                                                     "type":  "integer",
+                                                                                                     "format":  "int64"
+                                                                                                 },
+                                                                                      "amount":  {
+                                                                                                     "type":  "number"
+                                                                                                 },
+                                                                                      "status":  {
+                                                                                                     "type":  "string",
+                                                                                                     "enum":  [
+                                                                                                                  "REQUESTED",
+                                                                                                                  "APPROVED",
+                                                                                                                  "REJECTED",
+                                                                                                                  "RECEIVED",
+                                                                                                                  "REFUND_PENDING",
+                                                                                                                  "REFUNDED"
+                                                                                                              ]
+                                                                                                 },
+                                                                                      "reason":  {
+                                                                                                     "type":  "string"
+                                                                                                 },
+                                                                                      "requestedAt":  {
+                                                                                                          "type":  "string",
+                                                                                                          "format":  "date-time"
+                                                                                                      },
+                                                                                      "decidedBy":  {
+                                                                                                        "type":  "integer",
+                                                                                                        "format":  "int64"
+                                                                                                    },
+                                                                                      "decidedAt":  {
+                                                                                                        "type":  "string",
+                                                                                                        "format":  "date-time"
+                                                                                                    },
+                                                                                      "decisionNote":  {
+                                                                                                           "type":  "string"
+                                                                                                       },
+                                                                                      "receivedBy":  {
+                                                                                                         "type":  "integer",
+                                                                                                         "format":  "int64"
+                                                                                                     },
+                                                                                      "receivedAt":  {
+                                                                                                         "type":  "string",
+                                                                                                         "format":  "date-time"
+                                                                                                     },
+                                                                                      "warehouseReceipt":  {
+                                                                                                               "type":  "string"
+                                                                                                           },
+                                                                                      "restock":  {
+                                                                                                      "type":  "boolean"
+                                                                                                  },
+                                                                                      "paymentId":  {
+                                                                                                        "type":  "integer",
+                                                                                                        "format":  "int64"
+                                                                                                    },
+                                                                                      "refundedAt":  {
+                                                                                                         "type":  "string",
+                                                                                                         "format":  "date-time"
+                                                                                                     }
+                                                                                  }
+                                                               },
+                                       "ReceiveReturnRequest":  {
+                                                                    "type":  "object",
+                                                                    "properties":  {
+                                                                                       "warehouseReceipt":  {
+                                                                                                                "type":  "string",
+                                                                                                                "maxLength":  128,
+                                                                                                                "minLength":  0
+                                                                                                            },
+                                                                                       "restock":  {
+                                                                                                       "type":  "boolean"
+                                                                                                   }
+                                                                                   },
+                                                                    "required":  [
+                                                                                     "restock",
+                                                                                     "warehouseReceipt"
+                                                                                 ]
+                                                                },
+                                       "DecideReturnRequest":  {
+                                                                   "type":  "object",
+                                                                   "properties":  {
+                                                                                      "approved":  {
+                                                                                                       "type":  "boolean"
+                                                                                                   },
+                                                                                      "note":  {
+                                                                                                   "type":  "string",
+                                                                                                   "maxLength":  500,
+                                                                                                   "minLength":  0
+                                                                                               }
+                                                                                  },
+                                                                   "required":  [
+                                                                                    "approved",
+                                                                                    "note"
+                                                                                ]
+                                                               },
                                        "StockRequest":  {
                                                             "type":  "object",
                                                             "properties":  {
@@ -4297,6 +5125,74 @@
                                                                                                  }
                                                                               }
                                                            },
+                                       "CashRefundRequest":  {
+                                                                 "type":  "object",
+                                                                 "properties":  {
+                                                                                    "amount":  {
+                                                                                                   "type":  "number",
+                                                                                                   "minimum":  0.01
+                                                                                               },
+                                                                                    "idempotencyKey":  {
+                                                                                                           "type":  "string",
+                                                                                                           "maxLength":  128,
+                                                                                                           "minLength":  0
+                                                                                                       },
+                                                                                    "receiptNumber":  {
+                                                                                                          "type":  "string",
+                                                                                                          "maxLength":  128,
+                                                                                                          "minLength":  0
+                                                                                                      }
+                                                                                },
+                                                                 "required":  [
+                                                                                  "amount",
+                                                                                  "idempotencyKey",
+                                                                                  "receiptNumber"
+                                                                              ]
+                                                             },
+                                       "ApiResponseCashRefundResponse":  {
+                                                                             "type":  "object",
+                                                                             "properties":  {
+                                                                                                "success":  {
+                                                                                                                "type":  "boolean"
+                                                                                                            },
+                                                                                                "message":  {
+                                                                                                                "type":  "string"
+                                                                                                            },
+                                                                                                "data":  {
+                                                                                                             "$ref":  "#/components/schemas/CashRefundResponse"
+                                                                                                         },
+                                                                                                "errors":  {
+
+                                                                                                           },
+                                                                                                "timestamp":  {
+                                                                                                                  "type":  "string",
+                                                                                                                  "format":  "date-time"
+                                                                                                              }
+                                                                                            }
+                                                                         },
+                                       "CashRefundResponse":  {
+                                                                  "type":  "object",
+                                                                  "properties":  {
+                                                                                     "paymentId":  {
+                                                                                                       "type":  "integer",
+                                                                                                       "format":  "int64"
+                                                                                                   },
+                                                                                     "amount":  {
+                                                                                                    "type":  "number"
+                                                                                                },
+                                                                                     "receiptNumber":  {
+                                                                                                           "type":  "string"
+                                                                                                       },
+                                                                                     "refundedBy":  {
+                                                                                                        "type":  "integer",
+                                                                                                        "format":  "int64"
+                                                                                                    },
+                                                                                     "refundedAt":  {
+                                                                                                        "type":  "string",
+                                                                                                        "format":  "date-time"
+                                                                                                    }
+                                                                                 }
+                                                              },
                                        "CollectCodRequest":  {
                                                                  "type":  "object",
                                                                  "properties":  {

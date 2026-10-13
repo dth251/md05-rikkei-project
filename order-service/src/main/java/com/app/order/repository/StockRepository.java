@@ -48,4 +48,12 @@ public class StockRepository {
                 (result, row) -> new InventoryResponse(result.getLong(1), result.getInt(2), result.getInt(3)),
                 productId).stream().findFirst();
     }
+
+    public int restockReturned(
+            Long productId,
+            int quantity
+    ) {
+        return jdbc.update("UPDATE inventory SET available=available+?,version=version+1 "
+                + "WHERE product_id=? AND available<=2147483647-reserved-?", quantity, productId, quantity);
+    }
 }

@@ -85,8 +85,9 @@ xử lý event giao hàng. Giá và địa chỉ vẫn là snapshot bất biến
 - Tạo: giảm available, tăng reserved. Giao: giảm reserved đúng một lần,
   không giảm available thêm. Hủy trước giao: trả reserved về available
   đúng một lần; Order CANCELLED, Payment chuyển FAILED và phát payment.failed.
-- Không cho hủy bằng endpoint COD khi đã giao. Trả hàng, từ chối nhận hàng,
-  đối soát hãng vận chuyển và hoàn tiền cần quy trình riêng, chưa có ở đây.
+- Không cho hủy bằng endpoint COD khi đã giao. Trả toàn bộ đơn COMPLETED và
+  hoàn tiền dùng [quy trình trả hàng](returns-refunds.md). Từ chối nhận khi
+  đang giao và đối soát hãng vận chuyển vẫn cần quy trình riêng.
   ADMIN chỉ collect khi cửa hàng thực sự nhận tiền; API không xác minh tiền
   mặt thực tế hoặc tự liên lạc hãng vận chuyển.
 - COD không dùng timeout 30 phút của ONLINE; giữ kho đến khi ADMIN giao/hủy.
@@ -119,3 +120,9 @@ và thu tiền, kho, chống simulate/VNPay, acknowledgement, lifecycle đến t
 creation. Live tests dùng PostgreSQL, RabbitMQ và HTTP qua Gateway. Fixture
 có tiền tố COD, không phải giao dịch thật. SHA/kết quả/deploy trong
 [nhật ký](commits-and-deployments.md).
+
+## Trả hàng sau hoàn tất
+
+Đã có quy trình trả toàn bộ đơn COMPLETED và hoàn tiền COD có biên nhận;
+xem [trả hàng và hoàn tiền](returns-refunds.md). Hủy trước giao vẫn là API
+COD cancel hiện có, không thay thế bằng quy trình trả hàng.

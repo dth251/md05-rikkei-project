@@ -15,6 +15,7 @@ import com.app.payment.repository.PaymentRepository;
 import com.app.payment.repository.VnpayPaymentRepository;
 import com.app.payment.repository.VnpayRefundRepository;
 import com.app.payment.service.VnpayRefundTransactionService;
+import com.app.payment.service.ReturnRefundService;
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.time.Instant;
@@ -39,6 +40,7 @@ public class VnpayRefundTransactionServiceImpl implements VnpayRefundTransaction
     private final VnpaySettings settings;
     private final VnpayMapper mapper;
     private final String serverIp;
+    private final ReturnRefundService returnRefunds;
 
     public VnpayRefundTransactionServiceImpl(
             PaymentRepository payments,
@@ -46,7 +48,8 @@ public class VnpayRefundTransactionServiceImpl implements VnpayRefundTransaction
             VnpayRefundRepository refunds,
             VnpaySettings settings,
             VnpayMapper mapper,
-            @Value("${payment.vnpay.server-ip:}") String serverIp
+            @Value("${payment.vnpay.server-ip:}") String serverIp,
+            ReturnRefundService returnRefunds
     ) {
         this.payments = payments;
         this.captures = captures;
@@ -54,6 +57,7 @@ public class VnpayRefundTransactionServiceImpl implements VnpayRefundTransaction
         this.settings = settings;
         this.mapper = mapper;
         this.serverIp = serverIp;
+        this.returnRefunds = returnRefunds;
     }
 
     @Override
@@ -135,6 +139,7 @@ public class VnpayRefundTransactionServiceImpl implements VnpayRefundTransaction
         }
         if ("00".equals(code) && "00".equals(status) && transaction != null) {
             payment.recordRefund();
+            returnRefunds.refundCompleted(payment);
             refund.record(VnpayRefundState.COMPLETED, transaction, code);
         } else if ("05".equals(status) || "06".equals(status) || "94".equals(code)) {
             refund.record(VnpayRefundState.PROCESSING, transaction, code);

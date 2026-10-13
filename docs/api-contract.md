@@ -158,3 +158,11 @@ ship chốt kho, ADMIN thu đủ tiền qua POST /api/payments/{id}/cod/collect 
 complete sau acknowledgement. ADMIN hủy trước giao qua POST /api/orders/{id}/cod/cancel.
 Request cũ mặc định ONLINE. Xem [luồng COD](cod-payment.md) cho body, replay,
 trạng thái và giới hạn nghiệp vụ.
+
+## Trả toàn bộ đơn và hoàn tiền
+
+Chủ đơn COMPLETED yêu cầu trả qua POST /api/orders/{id}/return. ADMIN duyệt
+và xác nhận nhận lại toàn bộ hàng trước khi COD/VNPay được hoàn tiền. GET
+/api/orders/{id}/return thể hiện trạng thái riêng; lịch sử giao hàng vẫn
+COMPLETED. Xem [luồng trả hàng và hoàn tiền](returns-refunds.md) cho API,
+body, phân quyền, replay và xử lý provider chưa rõ kết quả.

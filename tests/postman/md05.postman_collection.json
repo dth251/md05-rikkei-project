@@ -94,6 +94,41 @@
                          "key":  "codReceipt",
                          "type":  "string",
                          "value":  ""
+                     },
+                     {
+                         "key":  "returnOrderId",
+                         "type":  "string",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "returnPaymentId",
+                         "type":  "string",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "returnAmount",
+                         "type":  "string",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "returnKey",
+                         "type":  "string",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "returnWarehouseReceipt",
+                         "type":  "string",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "cashRefundKey",
+                         "type":  "string",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "cashRefundReceipt",
+                         "type":  "string",
+                         "value":  ""
                      }
                  ],
     "info":  {
@@ -1025,7 +1060,8 @@
                                                     {
                                                         "script":  {
                                                                        "exec":  [
-                                                                                    "pm.test(\"Completed\", () =\u003e pm.response.to.have.status(200));"
+                                                                                    "pm.test(\"Completed\", () =\u003e pm.response.to.have.status(200));",
+                                                                                    "if (pm.response.code===200) { pm.collectionVariables.set(\"returnOrderId\", pm.collectionVariables.get(\"codOrderId\")); pm.collectionVariables.set(\"returnPaymentId\", pm.collectionVariables.get(\"codPaymentId\")); pm.collectionVariables.set(\"returnAmount\", pm.collectionVariables.get(\"codAmount\")); }"
                                                                                 ],
                                                                        "type":  "text/javascript"
                                                                    },
@@ -1134,6 +1170,253 @@
                                                         "script":  {
                                                                        "exec":  [
                                                                                     "pm.test(\"Payment failed\", () =\u003e pm.expect(pm.response.json().data.status).to.eql(\"FAILED\"));"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   },
+                                                        "listen":  "test"
+                                                    }
+                                                ]
+                                  }
+                              ]
+                 },
+                 {
+                     "description":  "Run the COD delivery folder through Complete first; it saves returnOrderId/paymentId/amount independently of the cancellation folder. Requires a completed order. Decide and receive are ADMIN only. Repeat async GETs after 1 second until ready/refunded. Clear return keys to start another case on another completed order. For VNPay use existing refund/reconcile endpoints after this same return process, never the cash refund.",
+                     "name":  "Whole-order COD return and refund",
+                     "item":  [
+                                  {
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{userToken}}"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/orders/{{returnOrderId}}/return",
+                                                      "body":  {
+                                                                   "raw":  "{\"idempotencyKey\":\"{{returnKey}}\",\"reason\":\"Return the whole order\"}",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               },
+                                                                   "mode":  "raw"
+                                                               }
+                                                  },
+                                      "name":  "1 Request whole completed COD order return",
+                                      "event":  [
+                                                    {
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "for (const key of [\"returnKey\",\"returnWarehouseReceipt\",\"cashRefundKey\",\"cashRefundReceipt\"]) { if (!pm.collectionVariables.get(key)) pm.collectionVariables.set(key, pm.variables.replaceIn(\"{{$guid}}\")); }"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   },
+                                                        "listen":  "prerequest"
+                                                    },
+                                                    {
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\"Recorded\", () =\u003e pm.response.to.have.status(200));"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   },
+                                                        "listen":  "test"
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{adminToken}}"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/orders/{{returnOrderId}}/return/decision",
+                                                      "body":  {
+                                                                   "raw":  "{\"approved\":true,\"note\":\"Whole order approved\"}",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               },
+                                                                   "mode":  "raw"
+                                                               }
+                                                  },
+                                      "name":  "2 ADMIN approve return",
+                                      "event":  [
+                                                    {
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\"Recorded\", () =\u003e pm.response.to.have.status(200));"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   },
+                                                        "listen":  "test"
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{adminToken}}"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/orders/{{returnOrderId}}/return/receive",
+                                                      "body":  {
+                                                                   "raw":  "{\"warehouseReceipt\":\"{{returnWarehouseReceipt}}\",\"restock\":true}",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               },
+                                                                   "mode":  "raw"
+                                                               }
+                                                  },
+                                      "name":  "3 ADMIN receive all goods and restock",
+                                      "event":  [
+                                                    {
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\"Recorded\", () =\u003e pm.response.to.have.status(200));"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   },
+                                                        "listen":  "test"
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{userToken}}"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/payments/{{returnPaymentId}}"
+                                                  },
+                                      "name":  "4 Get payment - repeat until refund REQUIRED",
+                                      "event":  [
+                                                    {
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\"Refund ready\", () =\u003e pm.expect(pm.response.json().data.refundStatus).to.eql(\"REQUIRED\"));"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   },
+                                                        "listen":  "test"
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{adminToken}}"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/payments/{{returnPaymentId}}/cod/refund",
+                                                      "body":  {
+                                                                   "raw":  "{\"amount\":{{returnAmount}},\"idempotencyKey\":\"{{cashRefundKey}}\",\"receiptNumber\":\"{{cashRefundReceipt}}\"}",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               },
+                                                                   "mode":  "raw"
+                                                               }
+                                                  },
+                                      "name":  "5 ADMIN refund full COD cash - stable key and receipt",
+                                      "event":  [
+                                                    {
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\"Recorded\", () =\u003e pm.response.to.have.status(200));"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   },
+                                                        "listen":  "test"
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{userToken}}"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/orders/{{returnOrderId}}/return"
+                                                  },
+                                      "name":  "6 Get return - repeat until REFUNDED",
+                                      "event":  [
+                                                    {
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\"Returned and refunded\", () =\u003e pm.expect(pm.response.json().data.status).to.eql(\"REFUNDED\"));"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   },
+                                                        "listen":  "test"
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{userToken}}"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/payments/{{returnPaymentId}}/cod/refund"
+                                                  },
+                                      "name":  "7 Owner reads cash refund receipt",
+                                      "event":  [
+                                                    {
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\"Recorded\", () =\u003e pm.response.to.have.status(200));"
                                                                                 ],
                                                                        "type":  "text/javascript"
                                                                    },

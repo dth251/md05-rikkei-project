@@ -35,6 +35,16 @@
               }
             }
           },
+          "409" : {
+            "description" : "Conflict",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
           "503" : {
             "description" : "Dependency unavailable",
             "content" : {
@@ -77,16 +87,6 @@
           },
           "400" : {
             "description" : "Invalid request",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiError"
-                }
-              }
-            }
-          },
-          "409" : {
-            "description" : "Conflict",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -123,6 +123,16 @@
               }
             }
           },
+          "409" : {
+            "description" : "Conflict",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
           "503" : {
             "description" : "Dependency unavailable",
             "content" : {
@@ -165,16 +175,6 @@
           },
           "400" : {
             "description" : "Invalid request",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiError"
-                }
-              }
-            }
-          },
-          "409" : {
-            "description" : "Conflict",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -211,6 +211,16 @@
               }
             }
           },
+          "409" : {
+            "description" : "Conflict",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
           "503" : {
             "description" : "Dependency unavailable",
             "content" : {
@@ -253,16 +263,6 @@
           },
           "400" : {
             "description" : "Invalid request",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiError"
-                }
-              }
-            }
-          },
-          "409" : {
-            "description" : "Conflict",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -309,6 +309,16 @@
               }
             }
           },
+          "409" : {
+            "description" : "Conflict",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
           "503" : {
             "description" : "Dependency unavailable",
             "content" : {
@@ -358,9 +368,271 @@
                 }
               }
             }
+          }
+        },
+        "x-required-role" : "ADMIN"
+      }
+    },
+    "/api/payments/{id}/simulate-refund" : {
+      "post" : {
+        "tags" : [ "simulated-refund-controller" ],
+        "operationId" : "simulateRefund",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponsePaymentResponse"
+                }
+              }
+            }
           },
           "409" : {
             "description" : "Conflict",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503" : {
+            "description" : "Dependency unavailable",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Not found",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Access denied",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Authentication required",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "x-required-role" : "ADMIN"
+      }
+    },
+    "/api/payments/{id}/cod/refund" : {
+      "get" : {
+        "tags" : [ "cash-refund-controller" ],
+        "operationId" : "get",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseCashRefundResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Conflict",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503" : {
+            "description" : "Dependency unavailable",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Not found",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Access denied",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Authentication required",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "x-required-role" : "USER"
+      },
+      "post" : {
+        "tags" : [ "cash-refund-controller" ],
+        "operationId" : "refund_1",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CashRefundRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseCashRefundResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Conflict",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503" : {
+            "description" : "Dependency unavailable",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Not found",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Access denied",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Authentication required",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid request",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -407,6 +679,16 @@
               }
             }
           },
+          "409" : {
+            "description" : "Conflict",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
           "503" : {
             "description" : "Dependency unavailable",
             "content" : {
@@ -456,16 +738,6 @@
                 }
               }
             }
-          },
-          "409" : {
-            "description" : "Conflict",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiError"
-                }
-              }
-            }
           }
         },
         "x-required-role" : "ADMIN"
@@ -474,7 +746,7 @@
     "/api/payments/{id}" : {
       "get" : {
         "tags" : [ "payment-controller" ],
-        "operationId" : "get",
+        "operationId" : "get_1",
         "parameters" : [ {
           "name" : "id",
           "in" : "path",
@@ -495,6 +767,16 @@
               }
             }
           },
+          "409" : {
+            "description" : "Conflict",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
           "503" : {
             "description" : "Dependency unavailable",
             "content" : {
@@ -537,16 +819,6 @@
           },
           "400" : {
             "description" : "Invalid request",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiError"
-                }
-              }
-            }
-          },
-          "409" : {
-            "description" : "Conflict",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -582,6 +854,16 @@
               }
             }
           },
+          "409" : {
+            "description" : "Conflict",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
           "503" : {
             "description" : "Dependency unavailable",
             "content" : {
@@ -624,16 +906,6 @@
           },
           "400" : {
             "description" : "Invalid request",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiError"
-                }
-              }
-            }
-          },
-          "409" : {
-            "description" : "Conflict",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -699,6 +971,16 @@
               }
             }
           },
+          "409" : {
+            "description" : "Conflict",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
           "503" : {
             "description" : "Dependency unavailable",
             "content" : {
@@ -741,16 +1023,6 @@
           },
           "400" : {
             "description" : "Invalid request",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiError"
-                }
-              }
-            }
-          },
-          "409" : {
-            "description" : "Conflict",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -938,6 +1210,68 @@
           },
           "codReceipt" : {
             "$ref" : "#/components/schemas/CodReceiptResponse"
+          }
+        }
+      },
+      "CashRefundRequest" : {
+        "type" : "object",
+        "properties" : {
+          "amount" : {
+            "type" : "number",
+            "minimum" : 0.01
+          },
+          "idempotencyKey" : {
+            "type" : "string",
+            "maxLength" : 128,
+            "minLength" : 0
+          },
+          "receiptNumber" : {
+            "type" : "string",
+            "maxLength" : 128,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "amount", "idempotencyKey", "receiptNumber" ]
+      },
+      "ApiResponseCashRefundResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "message" : {
+            "type" : "string"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/CashRefundResponse"
+          },
+          "errors" : { },
+          "timestamp" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }
+      },
+      "CashRefundResponse" : {
+        "type" : "object",
+        "properties" : {
+          "paymentId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "amount" : {
+            "type" : "number"
+          },
+          "receiptNumber" : {
+            "type" : "string"
+          },
+          "refundedBy" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "refundedAt" : {
+            "type" : "string",
+            "format" : "date-time"
           }
         }
       },

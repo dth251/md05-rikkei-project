@@ -54,6 +54,9 @@ class OpenApiTests {
         assertEquals("bearer", contract.path("components").path("securitySchemes").path("bearerAuth").path("scheme").asText());
         assertEquals("ADMIN", contract.path("paths").path("/api/payments/{id}/simulate").path("post").path("x-required-role").asText());
         assertEquals("ADMIN", contract.path("paths").path("/api/payments/{id}/cod/collect").path("post").path("x-required-role").asText());
+        assertEquals("ADMIN", contract.path("paths").path("/api/payments/{id}/cod/refund").path("post").path("x-required-role").asText());
+        assertEquals("USER", contract.path("paths").path("/api/payments/{id}/cod/refund").path("get").path("x-required-role").asText());
+        assertEquals("ADMIN", contract.path("paths").path("/api/payments/{id}/simulate-refund").path("post").path("x-required-role").asText());
         assertTrue(contract.path("components").path("schemas").has("CollectCodRequest"));
         mvc.perform(get("/swagger-ui/index.html").header("Authorization", "Bearer " + token("ADMIN")))
                 .andExpect(status().isNotFound());

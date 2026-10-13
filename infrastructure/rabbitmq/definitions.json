@@ -131,6 +131,42 @@
                        "arguments":  {
 
                                      }
+                   },
+                   {
+                       "name":  "payment.return-received.q",
+                       "vhost":  "/",
+                       "durable":  true,
+                       "auto_delete":  false,
+                       "arguments":  {
+
+                                     }
+                   },
+                   {
+                       "name":  "payment.return-received.q.dlq",
+                       "vhost":  "/",
+                       "durable":  true,
+                       "auto_delete":  false,
+                       "arguments":  {
+
+                                     }
+                   },
+                   {
+                       "name":  "order.return-result.q",
+                       "vhost":  "/",
+                       "durable":  true,
+                       "auto_delete":  false,
+                       "arguments":  {
+
+                                     }
+                   },
+                   {
+                       "name":  "order.return-result.q.dlq",
+                       "vhost":  "/",
+                       "durable":  true,
+                       "auto_delete":  false,
+                       "arguments":  {
+
+                                     }
                    }
                ],
     "bindings":  [
@@ -313,6 +349,56 @@
                          "arguments":  {
 
                                        }
+                     },
+                     {
+                         "source":  "commerce.dead-letter",
+                         "vhost":  "/",
+                         "destination":  "payment.return-received.q.dlq",
+                         "destination_type":  "queue",
+                         "routing_key":  "payment.return-received.q",
+                         "arguments":  {
+
+                                       }
+                     },
+                     {
+                         "source":  "commerce.dead-letter",
+                         "vhost":  "/",
+                         "destination":  "order.return-result.q.dlq",
+                         "destination_type":  "queue",
+                         "routing_key":  "order.return-result.q",
+                         "arguments":  {
+
+                                       }
+                     },
+                     {
+                         "source":  "commerce.events",
+                         "vhost":  "/",
+                         "destination":  "payment.return-received.q",
+                         "destination_type":  "queue",
+                         "routing_key":  "order.return-received",
+                         "arguments":  {
+
+                                       }
+                     },
+                     {
+                         "source":  "commerce.events",
+                         "vhost":  "/",
+                         "destination":  "order.return-result.q",
+                         "destination_type":  "queue",
+                         "routing_key":  "payment.return-refund-ready",
+                         "arguments":  {
+
+                                       }
+                     },
+                     {
+                         "source":  "commerce.events",
+                         "vhost":  "/",
+                         "destination":  "order.return-result.q",
+                         "destination_type":  "queue",
+                         "routing_key":  "payment.return-refunded",
+                         "arguments":  {
+
+                                       }
                      }
                  ],
     "policies":  [
@@ -379,6 +465,28 @@
                          "definition":  {
                                             "dead-letter-exchange":  "commerce.dead-letter",
                                             "dead-letter-routing-key":  "payment.cod-lifecycle.q"
+                                        },
+                         "priority":  10
+                     },
+                     {
+                         "name":  "dlx-payment.return-received.q",
+                         "vhost":  "/",
+                         "pattern":  "^payment\\.return-received\\.q$",
+                         "apply-to":  "queues",
+                         "definition":  {
+                                            "dead-letter-exchange":  "commerce.dead-letter",
+                                            "dead-letter-routing-key":  "payment.return-received.q"
+                                        },
+                         "priority":  10
+                     },
+                     {
+                         "name":  "dlx-order.return-result.q",
+                         "vhost":  "/",
+                         "pattern":  "^order\\.return-result\\.q$",
+                         "apply-to":  "queues",
+                         "definition":  {
+                                            "dead-letter-exchange":  "commerce.dead-letter",
+                                            "dead-letter-routing-key":  "order.return-result.q"
                                         },
                          "priority":  10
                      }
