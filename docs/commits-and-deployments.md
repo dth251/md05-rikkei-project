@@ -502,3 +502,34 @@ UTC và RTC đã sửa, RTC ghi lại lúc 09:58:32 UTC; NTP vẫn timeout cả 
 Merchant VNPay, SMTP ngoài và kênh alert chưa có cấu hình private. Theo dõi trạng thái
 rollout sau checkpoint ở [main CI/CD](https://github.com/dth251/md05-rikkei-project/actions/runs/38381634257)
 và [PR #31](https://github.com/dth251/md05-rikkei-project/pull/31).
+
+## Rà soát file hỗ trợ ngày 13/10/2026
+
+Nhánh `feature/cleanup-support-files`; phạm vi `docs`, `infrastructure`, Docker
+và `tests`, giữ nguyên luồng hoạt động theo yêu cầu.
+
+| Mốc | SHA | Thời gian +07:00 | Kiểm tra / deploy thực tế |
+|---|---|---|---|
+| 144-infrastructure | `6f4e0be1a15f4ce70374683035d1639234170b75` | 19:30:15 | Auth 23/23 unit, zero fail/error/skip; bootJar và Dockerfile.runtime build đạt. 11 tổ hợp Compose giống hệt cấu hình trước dọn; Bash/PowerShell/k6/JSON/RPC và diff check đạt. Commit local, chưa push/CI/PR/deploy |
+
+Đã bỏ `auth-service/Dockerfile` tự build Gradle trong image vì Compose/CI chỉ
+dùng `Dockerfile.runtime`. Nội dung `docs/rpc-recovery-checkpoint.md` được giữ
+trong [tài liệu gRPC](product-order-grpc.md), rồi bỏ file checkpoint riêng;
+không còn tham chiếu tới hai đường dẫn đã xóa.
+
+Rà soát không phát hiện file hạ tầng/test nào đủ căn cứ để xóa. Schema SQL
+được `apply-schema.sh` tìm theo glob, Grafana đọc cả thư mục provisioning/dashboard;
+thiếu tham chiếu tên file trực tiếp không có nghĩa file thừa. Giữ các Compose
+profile cho alerts/profiling, SMTP/VNPay fixture, script khởi tạo VPS/domain,
+Java tests, k6/Postman và bằng chứng cũ có ghi checkpoint.
+
+Kiểm tra local: 20 Bash scripts, 10 PowerShell scripts, 5 k6 scripts và 21 JSON
+files hợp lệ; hợp đồng proto Product–Order khớp. Các Dockerfile runtime và bind
+mount hạ tầng trong cấu hình Compose đều tồn tại. So sánh SHA-256 đầu ra
+`docker compose config --format json` trước/sau bằng `.env.example` và giá trị
+public chỉ dùng validation: base, chín override riêng và tổ hợp observability/
+SMTP/VNPay đều không đổi. Đây là kiểm tra cấu hình, không thay thế live tests.
+
+Image kiểm chứng local `omnichannel-auth:cleanup-144` build từ JAR vừa kiểm thử;
+không recreate container, thay đổi volume/dữ liệu hoặc rollout VPS. Thay đổi
+`.vscode/settings.json` có sẵn trong workspace không nằm trong commit này.
