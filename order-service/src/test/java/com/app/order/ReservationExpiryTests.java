@@ -95,9 +95,34 @@ class ReservationExpiryTests {
             pay.get();
         }
         OrderStatus state = orders.findById(order.getId()).orElseThrow().getStatus();
-        assertTrue(state == OrderStatus.CONFIRMED || state == OrderStatus.EXPIRED);
-        assertStock(order, state == OrderStatus.CONFIRMED ? 0 : 3, 0);
-        assertEquals(1, count(order, state == OrderStatus.CONFIRMED ? "order.confirmed" : "order.expired"));
+        assertEquals(OrderStatus.EXPIRED, state);
+        assertStock(order, 3, 0);
+        assertEquals(1, count(order, "order.expired"));
+        assertEquals(0, count(order, "order.confirmed"));
+        assertEquals(1, count(order, "order.refund-requested"));
+    }
+
+    @Test
+    void overduePaymentExpiresEvenWhenSchedulerHasNotScanned() {
+        PurchaseOrder order = reserved(true, 3);
+        payments.accept(paid(order));
+        assertEquals(OrderStatus.EXPIRED, orders.findById(order.getId()).orElseThrow().getStatus());
+        assertStock(order, 3, 0);
+        assertEquals(1, count(order, "order.expired"));
+        assertEquals(1, count(order, "order.refund-requested"));
+        assertEquals(0, count(order, "order.confirmed"));
+        assertFalse(expiry.expire(order.getId(), cutoff()));
+    }
+
+    @Test
+    void paymentBeforeDeadlineConfirmsAndLaterScanCannotReleaseStock() {
+        PurchaseOrder order = reserved(false, 3);
+        payments.accept(paid(order));
+        assertEquals(OrderStatus.CONFIRMED, orders.findById(order.getId()).orElseThrow().getStatus());
+        assertFalse(expiry.expire(order.getId(), Instant.now().plusSeconds(1)));
+        assertStock(order, 0, 0);
+        assertEquals(1, count(order, "order.confirmed"));
+        assertEquals(0, count(order, "order.expired"));
     }
 
     private PurchaseOrder reserved(boolean old, int reserved) {
@@ -108,12 +133,12 @@ class ReservationExpiryTests {
         order = orders.saveAndFlush(order);
         if (old) {
             jdbc.update("UPDATE orders SET created_at=? WHERE id=?",
-                    Timestamp.from(Instant.now().minusSeconds(1900)), order.getId());
+                    Timestamp.from(Instant.now().minusSeconds(301)), order.getId());
         }
         return order;
     }
 
-    private Instant cutoff() { return Instant.now().minusSeconds(1800); }
+    private Instant cutoff() { return Instant.now().minusSeconds(300); }
 
     private CommerceEvent paid(PurchaseOrder order) {
         return new CommerceEvent(UUID.randomUUID().toString(), "payment.succeeded", order.getId(), 801L,

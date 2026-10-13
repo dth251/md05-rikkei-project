@@ -149,7 +149,7 @@ Notification không có API client hoặc Gateway route. Consumer ghi một noti
 
 Event JSON của mỗi service tự sở hữu gồm `eventId` (UUID), `type`, `orderId`, `userId`, `amount`, `paymentId`, `occurredAt` (ISO UTC). `paymentId=null` với `order.created`; các outcome/final events có payment ID. Exchange topic durable `commerce.events`; ba durable queues và năm bindings như kế hoạch. Routing: `order.created` → `payment.succeeded/payment.failed` → `order.confirmed/order.cancelled`.
 
-Order/Payment có transactional Outbox, persistent messages và broker confirms/returns. Consumer ACK sau local DB commit và deduplicate. Delivery là at-least-once; không tuyên bố exactly-once transport. Payload sai bị reject, chưa có malformed-event DLQ/replay tool; sự cố DB/MQ tạm thời được thử lại. Reservation chưa có timeout/hủy tự động: Payment dừng hoặc chưa simulate thì order giữ PENDING_PAYMENT đến khi xử lý tiếp.
+Order/Payment có transactional Outbox, persistent messages và broker confirms/returns. Consumer ACK sau local DB commit và deduplicate. Delivery là at-least-once; không tuyên bố exactly-once transport. Payload sai vào DLQ với công cụ inspect/redrive có kiểm soát. Reservation ONLINE tự hết hạn sau 5 phút: đơn PENDING_PAYMENT chuyển EXPIRED và hoàn kho trong cùng transaction. Payment đến sau hạn không xác nhận lại đơn; tiền capture giữ chứng cứ và yêu cầu đối soát/hoàn. Chi tiết [expiry/email/monitoring](expiry-email-monitoring.md).
 
 ## Thanh toán COD
 

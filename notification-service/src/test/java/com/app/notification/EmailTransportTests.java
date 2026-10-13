@@ -44,6 +44,29 @@ class EmailTransportTests {
         assertThrows(IllegalArgumentException.class, () -> transport.send(task, "a@example.com,b@example.com"));
     }
 
+    @Test
+    void smtpReceivesConfirmationCancellationAndUnpaidExpiryEmails() throws Exception {
+        var smtp = new GreenMail(new ServerSetup(0, "127.0.0.1", ServerSetup.PROTOCOL_SMTP));
+        smtp.start();
+        try {
+            var transport = transport(smtp.getSmtp().getPort());
+            String[] events = {"order.confirmed", "order.cancelled", "order.expired"};
+            String[] subjects = {"đã xác nhận", "đã hủy", "đã hủy do quá hạn thanh toán"};
+            for (int index = 0; index < events.length; index++) {
+                transport.send(new EmailTask(UUID.randomUUID().toString(), 456L, 1L, events[index], 1),
+                        "recipient@example.com");
+            }
+            assertTrue(smtp.waitForIncomingEmail(5000, 3));
+            var messages = smtp.getReceivedMessages();
+            for (int index = 0; index < subjects.length; index++) {
+                assertEquals("Đơn hàng #456 " + subjects[index], messages[index].getSubject());
+                assertEquals("recipient@example.com", messages[index].getAllRecipients()[0].toString());
+            }
+        } finally {
+            smtp.stop();
+        }
+    }
+
     private EmailTransportImpl transport(
             int port
     ) {

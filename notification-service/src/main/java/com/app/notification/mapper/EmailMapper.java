@@ -13,6 +13,7 @@ public class EmailMapper {
         String status = switch (task.eventType()) {
             case "order.confirmed" -> "đã xác nhận";
             case "order.cancelled" -> "đã hủy";
+            case "order.expired" -> "đã hủy do quá hạn thanh toán";
             case "order.shipped" -> "đang giao hàng";
             case "order.completed" -> "đã hoàn tất";
             default -> throw new IllegalArgumentException("Unsupported email event");

@@ -640,3 +640,58 @@ tại checkpoint này. .env/.verification và thay đổi .vscode/settings.json
 có sẵn không nằm trong commit. Không bổ sung frontend/shared module,
 không thay luồng ONLINE/COD hoặc notification hiện có. API, Mermaid,
 biên nhận cash, giới hạn và rollout trong [luồng trả hàng](returns-refunds.md).
+
+## Sửa IDE và triển khai COD / trả hàng ngày 13/10/2026
+
+| Mốc | SHA | Thời gian +07:00 | Kiểm tra / deploy thực tế |
+|---|---|---|---|
+| 152-devops | `b4ca46d72b8d0dfa38a9f883f56a6a1f2e241397` | 2026-10-13T21:55:26+07:00 | Bổ sung Order 006 / Payment 004 để bảo đảm FK/CHECK khi Hibernate tạo bảng trước. Chuỗi migration local và kiểm tra dữ liệu không hợp lệ đạt trong schema kiểm chứng rồi rollback. CI đầu còn lỗi CHECK fulfillment trùng tên, chưa deploy. |
+| 153-devops | `daf52df07bf31c8dba1af34836a4038311fcf2b7` | 2026-10-13T22:04:51+07:00 | CI chỉ thay CHECK fulfillment của Hibernate khi database Order rỗng, rồi áp dụng SQL bất biến. PR CI 38418958902 đạt toàn bộ Java, API/live, VNPay fixture/recovery, SMTP, tải nhỏ và observability. Publish/deploy được skip đúng trên PR. |
+| 154-payment-service | `7839183b15a78b30234182e4f0e96cbfb1c9874e` | 2026-10-13T23:30:27+07:00 | Merge PR #33 sau CI đạt. Main pipeline 38431072534: verify, observability-config, publish sáu image và deploy đều success. Rollout hoàn tất 23:58:09 +07:00. SSH xác nhận sáu image/revision đúng SHA, healthy và restart=0; HTTPS trả 200 / UP. Bốn Java return/refund live tests qua HTTPS VPS đạt lúc 2026-10-14T00:00:12+07:00, không fail/error/skip. |
+
+IDE thực tế ban đầu có 1.055 Java errors. Rebuild sáu Gradle projects giảm
+còn 82 lỗi generated gRPC của Order; reload cấu hình Gradle để nhận hai
+source roots `build/generated/sources/proto/main/java` và `main/grpc` giảm
+còn 0. Restart Java server và đọc diagnostics lại vẫn 0; lần kiểm tra
+cuối 2026-10-13T17:01:12.276Z (00:01:12 +07:00 ngày 14/10) xác nhận 0. Không tắt diagnostics hoặc thay mã
+nghiệp vụ để che lỗi. Chi tiết trong [runbook IDE](java-ide.md).
+
+CI database mới cần Hibernate tạo base tables trước migration; VPS có dữ
+liệu giữ thứ tự schema trước recreate service. Không sửa SQL đã checksum.
+Order 006 / Payment 004 bổ sung các ràng buộc khi bảng return/refund đã
+được Hibernate tạo. Toàn chuỗi Order 001–006 / Payment 001–004 đã được
+chạy lại trên schema kiểm chứng rỗng và rollback; 17 Bash blocks của CI
+qua syntax check, diff check đạt.
+
+[PR #33](https://github.com/dth251/md05-rikkei-project/pull/33),
+[CI PR đạt](https://github.com/dth251/md05-rikkei-project/actions/runs/38418958902),
+[main CI/CD](https://github.com/dth251/md05-rikkei-project/actions/runs/38431072534).
+
+Trước rollout, VPS còn sáu image `19d9fc6d797154dd15a296590a4c773b7eca08e1`;
+HTTPS `/gateway-status` trả 200 / UP lúc 23:33:41 +07:00. Thay đổi local
+`.vscode/settings.json` và việc di chuyển `infrastructure/` sang
+`docs/infrastructure/` ngoài PR được giữ nguyên, không stage cùng bản
+deploy. `.env`, SSH key và bằng chứng `.verification` không đưa vào Git.
+
+Rollout thực tế: Auth 23:51:10, Gateway 23:52:19, Product 23:53:49,
+Payment 23:55:11, Order 23:56:48, Notification 23:58:09 +07:00.
+Deployment áp dụng topology và schema trước recreate, không xóa volume.
+SSH xác nhận `current` trỏ release SHA 154; manifest và OCI revision của
+cả sáu service cùng SHA. Order database có versions 001–006, Payment
+001–004; các FK/CHECK return/refund có trong PostgreSQL.
+
+Kiểm thử VPS dùng `ReturnRefundLiveTests` 4/4 qua domain HTTPS và tunnel
+PostgreSQL private: hoàn COD với 24 request nhận hàng/chi hoàn đồng thời,
+hồ sơ bị từ chối giữ nguyên kho/tiền, hàng hỏng hoàn tiền nhưng không
+restock, và ONLINE legacy mô phỏng. Các ca kiểm tra quyền, tổng tiền,
+stock available/reserved, một biên nhận chi, một event hoàn và trạng thái
+Order REFUNDED. Không restart container VPS hoặc gọi VNPay provider;
+không xác nhận chuyển tiền ngân hàng thật. Bốn đơn/sản phẩm là fixture
+riêng, giữ dữ liệu và audit kiểm thử. File cấu hình private tạm và tunnel
+đã được đóng/xóa sau kiểm tra; không ghi secret ra log.
+
+Đối soát sau live ngày 14/10: sáu health UP, hai queue returns đều có một
+consumer, mọi queue ready/unacked/DLQ=0; Order/Payment pending Outbox=0.
+HTTPS `/gateway-status` trả 200 với `{"status":"UP"}` lúc 00:01:12 +07:00.
+Các ca VNPay signed callback/refund/restart được xác minh bằng fixture
+trong CI, không phải merchant sandbox hoặc giao dịch khách hàng thực tế.

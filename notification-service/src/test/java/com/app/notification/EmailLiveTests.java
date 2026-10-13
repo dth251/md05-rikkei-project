@@ -60,6 +60,58 @@ class EmailLiveTests extends NotificationLiveFixture {
     }
 
     @Test
+    void cancellationSendsRealEmailToRegisteredOrderOwner() throws Exception {
+        var fixture = scenario("FAILED", "CANCELLED", "order.cancelled", "WEB");
+        awaitSent(fixture);
+        assertMailbox(fixture, "đã hủy");
+    }
+
+    @Test
+    void unpaidFiveMinuteDeadlineReleasesStockAndSendsExpiryEmail() throws Exception {
+        var fixture = pending("WEB");
+        long orderId = fixture.order().path("id").asLong();
+        long productId = fixture.order().path("items").get(0).path("productId").asLong();
+        Instant created = Instant.parse(fixture.order().path("createdAt").asText());
+        boolean actualWait = "true".equals(System.getenv("SMTP_EXPIRY_REAL_WAIT"));
+        if (!actualWait) {
+            try (var connection = java.sql.DriverManager.getConnection(
+                    System.getenv().getOrDefault("ORDER_LIVE_DB_URL", "jdbc:postgresql://localhost:15432/order_db"),
+                    "order_user", System.getenv("ORDER_LIVE_DB_PASSWORD"));
+                 var statement = connection.prepareStatement("UPDATE orders SET created_at=? WHERE id=? AND status='PENDING_PAYMENT'")) {
+                statement.setTimestamp(1, java.sql.Timestamp.from(Instant.now().minusSeconds(301)));
+                statement.setLong(2, orderId);
+                assertEquals(1, statement.executeUpdate());
+            }
+        } else {
+            while (Instant.now().isBefore(created.plusSeconds(299))) {
+                var response = send("GET", "/api/orders/" + orderId, null, fixture.userToken());
+                assertEquals(200, response.statusCode());
+                assertEquals("PENDING_PAYMENT", json.readTree(response.body()).path("data").path("status").asText());
+                Thread.sleep(1000);
+            }
+        }
+        Instant deadline = actualWait ? created.plusSeconds(320) : Instant.now().plusSeconds(30);
+        String status;
+        do {
+            var response = send("GET", "/api/orders/" + orderId, null, fixture.userToken());
+            assertEquals(200, response.statusCode());
+            status = json.readTree(response.body()).path("data").path("status").asText();
+            if ("EXPIRED".equals(status)) {
+                break;
+            }
+            Thread.sleep(500);
+        } while (Instant.now().isBefore(deadline));
+        assertEquals("EXPIRED", status);
+        awaitNotification(orderId, "order.expired");
+        awaitSent(fixture);
+        var stock = send("GET", "/api/inventory/" + productId, null, adminToken());
+        assertEquals(200, stock.statusCode());
+        assertEquals(1, json.readTree(stock.body()).path("data").path("available").asInt());
+        assertEquals(0, json.readTree(stock.body()).path("data").path("reserved").asInt());
+        assertMailbox(fixture, "đã hủy do quá hạn thanh toán");
+    }
+
+    @Test
     void notificationRestartConsumesDurableEventAndSendsOnce() throws Exception {
         Fixture fixture;
         try {
@@ -91,13 +143,20 @@ class EmailLiveTests extends NotificationLiveFixture {
     private void assertMailbox(
             Fixture fixture
     ) throws Exception {
+        assertMailbox(fixture, "đã xác nhận");
+    }
+
+    private void assertMailbox(
+            Fixture fixture,
+            String status
+    ) throws Exception {
         String base = System.getenv().getOrDefault("SMTP_INBOX_URL", "http://127.0.0.1:18025");
         var response = client.send(HttpRequest.newBuilder(URI.create(base + "/api/v1/messages"))
                 .timeout(Duration.ofSeconds(10)).GET().build(), HttpResponse.BodyHandlers.ofString());
         assertEquals(200, response.statusCode());
         int matching = 0;
         for (var message : json.readTree(response.body()).path("messages")) {
-            if (("Đơn hàng #" + fixture.order().path("id").asLong() + " đã xác nhận").equals(message.path("Subject").asText())) {
+            if (("Đơn hàng #" + fixture.order().path("id").asLong() + " " + status).equals(message.path("Subject").asText())) {
                 matching++;
                 assertEquals(fixture.email(), message.path("To").get(0).path("Address").asText());
             }

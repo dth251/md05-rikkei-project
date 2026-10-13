@@ -2,11 +2,9 @@ package com.app.order.config;
 
 import com.app.order.service.ReservationExpiryService;
 import io.micrometer.core.instrument.MeterRegistry;
-import java.time.Duration;
 import java.time.Instant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -20,24 +18,21 @@ public class ReservationExpiryScheduler {
     private static final Logger LOGGER = LoggerFactory.getLogger(ReservationExpiryScheduler.class);
     private final ReservationExpiryService expiry;
     private final MeterRegistry registry;
-    private final Duration ttl;
+    private final ReservationPolicy policy;
 
     public ReservationExpiryScheduler(
         ReservationExpiryService expiry,
         MeterRegistry registry,
-        @Value("${commerce.reservation.ttl:PT30M}") Duration ttl
+        ReservationPolicy policy
     ) {
-        if (ttl.compareTo(Duration.ofMinutes(1)) < 0 || ttl.compareTo(Duration.ofDays(1)) > 0) {
-            throw new IllegalArgumentException("Reservation TTL must be between one minute and one day");
-        }
         this.expiry = expiry;
         this.registry = registry;
-        this.ttl = ttl;
+        this.policy = policy;
     }
 
-    @Scheduled(fixedDelayString = "${commerce.reservation.scan-delay-ms:10000}")
+    @Scheduled(fixedDelayString = "${commerce.reservation.scan-delay-ms:1000}")
     public void scan() {
-        Instant cutoff = Instant.now().minus(ttl);
+        Instant cutoff = policy.cutoff(Instant.now());
         for (Long orderId : expiry.candidates(cutoff)) {
             try {
                 if (expiry.expire(orderId, cutoff)) {

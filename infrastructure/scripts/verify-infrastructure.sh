@@ -19,20 +19,20 @@ done
 count="$(query "SELECT count(*) FROM pg_database WHERE datname IN ('auth_db', 'product_db', 'order_db', 'payment_db', 'notification_db')")"
 [[ "$count" == 5 ]]
 queues="$(docker compose exec -T rabbitmq rabbitmqctl -q list_queues name durable)"
-for queue in payment.order-created.q.dlq order.payment-result.q.dlq notification.order.q.dlq payment.order-expired.q.dlq notification.fulfillment.q.dlq payment.cod-lifecycle.q.dlq payment.return-received.q.dlq order.return-result.q.dlq; do
+for queue in notification.expiry.q.dlq payment.order-created.q.dlq order.payment-result.q.dlq notification.order.q.dlq payment.order-expired.q.dlq notification.fulfillment.q.dlq payment.cod-lifecycle.q.dlq payment.return-received.q.dlq order.return-result.q.dlq; do
     grep -Fqx "$queue"$'\ttrue' <<< "$queues" \
         || { echo "Missing durable dead letter queue: $queue" >&2; exit 1; }
 done
 policies="$(docker compose exec -T rabbitmq rabbitmqctl -q list_policies)"
-for queue in payment.order-created.q order.payment-result.q notification.order.q payment.order-expired.q notification.fulfillment.q payment.cod-lifecycle.q payment.return-received.q order.return-result.q; do
+for queue in notification.expiry.q payment.order-created.q order.payment-result.q notification.order.q payment.order-expired.q notification.fulfillment.q payment.cod-lifecycle.q payment.return-received.q order.return-result.q; do
     grep -Fq "dlx-$queue" <<< "$policies" \
         || { echo "Missing scoped DLX policy: $queue" >&2; exit 1; }
 done
-for queue in payment.order-created.q order.payment-result.q notification.order.q payment.order-expired.q notification.fulfillment.q payment.cod-lifecycle.q payment.return-received.q order.return-result.q; do
+for queue in notification.expiry.q payment.order-created.q order.payment-result.q notification.order.q payment.order-expired.q notification.fulfillment.q payment.cod-lifecycle.q payment.return-received.q order.return-result.q; do
     grep -Fqx "$queue"$'\ttrue' <<< "$queues" || { echo "Missing durable queue: $queue" >&2; exit 1; }
 done
 bindings="$(docker compose exec -T rabbitmq rabbitmqctl -q list_bindings source_name destination_name routing_key)"
-for binding in 'payment.order-created.q:order.created' 'order.payment-result.q:payment.succeeded' 'order.payment-result.q:payment.failed' 'notification.order.q:order.confirmed' 'notification.order.q:order.cancelled' 'payment.order-expired.q:order.expired' 'payment.order-expired.q:order.refund-requested' 'notification.fulfillment.q:order.shipped' 'notification.fulfillment.q:order.completed' 'payment.order-created.q:order.cod-created' 'payment.cod-lifecycle.q:order.cod-shipped' 'payment.cod-lifecycle.q:order.cod-cancelled' 'payment.return-received.q:order.return-received' 'order.return-result.q:payment.return-refund-ready' 'order.return-result.q:payment.return-refunded'; do
+for binding in 'payment.order-created.q:order.created' 'order.payment-result.q:payment.succeeded' 'order.payment-result.q:payment.failed' 'notification.expiry.q:order.expired' 'notification.order.q:order.confirmed' 'notification.order.q:order.cancelled' 'payment.order-expired.q:order.expired' 'payment.order-expired.q:order.refund-requested' 'notification.fulfillment.q:order.shipped' 'notification.fulfillment.q:order.completed' 'payment.order-created.q:order.cod-created' 'payment.cod-lifecycle.q:order.cod-shipped' 'payment.cod-lifecycle.q:order.cod-cancelled' 'payment.return-received.q:order.return-received' 'order.return-result.q:payment.return-refund-ready' 'order.return-result.q:payment.return-refunded'; do
     queue="${binding%%:*}"
     key="${binding#*:}"
     grep -Fqx 'commerce.events'$'\t'"$queue"$'\t'"$key" <<< "$bindings" \

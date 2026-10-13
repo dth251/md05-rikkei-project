@@ -140,6 +140,7 @@ jobs:
           docker compose -f docker-compose.yml -f docker-compose.local.yml -f docker-compose.smtp-test.yml --profile smtp-test up -d --no-deps --wait --wait-timeout 180 notification-service
           export JWT_SECRET="$(sed -n 's/^JWT_SECRET=//p' .env)"
           export NOTIFICATION_LIVE_DB_PASSWORD="$(sed -n 's/^NOTIFICATION_DB_PASSWORD=//p' .env)"
+          export ORDER_LIVE_DB_PASSWORD="$(sed -n 's/^ORDER_DB_PASSWORD=//p' .env)"
           export RABBITMQ_LIVE_USER="$(sed -n 's/^RABBITMQ_DEFAULT_USER=//p' .env)"
           export RABBITMQ_LIVE_PASSWORD="$(sed -n 's/^RABBITMQ_DEFAULT_PASS=//p' .env)"
           SMTP_LIVE_TEST=true notification-service/gradlew -p notification-service liveTest --tests '*EmailLiveTests' --no-daemon
@@ -366,10 +367,14 @@ jobs:
       - name: Transfer immutable release
         run: |
           set -euo pipefail
-          tar -czf release.tar.gz docker-compose.yml docker-compose.production.yml infrastructure
+          tar -czf release.tar.gz docker-compose.yml docker-compose.production.yml docker-compose.monitoring.yml docker-compose.smtp-test.yml infrastructure
           ssh -i ~/.ssh/id_deploy -o StrictHostKeyChecking=yes "$VPS_USER@$VPS_HOST" "mkdir -p '$DEPLOY_ROOT/releases/$IMAGE_TAG'"
           scp -i ~/.ssh/id_deploy -o StrictHostKeyChecking=yes release.tar.gz "$VPS_USER@$VPS_HOST:$DEPLOY_ROOT/releases/$IMAGE_TAG/"
           ssh -i ~/.ssh/id_deploy -o StrictHostKeyChecking=yes "$VPS_USER@$VPS_HOST" "cd '$DEPLOY_ROOT/releases/$IMAGE_TAG' && tar -xzf release.tar.gz && test -f '$DEPLOY_ROOT/.env' && ln -sfn '$DEPLOY_ROOT/.env' .env"
+      - name: Provision configured SMTP sandbox and monitoring
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/id_deploy -o StrictHostKeyChecking=yes "$VPS_USER@$VPS_HOST" "cd '$DEPLOY_ROOT/releases/$IMAGE_TAG' && bash infrastructure/scripts/provision-demo-profiles.sh"
       - name: Deploy changed services with individual image SHAs
         id: rollout
         env:

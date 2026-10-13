@@ -15,6 +15,7 @@ public final class DeadLetterTool {
             "order.payment-result.q", Set.of("payment.succeeded", "payment.failed"),
             "payment.order-expired.q", Set.of("order.expired", "order.refund-requested"),
             "notification.order.q", Set.of("order.confirmed", "order.cancelled"),
+            "notification.expiry.q", Set.of("order.expired"),
             "notification.fulfillment.q", Set.of("order.shipped", "order.completed"));
 
     public static void main(String[] args) throws Exception {

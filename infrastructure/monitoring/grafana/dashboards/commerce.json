@@ -4,7 +4,7 @@
                  "to":  "now",
                  "from":  "now-30m"
              },
-    "version":  1,
+    "version":  2,
     "panels":  [
                    {
                        "description":  "No data means the metric/source is absent or has not emitted samples; it does not mean zero.",
@@ -786,6 +786,43 @@
                                        "w":  12,
                                        "h":  8,
                                        "x":  12
+                                   }
+                   },
+                   {
+                       "description":  "No data means the metric/source is absent or has not emitted samples; it does not mean zero.",
+                       "options":  {
+                                       "legend":  {
+                                                      "placement":  "bottom",
+                                                      "displayMode":  "list"
+                                                  }
+                                   },
+                       "id":  22,
+                       "type":  "timeseries",
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "short"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "targets":  [
+                                       {
+                                           "legendFormat":  "{{application}} {{service}} {{queue}} {{state}} {{status}} {{result}}",
+                                           "expr":  "rate(commerce_reservation_expired_total[2m])",
+                                           "refId":  "A"
+                                       }
+                                   ],
+                       "title":  "Scheduled reservation expirations",
+                       "gridPos":  {
+                                       "y":  68,
+                                       "w":  12,
+                                       "h":  8,
+                                       "x":  0
                                    }
                    }
                ],
