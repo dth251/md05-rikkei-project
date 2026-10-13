@@ -533,3 +533,22 @@ SMTP/VNPay đều không đổi. Đây là kiểm tra cấu hình, không thay t
 Image kiểm chứng local `omnichannel-auth:cleanup-144` build từ JAR vừa kiểm thử;
 không recreate container, thay đổi volume/dữ liệu hoặc rollout VPS. Thay đổi
 `.vscode/settings.json` có sẵn trong workspace không nằm trong commit này.
+
+## Khôi phục build IDE của API Gateway ngày 13/10/2026
+
+Nhánh `feature/fix-gateway-ide-build`. Lỗi Java builder báo resource
+`/api-gateway/bin/main/application.yml` đã tồn tại được xác nhận trực tiếp qua
+API diagnostics của IDE; Gradle vẫn compile/test/build bình thường.
+
+| Mốc | SHA | Thời gian +07:00 | Kiểm tra / deploy thực tế |
+|---|---|---|---|
+| 146-api-gateway | `3c84bfdd903da46cb83b758c3016b96238d90899` | 19:42:24 | Gateway 23/23 tests, zero fail/error/skip, bootJar đạt. Reload/full rebuild IDE đạt; diagnostics 19:41:35 xác nhận Gateway và toàn workspace 0 lỗi Java. Chỉ sửa trạng thái IDE và ghi runbook; commit local, chưa push/CI/PR/deploy |
+
+Log Java extension ghi pipe timeout/fallback stdio và hai standard servers dùng
+cùng workspace cache, kèm lỗi lưu index. Đã sao lưu metadata Gateway private,
+dừng process pipe cũ đúng workspace, gọi reload cấu hình/full build của Java
+extension và đối chiếu diagnostics. Cuối phiên kiểm tra chỉ còn một standard
+server của workspace. Không tắt cảnh báo/null analysis, không sửa source/routes/
+JWT/rate limit, không thay đổi dữ liệu hoặc recreate container. Thay đổi
+`.vscode/settings.json` có sẵn vẫn giữ nguyên ngoài commit. Hướng xử lý trong
+[tài liệu IDE](java-ide.md), kết quả trong [Gateway tests](gateway-test-results.md).
