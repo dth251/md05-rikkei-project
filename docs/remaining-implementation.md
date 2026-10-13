@@ -82,14 +82,45 @@ Harness dừng các pha sau nếu threshold hoặc reconciliation thất bại; 
 response 201 với replay 200, payment poll 404 với lỗi, dropped/interrupted iterations
 với request thành công. Chưa thể khẳng định 500–1.000 RPS nếu chưa đo đạt.
 
+## CI và tích hợp ngày 13/10
+
+Head `175095963f15aa23846dcce0673384e796758d90` (mốc 140):
+[PR CI 38379527058](https://github.com/dth251/md05-rikkei-project/actions/runs/38379527058)
+và [push CI 38379521378](https://github.com/dth251/md05-rikkei-project/actions/runs/38379521378)
+đều success. Java/build, live integration/recovery, VNPay, SMTP, tải nhỏ nhiều tài khoản,
+monitoring/history qua restart, persisted trace privacy, trace nghiệp vụ/exporter outage
+và Docker audit/Loki privacy đều đạt. Reports/evidence có trong artifact `java-test-reports`;
+bản trích đã loại credential nằm ở [evidence CI](evidence/remaining-ci-140/README.md).
+
+[PR #31](https://github.com/dth251/md05-rikkei-project/pull/31) merge lúc **17:11 +07**,
+main mốc 141 `19d9fc6d797154dd15a296590a4c773b7eca08e1`.
+[Main CI/CD 38381634257](https://github.com/dth251/md05-rikkei-project/actions/runs/38381634257)
+đang chạy tại checkpoint; chưa ghi deploy mới từ việc PR đã merge.
+
+CI Linux, hai tài khoản, target 1 iteration/s, mỗi phase 10 giây, 5 VU ban đầu/tối đa 20:
+
+| Phase | HTTP | p95 / p99 HTTP (ms) | Đơn tạo / xác nhận |
+|---|---:|---:|---:|
+| Warm-up catalog | 11 | 20,34 / 26,03 | 0 / 0 |
+| Catalog | 10 | 13,07 / 14,43 | 0 / 0 |
+| Orders | 10 | 61,02 / 73,13 | 10 / finalize riêng |
+| E2E | 74 | 26,56 / 101,91 | 11 / 11 |
+
+HTTP failed và dropped iterations đều 0; không 429/transport error, mọi threshold đạt.
+Đối chiếu cuối: 21 đơn CONFIRMED, stock từ 50 còn 39/40 theo từng tài khoản, reserved 0.
+Số HTTP bao gồm polling; target là iteration/s, không phải cam kết HTTP RPS hay capacity VPS.
+Trace fixture nối đủ sáu service, Order/Payment/email có 10/5/5 durable context rows.
+Khi collector dừng, bốn đơn mới vẫn được tạo/xác nhận và đối chiếu tồn kho đạt.
+
 ## Điều kiện còn cần trước production
 
 Kiểm tra VPS ngày 13/10 sau nâng cấp: root disk 40 GB, còn khoảng 19 GB (50%);
 RAM khoảng 4.926 MiB, available khoảng 2.830 MiB. Sáu service mốc 119 healthy,
 HTTPS catalog trả 200. Đồng hồ lệch +25.200 giây; đã sửa UTC lúc 09:21:48 UTC
 bằng Date header HTTPS Google/Cloudflare, hai nguồn chênh 1 giây. Đã cấu hình
-timesyncd dùng IPv4 Cloudflare và Google; các truy vấn NTP vẫn timeout, trạng thái
-`NTPSynchronized=no`. Sửa giờ một lần chưa thay thế đồng bộ liên tục.
+timesyncd thử Cloudflare/Google và pool Việt Nam; các truy vấn NTP vẫn timeout, trạng thái
+`NTPSynchronized=no`. RTC lệch +7 giờ cũng được ghi lại UTC lúc 09:58:32 UTC.
+Sửa giờ một lần chưa thay thế đồng bộ liên tục.
 Chưa deploy thêm collector hoặc demo dừng dependency trên VPS. Preflight yêu cầu
 tối thiểu 4 GiB disk trống, 1 GiB RAM available và NTP sync;
 đó là guard tối thiểu, không phải cam kết capacity. Không tự xóa volume/data/image cache.
@@ -125,7 +156,7 @@ R11 (Elasticsearch/Mongo/SMS/HA) giữ ngoài phạm vi bốn nhóm đã thống
   harness hiện chặn pha tải khi available RAM dưới 512 MiB, ngắt pha dưới 256 MiB.
 - CI đã thêm kiểm tra trace nghiệp vụ sáu service, trace context bền vững trong
   Order/Payment/email, nghiệp vụ khi collector dừng và Docker audit privacy ở Loki.
-  Các bài mới cần chạy ở head PR; chưa ghi đạt từ cấu hình hoặc kiểm tra cú pháp.
+  Các bài mới đã đạt tại head 140 nêu trên; chưa xác nhận deploy từ kết quả CI.
 - CI head `f457e4279175edba5722ba4eb895dbdd7dedfc39`, push run 38377774329:
   unit/build, infrastructure/live, VNPay, SMTP và multi-account load/reconciliation đạt.
   Monitoring thất bại vì fresh TSDB chưa có đủ ba samples. Verifier đã thêm bounded wait

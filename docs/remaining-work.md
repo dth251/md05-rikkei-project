@@ -6,18 +6,23 @@ không phải xác nhận dự án đã đáp ứng đầy đủ đề bài.
 ## 1. Mốc đối chiếu và trạng thái hiện tại
 
 Checkpoint bổ sung 13/10: nhánh `feature/remaining-work-implementation`, các mốc
-133–135 đã tích hợp VNPay và bổ sung SMTP, live tests cùng Outbox tracing. 171 unit,
+133–140 đã tích hợp VNPay, SMTP, observability và kiểm thử. 171 unit,
 12 VNPay PostgreSQL/Gateway/refund restart và 3 SMTP PostgreSQL/Mailpit đạt local.
 Prometheus/Grafana đã kiểm chứng targets/history/provisioning qua restart; Tempo
 đã lưu và trả trace fixture sạch thông tin nhạy cảm. Xem
 [triển khai và giới hạn kiểm chứng](remaining-implementation.md).
 
+CI PR/push head 140 đều success, gồm tải nhỏ/đối chiếu nghiệp vụ, monitoring/history,
+trace sáu service/exporter outage và Loki privacy. PR #31 đã merge main mốc 141
+`19d9fc6d797154dd15a296590a4c773b7eca08e1` lúc 17:11 +07; main CI/CD đang chạy.
+Chưa xác nhận rollout mới tại checkpoint này; sandbox/SMTP ngoài và demo VPS còn thiếu.
+
 VPS sau nâng cấp ổ đĩa có 40 GB, còn khoảng 19 GB trống; sáu service mốc 119 healthy,
 HTTPS catalog 200. Đã sửa lệch UTC +7 giờ bằng đối chiếu hai nguồn HTTPS; NTP vẫn
 chưa đồng bộ. Chưa rollout code mới. Các số đo 12/10 bên dưới là lịch sử.
 
-- Main hiện tại: `f7c5e8b0dc411482e38edb64b8141c8531240217` — mốc 125,
-  đã xóa README gốc qua [PR #29](https://github.com/dth251/md05-rikkei-project/pull/29).
+- Main tại checkpoint: `19d9fc6d797154dd15a296590a4c773b7eca08e1` — mốc 141,
+  tích hợp qua [PR #31](https://github.com/dth251/md05-rikkei-project/pull/31).
 - Bản ứng dụng trên VPS: `b253c9528c764fc24dded222ee464dc4ba99b206` — mốc 119.
   SSH lúc **09:44:34 +07 ngày 12/10/2026** xác nhận sáu service healthy.
   Mốc 125 chỉ thay đổi tài liệu nên không cần rollout ứng dụng.
@@ -51,14 +56,14 @@ Các mức ưu tiên này dùng cho checklist này.
 
 | Mã | Phần còn thiếu | Trạng thái | Ưu tiên |
 |---|---|---|---|
-| R01 | Hoàn tất tích hợp VNPay | 12 live fixture/PG/Gateway tests đạt; cần head CI, PR/deploy và merchant thật | P0 |
-| R02 | Gửi email SMTP | Code và 3 PG/Mailpit tests đạt; cần head CI/deploy và SMTP ngoài | P0 |
+| R01 | Hoàn tất tích hợp VNPay | 12 live fixture/PG/Gateway tests và head CI đạt, đã merge; còn deploy/merchant thật | P0 |
+| R02 | Gửi email SMTP | Code, 3 PG/Mailpit tests và head CI đạt, đã merge; còn deploy/SMTP ngoài | P0 |
 | R03 | Prometheus server | Targets/history/restart đạt local; chưa deploy VPS | P0 |
 | R04 | Grafana dashboard | 3 datasource, 21 panels/provisioning/restart đạt local; cần ảnh và deploy | P0 |
-| R05 | Distributed tracing | Agent/Outbox/email context và Tempo privacy có; trace nghiệp vụ cần chạy CI | P0 |
-| R06 | Profiling và k6 nhiều tài khoản | Harness nhiều USER có; warm-up local không đạt latency, chưa xác nhận capacity | P0 |
+| R05 | Distributed tracing | Trace sáu service/durable context/privacy/exporter outage đạt CI; chưa VPS | P0 |
+| R06 | Profiling và k6 nhiều tài khoản | Tải nhỏ/đối chiếu SQL/API đạt CI; local từng fail, chưa xác nhận capacity VPS | P0 |
 | R07 | Demo sự cố nghiệp vụ trên VPS | Recovery local/CI đã có; demo dependency VPS còn thiếu | P0 |
-| R08 | Logging tập trung | Docker audit/trace lookup/privacy đạt local; cần head CI và deploy | P1 |
+| R08 | Logging tập trung | Docker audit/trace lookup/privacy đạt local và head CI; chưa deploy | P1 |
 | R09 | Alert và theo dõi dependency | Exporter local UP, 11 rules hợp lệ/2 fixture đạt; cần kênh nhận và deploy | P1 |
 | R10 | Đồng bộ tài liệu/bằng chứng cuối | OpenAPI/collection/runbook đã cập nhật; còn CI/deploy/ảnh/video thực | P1 |
 | R11 | Các mở rộng nghiệp vụ/kiến trúc | Chưa nằm trong kế hoạch triển khai hiện tại | P2 |
@@ -77,8 +82,8 @@ client IP. CI nhánh đạt không đồng nghĩa đã giao dịch với VNPay t
   và bảo đảm Order hết hạn không bị xác nhận lại.
 - [x] Kiểm thử restart Payment giữa các bước refund; timeout không tạo lần
   gửi lệnh hoàn tiền thứ hai, query thanh toán gốc không được ghi REFUNDED.
-- [ ] Bổ sung các bài này vào CI và chạy ở đúng head sẽ merge.
-- [ ] Export lại OpenAPI Payment/Gateway cho checkout, IPN, return, refund,
+- [x] Bổ sung các bài này vào CI và chạy ở đúng head sẽ merge.
+- [x] Export lại OpenAPI Payment/Gateway cho checkout, IPN, return, refund,
   reconcile; cập nhật collection/runbook tương ứng.
 - [ ] Tạo PR, merge sau kiểm thử đạt và deploy các service thực sự thay đổi.
 - [ ] Cấu hình merchant sandbox, secret, return/IPN HTTPS và server IP trong
@@ -100,7 +105,7 @@ Phần sandbox thực phụ thuộc cấu hình merchant chưa được cung c�
   ghi dữ liệu cùng transaction thích hợp trước khi thực hiện SMTP.
 - [x] Retry có giới hạn, chống tạo tác vụ trùng khi RabbitMQ giao event lại;
   quy định cách xử lý trường hợp SMTP đã nhận thư nhưng app chưa lưu kết quả.
-- [ ] Kiểm thử bằng SMTP server thử nghiệm: nội dung/người nhận, duplicate
+- [x] Kiểm thử bằng SMTP server thử nghiệm: nội dung/người nhận, duplicate
   event, SMTP mất kết nối và restart Notification.
 - [ ] Cấu hình SMTP/TLS/credential private và thử nhận email ngoài thực tế.
 - [ ] Chạy CI, PR và deploy Notification cùng các service liên quan nếu có.
@@ -111,17 +116,17 @@ bố gửi đúng một lần tuyệt đối nếu còn cửa sổ crash sau khi
 
 ## 5. R03 — Prometheus server
 
-Hiện `/actuator/prometheus` chỉ xuất metrics tại thời điểm gọi. Chưa có server
-thu thập định kỳ, lưu time series hoặc truy vấn lịch sử.
+Stack local/CI đã thu thập định kỳ, query lịch sử và giữ dữ liệu qua restart.
+Trên VPS chưa deploy Prometheus; endpoint Actuator vẫn chỉ xuất metrics tại thời điểm gọi.
 
-- [ ] Tạo cấu hình scrape cho sáu service bằng DNS/mạng private; kiểm tra
+- [x] Tạo cấu hình scrape cho sáu service bằng DNS/mạng private; kiểm tra
   từng target, thời gian scrape và lỗi timeout.
-- [ ] Thêm Compose profile monitoring riêng, phiên bản image được cố định,
+- [x] Thêm Compose profile monitoring riêng, phiên bản image được cố định,
   giới hạn tài nguyên, volume và healthcheck.
-- [ ] Quy định scrape interval, retention theo thời gian/dung lượng và
+- [x] Quy định scrape interval, retention theo thời gian/dung lượng và
   ngân sách disk; kiểm tra dữ liệu còn sau restart.
-- [ ] Kiểm tra cấu hình bằng công cụ Prometheus và test query trên stack thử.
-- [ ] Giữ endpoint nội bộ; cách truy cập quản trị qua SSH/private network.
+- [x] Kiểm tra cấu hình bằng công cụ Prometheus và test query trên stack thử.
+- [x] Giữ endpoint nội bộ; cách truy cập quản trị qua SSH/private network.
 - [ ] Chọn môi trường có ngân sách tài nguyên đủ trước khi deploy stack.
 
 **Hoàn tất khi:** targets cần theo dõi UP, query trả dữ liệu có nhãn service,
@@ -147,19 +152,19 @@ có lịch sử qua nhiều lần scrape và dữ liệu được lưu đúng re
 
 ## 7. R05/R08 — Tracing và logging tập trung
 
-- [ ] Tracing: instrument HTTP Gateway/service và gRPC Product–Order;
+- [x] Tracing: instrument HTTP Gateway/service và gRPC Product–Order;
   truyền trace context qua RabbitMQ/Outbox khi phù hợp.
-- [ ] Chọn và cấu hình OpenTelemetry cùng backend trace; quy định sampling,
+- [x] Chọn và cấu hình OpenTelemetry cùng backend trace; quy định sampling,
   giới hạn queue/export và retry khi backend mất kết nối.
-- [ ] Đối chiếu trace một đơn hàng từ Gateway đến các bước đồng bộ/bất đồng
+- [x] Đối chiếu trace một đơn hàng từ Gateway đến các bước đồng bộ/bất đồng
   bộ; nghiệp vụ tiếp tục hoạt động khi exporter không sẵn sàng.
-- [ ] Logging: cấu hình gom log container về hệ thống tập trung và truy vấn
+- [x] Logging: cấu hình gom log container về hệ thống tập trung và truy vấn
   theo application, timestamp, trace ID/correlation ID.
-- [ ] Cố định image/collector còn được hỗ trợ khi triển khai; cấu hình
+- [x] Cố định image/collector còn được hỗ trợ khi triển khai; cấu hình
   retention, giới hạn tài nguyên và storage cho log/trace.
-- [ ] Loại token, password, signing key, email/địa chỉ và payload provider
+- [x] Loại token, password, signing key, email/địa chỉ và payload provider
   khỏi log/trace; kiểm tra bằng fixture và dữ liệu xuất đã redaction.
-- [ ] Bổ sung CI kiểm tra config và lưu bằng chứng trace/log đã chạy thật.
+- [x] Bổ sung CI kiểm tra config và lưu bằng chứng trace/log đã chạy thật.
 
 **Hoàn tất khi:** tìm được request/event xuyên service và lỗi tương ứng trong
 trace/log; có cấu hình được kiểm chứng, không chỉ có sơ đồ hoặc file Compose.
@@ -171,9 +176,9 @@ user fixture giới hạn, chưa chứng minh mục tiêu 500–1.000 requests/s
 Catalog target 50/s đã thất bại; Order giảm 1/s vẫn có dropped iterations.
 Không dùng lại kết quả local để kết luận capacity VPS hiện tại.
 
-- [ ] Mở rộng Java fixture thành nhiều tài khoản USER thật, dữ liệu/stock
+- [x] Mở rộng Java fixture thành nhiều tài khoản USER thật, dữ liệu/stock
   tách biệt và idempotency key mới cho mỗi đơn cần tạo.
-- [ ] Tách catalog, tạo đơn, thanh toán, quota và race; bổ sung luồng
+- [x] Tách catalog, tạo đơn, thanh toán, quota và race; bổ sung luồng
   end-to-end với kiểm tra trạng thái Order/Payment/stock sau tải.
 - [ ] Profiling JVM/GC/threads, SQL/query plan/pool và MQ/Outbox; có số đo
   trước/sau để xác định và kiểm tra cải thiện bottleneck.
@@ -225,8 +230,8 @@ có người/kênh nhận phù hợp và không chứa credential hoặc dữ li
 
 ## 11. R10 — Tài liệu và bằng chứng cuối
 
-- [ ] Đồng bộ OpenAPI, API contract và Postman theo controller sau các PR mới.
-- [ ] Thêm runbook VNPay/SMTP, provisioning monitoring và xử lý alert.
+- [x] Đồng bộ OpenAPI, API contract và Postman theo controller sau các PR mới.
+- [x] Thêm runbook VNPay/SMTP, provisioning monitoring và xử lý alert.
 - [ ] Ghi SHA, thời gian, kết quả kiểm thử, image/health deploy từng mốc;
   giữ rõ checkpoint thất bại và giới hạn của phép đo.
 - [ ] Cập nhật sơ đồ kiến trúc/runtime, ảnh dashboard/trace và video sự cố.

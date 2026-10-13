@@ -1,0 +1,470 @@
+{
+    "commit":  "175095963f15aa23846dcce0673384e796758d90",
+    "run":  38379527058,
+    "environment":  "GitHub Actions Linux, not VPS",
+    "accounts":  2,
+    "targetIterationsPerSecond":  1,
+    "phaseDurationsSeconds":  {
+                                  "catalog":  10,
+                                  "orders":  10,
+                                  "e2e":  10,
+                                  "trace-outage":  3,
+                                  "trace-business":  5,
+                                  "warmup":  10
+                              },
+    "note":  "HTTP counts include polling; expected payment-not-yet-created 404 counted in 4xx, not http_req_failed; no capacity claim",
+    "phases":  [
+                   {
+                       "phase":  "warmup",
+                       "http":  11,
+                       "httpRate":  1.098701626382897,
+                       "p95Ms":  20.338414999999998,
+                       "p99Ms":  26.026242200000006,
+                       "failedRate":  0,
+                       "status2xx":  11,
+                       "status4xx":  0,
+                       "status5xx":  0,
+                       "status429":  0,
+                       "transport":  0,
+                       "dropped":  0,
+                       "created":  0,
+                       "confirmed":  0,
+                       "thresholds":  [
+                                          {
+                                              "metric":  "status_429",
+                                              "result":  {
+                                                             "count==0":  {
+                                                                              "ok":  true
+                                                                          }
+                                                         }
+                                          },
+                                          {
+                                              "metric":  "http_req_duration{stage:primary}",
+                                              "result":  {
+                                                             "p(95)\u003c2000":  {
+                                                                                     "ok":  true
+                                                                                 }
+                                                         }
+                                          },
+                                          {
+                                              "metric":  "status_transport",
+                                              "result":  {
+                                                             "count==0":  {
+                                                                              "ok":  true
+                                                                          }
+                                                         }
+                                          },
+                                          {
+                                              "metric":  "dropped_iterations",
+                                              "result":  {
+                                                             "count==0":  {
+                                                                              "ok":  true
+                                                                          }
+                                                         }
+                                          },
+                                          {
+                                              "metric":  "checks",
+                                              "result":  {
+                                                             "rate==1":  {
+                                                                             "ok":  true
+                                                                         }
+                                                         }
+                                          },
+                                          {
+                                              "metric":  "http_req_failed",
+                                              "result":  {
+                                                             "rate\u003c0.01":  {
+                                                                                    "ok":  true
+                                                                                }
+                                                         }
+                                          }
+                                      ]
+                   },
+                   {
+                       "phase":  "catalog",
+                       "http":  10,
+                       "httpRate":  0.9999414727256424,
+                       "p95Ms":  13.065905649999996,
+                       "p99Ms":  14.42913313,
+                       "failedRate":  0,
+                       "status2xx":  10,
+                       "status4xx":  0,
+                       "status5xx":  0,
+                       "status429":  0,
+                       "transport":  0,
+                       "dropped":  0,
+                       "created":  0,
+                       "confirmed":  0,
+                       "thresholds":  [
+                                          {
+                                              "metric":  "dropped_iterations",
+                                              "result":  {
+                                                             "count==0":  {
+                                                                              "ok":  true
+                                                                          }
+                                                         }
+                                          },
+                                          {
+                                              "metric":  "http_req_failed",
+                                              "result":  {
+                                                             "rate\u003c0.01":  {
+                                                                                    "ok":  true
+                                                                                }
+                                                         }
+                                          },
+                                          {
+                                              "metric":  "status_transport",
+                                              "result":  {
+                                                             "count==0":  {
+                                                                              "ok":  true
+                                                                          }
+                                                         }
+                                          },
+                                          {
+                                              "metric":  "status_429",
+                                              "result":  {
+                                                             "count==0":  {
+                                                                              "ok":  true
+                                                                          }
+                                                         }
+                                          },
+                                          {
+                                              "metric":  "http_req_duration{stage:primary}",
+                                              "result":  {
+                                                             "p(95)\u003c2000":  {
+                                                                                     "ok":  true
+                                                                                 }
+                                                         }
+                                          },
+                                          {
+                                              "metric":  "checks",
+                                              "result":  {
+                                                             "rate==1":  {
+                                                                             "ok":  true
+                                                                         }
+                                                         }
+                                          }
+                                      ]
+                   },
+                   {
+                       "phase":  "orders",
+                       "http":  10,
+                       "httpRate":  0.9999652243093908,
+                       "p95Ms":  61.023762799999965,
+                       "p99Ms":  73.13421896,
+                       "failedRate":  0,
+                       "status2xx":  10,
+                       "status4xx":  0,
+                       "status5xx":  0,
+                       "status429":  0,
+                       "transport":  0,
+                       "dropped":  0,
+                       "created":  10,
+                       "confirmed":  0,
+                       "thresholds":  [
+                                          {
+                                              "metric":  "http_req_failed",
+                                              "result":  {
+                                                             "rate\u003c0.01":  {
+                                                                                    "ok":  true
+                                                                                }
+                                                         }
+                                          },
+                                          {
+                                              "metric":  "status_transport",
+                                              "result":  {
+                                                             "count==0":  {
+                                                                              "ok":  true
+                                                                          }
+                                                         }
+                                          },
+                                          {
+                                              "metric":  "http_req_duration{stage:primary}",
+                                              "result":  {
+                                                             "p(95)\u003c2000":  {
+                                                                                     "ok":  true
+                                                                                 }
+                                                         }
+                                          },
+                                          {
+                                              "metric":  "checks",
+                                              "result":  {
+                                                             "rate==1":  {
+                                                                             "ok":  true
+                                                                         }
+                                                         }
+                                          },
+                                          {
+                                              "metric":  "orders_created",
+                                              "result":  {
+                                                             "count\u003e0":  {
+                                                                                  "ok":  true
+                                                                              }
+                                                         }
+                                          },
+                                          {
+                                              "metric":  "status_429",
+                                              "result":  {
+                                                             "count==0":  {
+                                                                              "ok":  true
+                                                                          }
+                                                         }
+                                          },
+                                          {
+                                              "metric":  "dropped_iterations",
+                                              "result":  {
+                                                             "count==0":  {
+                                                                              "ok":  true
+                                                                          }
+                                                         }
+                                          }
+                                      ]
+                   },
+                   {
+                       "phase":  "e2e",
+                       "http":  74,
+                       "httpRate":  6.947121357541986,
+                       "p95Ms":  26.559347199999944,
+                       "p99Ms":  101.91040923,
+                       "failedRate":  0,
+                       "status2xx":  57,
+                       "status4xx":  17,
+                       "status5xx":  0,
+                       "status429":  0,
+                       "transport":  0,
+                       "dropped":  0,
+                       "created":  11,
+                       "confirmed":  11,
+                       "thresholds":  [
+                                          {
+                                              "metric":  "http_req_failed",
+                                              "result":  {
+                                                             "rate\u003c0.01":  {
+                                                                                    "ok":  true
+                                                                                }
+                                                         }
+                                          },
+                                          {
+                                              "metric":  "orders_created",
+                                              "result":  {
+                                                             "count\u003e0":  {
+                                                                                  "ok":  true
+                                                                              }
+                                                         }
+                                          },
+                                          {
+                                              "metric":  "dropped_iterations",
+                                              "result":  {
+                                                             "count==0":  {
+                                                                              "ok":  true
+                                                                          }
+                                                         }
+                                          },
+                                          {
+                                              "metric":  "checks",
+                                              "result":  {
+                                                             "rate==1":  {
+                                                                             "ok":  true
+                                                                         }
+                                                         }
+                                          },
+                                          {
+                                              "metric":  "http_req_duration{stage:primary}",
+                                              "result":  {
+                                                             "p(95)\u003c2000":  {
+                                                                                     "ok":  true
+                                                                                 }
+                                                         }
+                                          },
+                                          {
+                                              "metric":  "status_transport",
+                                              "result":  {
+                                                             "count==0":  {
+                                                                              "ok":  true
+                                                                          }
+                                                         }
+                                          },
+                                          {
+                                              "metric":  "orders_confirmed",
+                                              "result":  {
+                                                             "count\u003e0":  {
+                                                                                  "ok":  true
+                                                                              }
+                                                         }
+                                          },
+                                          {
+                                              "metric":  "status_429",
+                                              "result":  {
+                                                             "count==0":  {
+                                                                              "ok":  true
+                                                                          }
+                                                         }
+                                          }
+                                      ]
+                   },
+                   {
+                       "phase":  "trace-business",
+                       "http":  35,
+                       "httpRate":  5.694820826000113,
+                       "p95Ms":  158.80108989999977,
+                       "p99Ms":  322.0386693599994,
+                       "failedRate":  0,
+                       "status2xx":  26,
+                       "status4xx":  9,
+                       "status5xx":  0,
+                       "status429":  0,
+                       "transport":  0,
+                       "dropped":  0,
+                       "created":  5,
+                       "confirmed":  5,
+                       "thresholds":  [
+                                          {
+                                              "metric":  "dropped_iterations",
+                                              "result":  {
+                                                             "count==0":  {
+                                                                              "ok":  true
+                                                                          }
+                                                         }
+                                          },
+                                          {
+                                              "metric":  "orders_confirmed",
+                                              "result":  {
+                                                             "count\u003e0":  {
+                                                                                  "ok":  true
+                                                                              }
+                                                         }
+                                          },
+                                          {
+                                              "metric":  "status_transport",
+                                              "result":  {
+                                                             "count==0":  {
+                                                                              "ok":  true
+                                                                          }
+                                                         }
+                                          },
+                                          {
+                                              "metric":  "http_req_duration{stage:primary}",
+                                              "result":  {
+                                                             "p(95)\u003c2000":  {
+                                                                                     "ok":  true
+                                                                                 }
+                                                         }
+                                          },
+                                          {
+                                              "metric":  "checks",
+                                              "result":  {
+                                                             "rate==1":  {
+                                                                             "ok":  true
+                                                                         }
+                                                         }
+                                          },
+                                          {
+                                              "metric":  "status_429",
+                                              "result":  {
+                                                             "count==0":  {
+                                                                              "ok":  true
+                                                                          }
+                                                         }
+                                          },
+                                          {
+                                              "metric":  "http_req_failed",
+                                              "result":  {
+                                                             "rate\u003c0.01":  {
+                                                                                    "ok":  true
+                                                                                }
+                                                         }
+                                          },
+                                          {
+                                              "metric":  "orders_created",
+                                              "result":  {
+                                                             "count\u003e0":  {
+                                                                                  "ok":  true
+                                                                              }
+                                                         }
+                                          }
+                                      ]
+                   },
+                   {
+                       "phase":  "trace-outage",
+                       "http":  28,
+                       "httpRate":  6.072641574844374,
+                       "p95Ms":  128.33565934999996,
+                       "p99Ms":  142.26924397,
+                       "failedRate":  0,
+                       "status2xx":  24,
+                       "status4xx":  4,
+                       "status5xx":  0,
+                       "status429":  0,
+                       "transport":  0,
+                       "dropped":  0,
+                       "created":  4,
+                       "confirmed":  4,
+                       "thresholds":  [
+                                          {
+                                              "metric":  "checks",
+                                              "result":  {
+                                                             "rate==1":  {
+                                                                             "ok":  true
+                                                                         }
+                                                         }
+                                          },
+                                          {
+                                              "metric":  "dropped_iterations",
+                                              "result":  {
+                                                             "count==0":  {
+                                                                              "ok":  true
+                                                                          }
+                                                         }
+                                          },
+                                          {
+                                              "metric":  "status_429",
+                                              "result":  {
+                                                             "count==0":  {
+                                                                              "ok":  true
+                                                                          }
+                                                         }
+                                          },
+                                          {
+                                              "metric":  "orders_confirmed",
+                                              "result":  {
+                                                             "count\u003e0":  {
+                                                                                  "ok":  true
+                                                                              }
+                                                         }
+                                          },
+                                          {
+                                              "metric":  "status_transport",
+                                              "result":  {
+                                                             "count==0":  {
+                                                                              "ok":  true
+                                                                          }
+                                                         }
+                                          },
+                                          {
+                                              "metric":  "http_req_duration{stage:primary}",
+                                              "result":  {
+                                                             "p(95)\u003c2000":  {
+                                                                                     "ok":  true
+                                                                                 }
+                                                         }
+                                          },
+                                          {
+                                              "metric":  "orders_created",
+                                              "result":  {
+                                                             "count\u003e0":  {
+                                                                                  "ok":  true
+                                                                              }
+                                                         }
+                                          },
+                                          {
+                                              "metric":  "http_req_failed",
+                                              "result":  {
+                                                             "rate\u003c0.01":  {
+                                                                                    "ok":  true
+                                                                                }
+                                                         }
+                                          }
+                                      ]
+                   }
+               ]
+}

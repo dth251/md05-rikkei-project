@@ -1,0 +1,27 @@
+{
+  "dashboardPanels": 21,
+  "services": [
+    "api-gateway",
+    "product-service",
+    "payment-service",
+    "auth-service",
+    "notification-service",
+    "order-service"
+  ],
+  "restartVerified": true,
+  "dependencyJobs": [
+    "host",
+    "rabbitmq-queues",
+    "redis",
+    "rabbitmq",
+    "postgres"
+  ],
+  "timeUtc": "2026-10-13T10:04:28.8970932Z",
+  "datasources": [
+    "prometheus",
+    "tempo",
+    "loki"
+  ],
+  "note": "Docker Desktop host exporter measures Linux VM; no capacity claim",
+  "historySeries": 6
+}

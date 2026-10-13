@@ -1,0 +1,18 @@
+{
+  "accounts" : [ {
+    "productId" : 38,
+    "reserved" : 0,
+    "userId" : 20,
+    "available" : 39,
+    "ordersConfirmed" : 11
+  }, {
+    "productId" : 39,
+    "reserved" : 0,
+    "userId" : 21,
+    "available" : 40,
+    "ordersConfirmed" : 10
+  } ],
+  "note" : "API/SQL assertions passed; credentials excluded; data retained",
+  "runId" : "1525a921-bbee-43cc-aac7-cdff850f33b7",
+  "timeUtc" : "2026-10-13T10:03:13.613846916Z"
+}
