@@ -374,7 +374,7 @@ jobs:
       - name: Provision configured SMTP sandbox and monitoring
         run: |
           set -euo pipefail
-          ssh -i ~/.ssh/id_deploy -o StrictHostKeyChecking=yes "$VPS_USER@$VPS_HOST" "cd '$DEPLOY_ROOT/releases/$IMAGE_TAG' && bash infrastructure/scripts/provision-demo-profiles.sh"
+          ssh -i ~/.ssh/id_deploy -o StrictHostKeyChecking=yes "$VPS_USER@$VPS_HOST" "cd '$DEPLOY_ROOT/releases/$IMAGE_TAG' && IMAGE_TAG='$IMAGE_TAG' bash infrastructure/scripts/provision-demo-profiles.sh"
       - name: Deploy changed services with individual image SHAs
         id: rollout
         env:
