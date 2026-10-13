@@ -35,18 +35,8 @@
               }
             }
           },
-          "403" : {
-            "description" : "Access denied",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiError"
-                }
-              }
-            }
-          },
-          "404" : {
-            "description" : "Not found",
+          "409" : {
+            "description" : "Conflict",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -65,8 +55,8 @@
               }
             }
           },
-          "409" : {
-            "description" : "Conflict",
+          "404" : {
+            "description" : "Not found",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -75,8 +65,8 @@
               }
             }
           },
-          "400" : {
-            "description" : "Invalid request",
+          "403" : {
+            "description" : "Access denied",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -87,6 +77,16 @@
           },
           "401" : {
             "description" : "Authentication required",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid request",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -131,18 +131,8 @@
               }
             }
           },
-          "403" : {
-            "description" : "Access denied",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiError"
-                }
-              }
-            }
-          },
-          "404" : {
-            "description" : "Not found",
+          "409" : {
+            "description" : "Conflict",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -161,8 +151,8 @@
               }
             }
           },
-          "409" : {
-            "description" : "Conflict",
+          "404" : {
+            "description" : "Not found",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -171,8 +161,8 @@
               }
             }
           },
-          "400" : {
-            "description" : "Invalid request",
+          "403" : {
+            "description" : "Access denied",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -183,6 +173,16 @@
           },
           "401" : {
             "description" : "Authentication required",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid request",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -210,18 +210,8 @@
           "200" : {
             "description" : "OK"
           },
-          "403" : {
-            "description" : "Access denied",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiError"
-                }
-              }
-            }
-          },
-          "404" : {
-            "description" : "Not found",
+          "409" : {
+            "description" : "Conflict",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -240,8 +230,8 @@
               }
             }
           },
-          "409" : {
-            "description" : "Conflict",
+          "404" : {
+            "description" : "Not found",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -250,8 +240,8 @@
               }
             }
           },
-          "400" : {
-            "description" : "Invalid request",
+          "403" : {
+            "description" : "Access denied",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -262,6 +252,16 @@
           },
           "401" : {
             "description" : "Authentication required",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid request",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -289,18 +289,8 @@
           "required" : true
         },
         "responses" : {
-          "403" : {
-            "description" : "Access denied",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiError"
-                }
-              }
-            }
-          },
-          "404" : {
-            "description" : "Not found",
+          "409" : {
+            "description" : "Conflict",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -319,8 +309,8 @@
               }
             }
           },
-          "409" : {
-            "description" : "Conflict",
+          "404" : {
+            "description" : "Not found",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -329,8 +319,8 @@
               }
             }
           },
-          "400" : {
-            "description" : "Invalid request",
+          "403" : {
+            "description" : "Access denied",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -341,6 +331,16 @@
           },
           "401" : {
             "description" : "Authentication required",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid request",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -389,18 +389,8 @@
               }
             }
           },
-          "403" : {
-            "description" : "Access denied",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiError"
-                }
-              }
-            }
-          },
-          "404" : {
-            "description" : "Not found",
+          "409" : {
+            "description" : "Conflict",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -419,8 +409,8 @@
               }
             }
           },
-          "409" : {
-            "description" : "Conflict",
+          "404" : {
+            "description" : "Not found",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -429,8 +419,8 @@
               }
             }
           },
-          "400" : {
-            "description" : "Invalid request",
+          "403" : {
+            "description" : "Access denied",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -441,6 +431,16 @@
           },
           "401" : {
             "description" : "Authentication required",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid request",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -469,18 +469,8 @@
           "required" : true
         },
         "responses" : {
-          "403" : {
-            "description" : "Access denied",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiError"
-                }
-              }
-            }
-          },
-          "404" : {
-            "description" : "Not found",
+          "409" : {
+            "description" : "Conflict",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -499,8 +489,8 @@
               }
             }
           },
-          "409" : {
-            "description" : "Conflict",
+          "404" : {
+            "description" : "Not found",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -509,8 +499,8 @@
               }
             }
           },
-          "400" : {
-            "description" : "Invalid request",
+          "403" : {
+            "description" : "Access denied",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -521,6 +511,16 @@
           },
           "401" : {
             "description" : "Authentication required",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid request",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -562,18 +562,8 @@
               }
             }
           },
-          "403" : {
-            "description" : "Access denied",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiError"
-                }
-              }
-            }
-          },
-          "404" : {
-            "description" : "Not found",
+          "409" : {
+            "description" : "Conflict",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -592,8 +582,8 @@
               }
             }
           },
-          "409" : {
-            "description" : "Conflict",
+          "404" : {
+            "description" : "Not found",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -602,8 +592,8 @@
               }
             }
           },
-          "400" : {
-            "description" : "Invalid request",
+          "403" : {
+            "description" : "Access denied",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -614,6 +604,16 @@
           },
           "401" : {
             "description" : "Authentication required",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid request",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -642,18 +642,8 @@
               }
             }
           },
-          "403" : {
-            "description" : "Access denied",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiError"
-                }
-              }
-            }
-          },
-          "404" : {
-            "description" : "Not found",
+          "409" : {
+            "description" : "Conflict",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -672,8 +662,8 @@
               }
             }
           },
-          "409" : {
-            "description" : "Conflict",
+          "404" : {
+            "description" : "Not found",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -682,8 +672,8 @@
               }
             }
           },
-          "400" : {
-            "description" : "Invalid request",
+          "403" : {
+            "description" : "Access denied",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -694,6 +684,16 @@
           },
           "401" : {
             "description" : "Authentication required",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid request",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -719,18 +719,8 @@
           "required" : true
         },
         "responses" : {
-          "403" : {
-            "description" : "Access denied",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiError"
-                }
-              }
-            }
-          },
-          "404" : {
-            "description" : "Not found",
+          "409" : {
+            "description" : "Conflict",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -749,8 +739,8 @@
               }
             }
           },
-          "409" : {
-            "description" : "Conflict",
+          "404" : {
+            "description" : "Not found",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -759,8 +749,8 @@
               }
             }
           },
-          "400" : {
-            "description" : "Invalid request",
+          "403" : {
+            "description" : "Access denied",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -771,6 +761,16 @@
           },
           "401" : {
             "description" : "Authentication required",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid request",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -808,18 +808,8 @@
               }
             }
           },
-          "403" : {
-            "description" : "Access denied",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiError"
-                }
-              }
-            }
-          },
-          "404" : {
-            "description" : "Not found",
+          "409" : {
+            "description" : "Conflict",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -838,8 +828,8 @@
               }
             }
           },
-          "409" : {
-            "description" : "Conflict",
+          "404" : {
+            "description" : "Not found",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -848,8 +838,8 @@
               }
             }
           },
-          "400" : {
-            "description" : "Invalid request",
+          "403" : {
+            "description" : "Access denied",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -860,6 +850,16 @@
           },
           "401" : {
             "description" : "Authentication required",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid request",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -896,18 +896,8 @@
               }
             }
           },
-          "403" : {
-            "description" : "Access denied",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiError"
-                }
-              }
-            }
-          },
-          "404" : {
-            "description" : "Not found",
+          "409" : {
+            "description" : "Conflict",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -926,8 +916,8 @@
               }
             }
           },
-          "409" : {
-            "description" : "Conflict",
+          "404" : {
+            "description" : "Not found",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -936,8 +926,8 @@
               }
             }
           },
-          "400" : {
-            "description" : "Invalid request",
+          "403" : {
+            "description" : "Access denied",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -948,6 +938,16 @@
           },
           "401" : {
             "description" : "Authentication required",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid request",
             "content" : {
               "application/json" : {
                 "schema" : {

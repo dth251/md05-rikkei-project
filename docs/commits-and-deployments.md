@@ -434,3 +434,35 @@ nanosecond khác giá trị reload database. Chuẩn hóa timestamp theo giây �
 protocol; full chạy lại 09:38:44 +07 đạt 42/42, không bỏ test hoặc bỏ assert.
 VNPay vẫn ở feature; không có cấu hình merchant/SMTP private hoặc giao dịch
 thực với provider. Phần việc còn lại được ghi tại `remediation-plan.md`.
+
+## Bổ sung remaining-work ngày 13/10/2026
+
+Nhánh `feature/remaining-work-implementation`; chưa merge/deploy code mới ở checkpoint này.
+
+| Mốc | SHA | Thời gian +07:00 | Kiểm tra / deploy thực tế |
+|---|---|---|---|
+| 133-payment-service | `e51c901f93469f88350efa1651857511c0fb1f56` | 14:42:00 | Kết hợp VNPay mốc 129, sửa fixture Gateway bằng port chưa dùng; Gateway 23 tests đạt; chưa deploy |
+| 134-notification-service | `6e13a635b2587d10ed4996541ec478f7a2dd5aff` | 15:43:55 | Auth 23/Notification 16 unit, 3 PG/Mailpit live đạt; API recipient private, durable SMTP/retry/dedup; chưa SMTP ngoài/deploy |
+| 135-payment-service | `32365474c8f1bf2d5a2e137a5106792e4c5fedd5` | 15:46:32 | Order 45/Payment 42 unit, 12 VNPay PG/Gateway/refund-restart live đạt; measured backlog/Outbox trace; chưa provider thật/deploy |
+| 136-notification-service | `d6f8f877ebae379d2bf50b3bdf603e5916372495` | 16:36:04 | Notification 16 unit/bootJar và 3 SMTP PG live chạy lại đạt; trace lưu trong delivery, span riêng lúc gửi; chưa deploy |
+| 137-infrastructure | `efc011cd8093cecd2255e7f1260a8b4e5dffcf37` | 16:36:50 | Compose/Bash/Collector/Alloy/Loki/Prometheus/Alertmanager config đạt; 11 rules hợp lệ/2 firing-resolved fixture đạt; local targets/history/Grafana restart, Tempo privacy và Docker audit Loki privacy đạt; chưa VPS deploy |
+| 138-tests | `a91f3793f9a03a9d88ab4e2044277b279d8823cf` | 16:37:50 | Java multi-user fixture compile, PowerShell parser/actionlint đạt; bổ sung stage VNPay/SMTP/load/monitoring/tracing/privacy/exporter outage. Các stage mới cần chạy ở head CI; không ghi runtime đạt từ cú pháp |
+
+Tổng unit sáu service: 171, zero fail/error. BootJar đạt. VNPay provider dùng HTTP
+fixture công khai, SMTP dùng Mailpit private; chưa có merchant hoặc SMTP ngoài.
+Trace privacy kiểm chứng bằng gửi fixture rồi đọc trace đã lưu từ Tempo, không chỉ validate
+YAML. Logging lần đầu không tìm thấy audit; chuyển targets sang relabel output, giới hạn
+phạm vi service và CPU/Go memory, chạy lại tìm được audit theo trace ID và marker bị loại.
+Không chuyển raw log ứng dụng vào Loki.
+
+Tải Windows lần đầu: 11 HTTP thành công, zero 429/transport/drop, warm-up p95 8.304 ms,
+p99 8.509 ms, vượt threshold 2.000 ms. Harness dừng các pha sau; không coi load đạt.
+Resource guard 512 MiB available trước pha, 256 MiB khi đang chạy, 4 GiB disk; không hạ
+threshold để biến thất bại thành thành công. Chưa xác nhận mục tiêu 500–1.000 RPS.
+
+VPS sau nâng cấp root disk: 40 GB, used 19 GB, available 19 GB (50%); RAM 4.926 MiB,
+available khoảng 2.830 MiB. Sáu image vẫn `b253c9528c764fc24dded222ee464dc4ba99b206`,
+health UP; HTTPS catalog 200. Đồng hồ sai +25.200 giây; đã sửa lúc 09:21:48 UTC bằng
+HTTPS Date Google/Cloudflare, hai nguồn chênh 1 giây. Drop-in timesyncd IPv4 Cloudflare/
+Google đã cấu hình; NTP vẫn timeout và `NTPSynchronized=no`. Không xóa dữ liệu/volume,
+chưa rollout app hoặc monitoring, chưa chạy dependency demo VPS.

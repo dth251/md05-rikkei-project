@@ -1,9 +1,20 @@
 # Danh sách các phần còn cần bổ sung
 
-Cập nhật: **12/10/2026, múi giờ +07:00**. Đây là checklist công việc còn lại,
+Cập nhật: **13/10/2026, múi giờ +07:00**. Đây là checklist công việc còn lại,
 không phải xác nhận dự án đã đáp ứng đầy đủ đề bài.
 
 ## 1. Mốc đối chiếu và trạng thái hiện tại
+
+Checkpoint bổ sung 13/10: nhánh `feature/remaining-work-implementation`, các mốc
+133–135 đã tích hợp VNPay và bổ sung SMTP, live tests cùng Outbox tracing. 171 unit,
+12 VNPay PostgreSQL/Gateway/refund restart và 3 SMTP PostgreSQL/Mailpit đạt local.
+Prometheus/Grafana đã kiểm chứng targets/history/provisioning qua restart; Tempo
+đã lưu và trả trace fixture sạch thông tin nhạy cảm. Xem
+[triển khai và giới hạn kiểm chứng](remaining-implementation.md).
+
+VPS sau nâng cấp ổ đĩa có 40 GB, còn khoảng 19 GB trống; sáu service mốc 119 healthy,
+HTTPS catalog 200. Đã sửa lệch UTC +7 giờ bằng đối chiếu hai nguồn HTTPS; NTP vẫn
+chưa đồng bộ. Chưa rollout code mới. Các số đo 12/10 bên dưới là lịch sử.
 
 - Main hiện tại: `f7c5e8b0dc411482e38edb64b8141c8531240217` — mốc 125,
   đã xóa README gốc qua [PR #29](https://github.com/dth251/md05-rikkei-project/pull/29).
@@ -40,16 +51,16 @@ Các mức ưu tiên này dùng cho checklist này.
 
 | Mã | Phần còn thiếu | Trạng thái | Ưu tiên |
 |---|---|---|---|
-| R01 | Hoàn tất tích hợp VNPay | Có code, unit và CI; thiếu kiểm thử chuyên biệt, PR và deploy | P0 |
-| R02 | Gửi email SMTP | Notification mới ghi log; chưa có luồng gửi email | P0 |
-| R03 | Prometheus server | Service có metrics; chưa có collector/lưu lịch sử | P0 |
-| R04 | Grafana dashboard | Chưa có server, datasource và dashboard | P0 |
-| R05 | Distributed tracing | Chưa có trace xuyên các service | P0 |
-| R06 | Profiling và k6 nhiều tài khoản | Có harness/số liệu cũ; chưa hoàn thành bài đo mới | P0 |
+| R01 | Hoàn tất tích hợp VNPay | 12 live fixture/PG/Gateway tests đạt; cần head CI, PR/deploy và merchant thật | P0 |
+| R02 | Gửi email SMTP | Code và 3 PG/Mailpit tests đạt; cần head CI/deploy và SMTP ngoài | P0 |
+| R03 | Prometheus server | Targets/history/restart đạt local; chưa deploy VPS | P0 |
+| R04 | Grafana dashboard | 3 datasource, 21 panels/provisioning/restart đạt local; cần ảnh và deploy | P0 |
+| R05 | Distributed tracing | Agent/Outbox/email context và Tempo privacy có; trace nghiệp vụ cần chạy CI | P0 |
+| R06 | Profiling và k6 nhiều tài khoản | Harness nhiều USER có; warm-up local không đạt latency, chưa xác nhận capacity | P0 |
 | R07 | Demo sự cố nghiệp vụ trên VPS | Recovery local/CI đã có; demo dependency VPS còn thiếu | P0 |
-| R08 | Logging tập trung | Chưa có hệ thống gom/tìm log xuyên container | P1 |
-| R09 | Alert và theo dõi dependency | Chưa có alert được kiểm chứng và exporter đầy đủ | P1 |
-| R10 | Đồng bộ tài liệu/bằng chứng cuối | OpenAPI hiện tại đã có; phần mới cần cập nhật tiếp | P1 |
+| R08 | Logging tập trung | Docker audit/trace lookup/privacy đạt local; cần head CI và deploy | P1 |
+| R09 | Alert và theo dõi dependency | Exporter local UP, 11 rules hợp lệ/2 fixture đạt; cần kênh nhận và deploy | P1 |
+| R10 | Đồng bộ tài liệu/bằng chứng cuối | OpenAPI/collection/runbook đã cập nhật; còn CI/deploy/ảnh/video thực | P1 |
 | R11 | Các mở rộng nghiệp vụ/kiến trúc | Chưa nằm trong kế hoạch triển khai hiện tại | P2 |
 
 ## 3. R01 — VNPay sandbox
@@ -60,11 +71,11 @@ refund/querydr. Payment đạt **42/42 unit, zero fail/error/skip**, bootJar đ�
 refund được thử với HTTP fixture. Gateway có kiểm thử routing, quota và
 client IP. CI nhánh đạt không đồng nghĩa đã giao dịch với VNPay thật.
 
-- [ ] Chạy callback qua Gateway thật với PostgreSQL; xác nhận payment, Order,
+- [x] Chạy callback qua Gateway thật với PostgreSQL; xác nhận payment, Order,
   tồn kho và số Outbox event sau callback thành công/thất bại/trùng.
-- [ ] Kiểm thử callback đồng thời trên PostgreSQL, xử lý capture tới sau expiry
+- [x] Kiểm thử callback đồng thời trên PostgreSQL, xử lý capture tới sau expiry
   và bảo đảm Order hết hạn không bị xác nhận lại.
-- [ ] Kiểm thử restart Payment giữa các bước refund; timeout không tạo lần
+- [x] Kiểm thử restart Payment giữa các bước refund; timeout không tạo lần
   gửi lệnh hoàn tiền thứ hai, query thanh toán gốc không được ghi REFUNDED.
 - [ ] Bổ sung các bài này vào CI và chạy ở đúng head sẽ merge.
 - [ ] Export lại OpenAPI Payment/Gateway cho checkout, IPN, return, refund,
@@ -81,13 +92,13 @@ Phần sandbox thực phụ thuộc cấu hình merchant chưa được cung c�
 
 ## 4. R02 — SMTP và Notification
 
-- [ ] Xây dựng gửi email theo trạng thái đơn với service interface/impl,
+- [x] Xây dựng gửi email theo trạng thái đơn với service interface/impl,
   DTO và mapper thuộc Notification.
-- [ ] Xác định nguồn email người nhận qua API/event hợp lệ; không truy vấn
+- [x] Xác định nguồn email người nhận qua API/event hợp lệ; không truy vấn
   trực tiếp database Auth từ Notification.
-- [ ] Lưu trạng thái gửi, số lần thử, lỗi đã chuẩn hóa và thời gian gửi;
+- [x] Lưu trạng thái gửi, số lần thử, lỗi đã chuẩn hóa và thời gian gửi;
   ghi dữ liệu cùng transaction thích hợp trước khi thực hiện SMTP.
-- [ ] Retry có giới hạn, chống tạo tác vụ trùng khi RabbitMQ giao event lại;
+- [x] Retry có giới hạn, chống tạo tác vụ trùng khi RabbitMQ giao event lại;
   quy định cách xử lý trường hợp SMTP đã nhận thư nhưng app chưa lưu kết quả.
 - [ ] Kiểm thử bằng SMTP server thử nghiệm: nội dung/người nhận, duplicate
   event, SMTP mất kết nối và restart Notification.
@@ -118,13 +129,13 @@ có lịch sử qua nhiều lần scrape và dữ liệu được lưu đúng re
 
 ## 6. R04 — Grafana dashboard
 
-- [ ] Cấu hình Grafana, datasource Prometheus và provisioning dashboard từ
+- [x] Cấu hình Grafana, datasource Prometheus và provisioning dashboard từ
   file trong repository; credential admin nằm ngoài source.
-- [ ] Dashboard tổng quan: availability, request rate, p95/p99 latency,
+- [x] Dashboard tổng quan: availability, request rate, p95/p99 latency,
   phân loại 2xx/4xx/5xx và 429 theo service/route.
-- [ ] Dashboard JVM: heap/non-heap, GC, threads; tài nguyên host/container
+- [x] Dashboard JVM: heap/non-heap, GC, threads; tài nguyên host/container
   chỉ hiển thị khi đã bổ sung nguồn metrics phù hợp.
-- [ ] Dashboard nghiệp vụ: publish/retry Outbox, độ trễ gRPC và các trạng
+- [x] Dashboard nghiệp vụ: publish/retry Outbox, độ trễ gRPC và các trạng
   thái/kết quả thực sự có metric; không tự suy ra pending backlog từ counter.
 - [ ] Đánh dấu rõ metric còn thiếu dữ liệu; kiểm tra đơn vị, nhãn và bộ lọc
   thời gian trên dữ liệu thật.
@@ -200,11 +211,11 @@ vụ và backlog/đơn hàng được xử lý đúng sau phục hồi.
 
 ## 10. R09 — Dependency metrics và alert
 
-- [ ] Bổ sung nguồn metrics host/container, PostgreSQL và RabbitMQ; kiểm tra
+- [x] Bổ sung nguồn metrics host/container, PostgreSQL và RabbitMQ; kiểm tra
   Redis nếu cần giám sát dependency rate limit.
-- [ ] Theo dõi queue ready/unacked/consumer, retry/DLQ, số và tuổi Outbox
+- [x] Theo dõi queue ready/unacked/consumer, retry/DLQ, số và tuổi Outbox
   pending bằng metric phù hợp; bổ sung metric còn thiếu trước khi vẽ panel.
-- [ ] Định nghĩa alert service/scrape down, latency/error tăng, thiếu tài
+- [x] Định nghĩa alert service/scrape down, latency/error tăng, thiếu tài
   nguyên, mất consumer và backlog vượt ngưỡng.
 - [ ] Kiểm thử rule và trạng thái firing/resolved bằng sự cố fixture; cấu
   hình kênh nhận cảnh báo và routing theo phạm vi vận hành đã thống nhất.
