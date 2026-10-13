@@ -1,0 +1,31 @@
+rule_files: [alerts.yml]
+evaluation_interval: 1m
+tests:
+  - interval: 1m
+    input_series:
+      - series: 'up{job="services",service="order-service",instance="order-service:8083"}'
+        values: '1 0 0 0 1 1'
+    alert_rule_test:
+      - eval_time: 3m
+        alertname: ScrapeTargetDown
+        exp_alerts:
+          - exp_labels: {job: services, service: order-service, instance: 'order-service:8083', severity: critical}
+            exp_annotations: {summary: 'Metrics target unavailable'}
+      - eval_time: 5m
+        alertname: ScrapeTargetDown
+        exp_alerts: []
+  - interval: 1m
+    input_series:
+      - series: 'commerce_outbox_pending{application="order-service"}'
+        values: '0 2 2 2 0'
+      - series: 'commerce_outbox_oldest_seconds{application="order-service"}'
+        values: '0 130 190 250 0'
+    alert_rule_test:
+      - eval_time: 3m
+        alertname: OutboxStalled
+        exp_alerts:
+          - exp_labels: {application: order-service, severity: critical}
+            exp_annotations: {summary: 'Pending Outbox event older than two minutes'}
+      - eval_time: 4m
+        alertname: OutboxStalled
+        exp_alerts: []

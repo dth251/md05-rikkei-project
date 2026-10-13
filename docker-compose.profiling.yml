@@ -1,0 +1,8 @@
+# Opt-in bounded recording. The artifact may contain private data; never commit or upload it.
+services:
+  order-service:
+    environment:
+      JAVA_TOOL_OPTIONS: -Xms32m -Xmx160m -XX:MaxMetaspaceSize=128m -XX:ReservedCodeCacheSize=32m -XX:ActiveProcessorCount=2 -Xss256k -XX:StartFlightRecording=name=commerce,settings=profile,duration=120s,maxsize=32m,filename=/profiles/order.jfr
+    mem_limit: 416m
+    volumes:
+      - ${PROFILE_DIR:?Set absolute private PROFILE_DIR}:/profiles

@@ -1,0 +1,58 @@
+groups:
+  - name: commerce
+    rules:
+      - alert: ScrapeTargetDown
+        expr: up == 0
+        for: 1m
+        labels: {severity: critical}
+        annotations: {summary: 'Metrics target unavailable'}
+      - alert: DiskNearlyFull
+        expr: node_filesystem_avail_bytes{fstype!~"tmpfs|overlay|squashfs"} / node_filesystem_size_bytes{fstype!~"tmpfs|overlay|squashfs"} < 0.1
+        for: 2m
+        labels: {severity: critical}
+        annotations: {summary: 'Less than 10 percent disk available'}
+      - alert: LowMemory
+        expr: node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes < 0.1
+        for: 2m
+        labels: {severity: warning}
+        annotations: {summary: 'Less than 10 percent memory available'}
+      - alert: HttpServerErrors
+        expr: sum by (application) (rate(http_server_requests_seconds_count{status=~"5.."}[5m])) / clamp_min(sum by (application) (rate(http_server_requests_seconds_count[5m])), 0.01) > 0.05
+        for: 2m
+        labels: {severity: warning}
+        annotations: {summary: 'HTTP server error ratio exceeds 5 percent'}
+      - alert: HttpLatencyHigh
+        expr: histogram_quantile(0.95, sum by (application,le) (rate(http_server_requests_seconds_bucket[5m]))) > 2
+        for: 2m
+        labels: {severity: warning}
+        annotations: {summary: 'HTTP p95 exceeds two seconds'}
+      - alert: OutboxStalled
+        expr: commerce_outbox_pending > 0 and commerce_outbox_oldest_seconds > 120
+        for: 1m
+        labels: {severity: critical}
+        annotations: {summary: 'Pending Outbox event older than two minutes'}
+      - alert: BacklogMetricsUnavailable
+        expr: commerce_backlog_snapshot_valid == 0
+        for: 1m
+        labels: {severity: warning}
+        annotations: {summary: 'Business backlog snapshot unavailable'}
+      - alert: BusinessQueueWithoutConsumer
+        expr: rabbitmq_detailed_queue_consumers{queue!~".*[.]dlq"} == 0
+        for: 1m
+        labels: {severity: critical}
+        annotations: {summary: 'Business queue has no consumer'}
+      - alert: DeadLetterBacklog
+        expr: rabbitmq_detailed_queue_messages_ready{queue=~".*[.]dlq"} > 0
+        for: 1m
+        labels: {severity: warning}
+        annotations: {summary: 'Dead letter queue needs investigation'}
+      - alert: QueueBacklog
+        expr: rabbitmq_detailed_queue_messages_ready{queue!~".*[.]dlq"} > 100
+        for: 2m
+        labels: {severity: warning}
+        annotations: {summary: 'Business queue backlog exceeds 100'}
+      - alert: EmailDeliveryNeedsReview
+        expr: commerce_email_deliveries{state=~"FAILED|UNKNOWN"} > 0
+        for: 1m
+        labels: {severity: warning}
+        annotations: {summary: 'Email delivery failed or outcome uncertain'}

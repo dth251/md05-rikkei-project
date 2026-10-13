@@ -1,0 +1,801 @@
+{
+    "schemaVersion":  39,
+    "time":  {
+                 "to":  "now",
+                 "from":  "now-30m"
+             },
+    "version":  1,
+    "panels":  [
+                   {
+                       "description":  "No data means the metric/source is absent or has not emitted samples; it does not mean zero.",
+                       "options":  {
+                                       "legend":  {
+                                                      "placement":  "bottom",
+                                                      "displayMode":  "list"
+                                                  }
+                                   },
+                       "id":  1,
+                       "type":  "timeseries",
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "short"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "targets":  [
+                                       {
+                                           "legendFormat":  "{{application}} {{service}} {{queue}} {{state}} {{status}} {{result}}",
+                                           "expr":  "up{job=\"services\"}",
+                                           "refId":  "A"
+                                       }
+                                   ],
+                       "title":  "Service availability",
+                       "gridPos":  {
+                                       "y":  0,
+                                       "w":  12,
+                                       "h":  8,
+                                       "x":  0
+                                   }
+                   },
+                   {
+                       "description":  "No data means the metric/source is absent or has not emitted samples; it does not mean zero.",
+                       "options":  {
+                                       "legend":  {
+                                                      "placement":  "bottom",
+                                                      "displayMode":  "list"
+                                                  }
+                                   },
+                       "id":  2,
+                       "type":  "timeseries",
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "reqps"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "targets":  [
+                                       {
+                                           "legendFormat":  "{{application}} {{service}} {{queue}} {{state}} {{status}} {{result}}",
+                                           "expr":  "sum by (application) (rate(http_server_requests_seconds_count[2m]))",
+                                           "refId":  "A"
+                                       }
+                                   ],
+                       "title":  "HTTP requests per second",
+                       "gridPos":  {
+                                       "y":  0,
+                                       "w":  12,
+                                       "h":  8,
+                                       "x":  12
+                                   }
+                   },
+                   {
+                       "description":  "No data means the metric/source is absent or has not emitted samples; it does not mean zero.",
+                       "options":  {
+                                       "legend":  {
+                                                      "placement":  "bottom",
+                                                      "displayMode":  "list"
+                                                  }
+                                   },
+                       "id":  3,
+                       "type":  "timeseries",
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "reqps"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "targets":  [
+                                       {
+                                           "legendFormat":  "{{application}} {{service}} {{queue}} {{state}} {{status}} {{result}}",
+                                           "expr":  "sum by (routeId) (rate(spring_cloud_gateway_requests_seconds_count[2m]))",
+                                           "refId":  "A"
+                                       }
+                                   ],
+                       "title":  "Gateway requests per second",
+                       "gridPos":  {
+                                       "y":  8,
+                                       "w":  12,
+                                       "h":  8,
+                                       "x":  0
+                                   }
+                   },
+                   {
+                       "description":  "No data means the metric/source is absent or has not emitted samples; it does not mean zero.",
+                       "options":  {
+                                       "legend":  {
+                                                      "placement":  "bottom",
+                                                      "displayMode":  "list"
+                                                  }
+                                   },
+                       "id":  4,
+                       "type":  "timeseries",
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "s"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "targets":  [
+                                       {
+                                           "legendFormat":  "{{application}} {{service}} {{queue}} {{state}} {{status}} {{result}}",
+                                           "expr":  "histogram_quantile(0.95, sum by (application,le) (rate(http_server_requests_seconds_bucket[5m])))",
+                                           "refId":  "A"
+                                       },
+                                       {
+                                           "legendFormat":  "p99 {{application}}",
+                                           "expr":  "histogram_quantile(0.99, sum by (application,le) (rate(http_server_requests_seconds_bucket[5m])))",
+                                           "refId":  "B"
+                                       }
+                                   ],
+                       "title":  "HTTP p95 / p99",
+                       "gridPos":  {
+                                       "y":  8,
+                                       "w":  12,
+                                       "h":  8,
+                                       "x":  12
+                                   }
+                   },
+                   {
+                       "description":  "No data means the metric/source is absent or has not emitted samples; it does not mean zero.",
+                       "options":  {
+                                       "legend":  {
+                                                      "placement":  "bottom",
+                                                      "displayMode":  "list"
+                                                  }
+                                   },
+                       "id":  5,
+                       "type":  "timeseries",
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "reqps"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "targets":  [
+                                       {
+                                           "legendFormat":  "{{application}} {{service}} {{queue}} {{state}} {{status}} {{result}}",
+                                           "expr":  "sum by (application,status) (rate(http_server_requests_seconds_count[2m]))",
+                                           "refId":  "A"
+                                       }
+                                   ],
+                       "title":  "HTTP status classes / 429",
+                       "gridPos":  {
+                                       "y":  16,
+                                       "w":  12,
+                                       "h":  8,
+                                       "x":  0
+                                   }
+                   },
+                   {
+                       "description":  "No data means the metric/source is absent or has not emitted samples; it does not mean zero.",
+                       "options":  {
+                                       "legend":  {
+                                                      "placement":  "bottom",
+                                                      "displayMode":  "list"
+                                                  }
+                                   },
+                       "id":  6,
+                       "type":  "timeseries",
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "bytes"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "targets":  [
+                                       {
+                                           "legendFormat":  "{{application}} {{service}} {{queue}} {{state}} {{status}} {{result}}",
+                                           "expr":  "sum by (application,area) (jvm_memory_used_bytes)",
+                                           "refId":  "A"
+                                       }
+                                   ],
+                       "title":  "JVM heap / non heap",
+                       "gridPos":  {
+                                       "y":  16,
+                                       "w":  12,
+                                       "h":  8,
+                                       "x":  12
+                                   }
+                   },
+                   {
+                       "description":  "No data means the metric/source is absent or has not emitted samples; it does not mean zero.",
+                       "options":  {
+                                       "legend":  {
+                                                      "placement":  "bottom",
+                                                      "displayMode":  "list"
+                                                  }
+                                   },
+                       "id":  7,
+                       "type":  "timeseries",
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "s"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "targets":  [
+                                       {
+                                           "legendFormat":  "{{application}} {{service}} {{queue}} {{state}} {{status}} {{result}}",
+                                           "expr":  "histogram_quantile(0.95, sum by (application,le) (rate(jvm_gc_pause_seconds_bucket[5m])))",
+                                           "refId":  "A"
+                                       }
+                                   ],
+                       "title":  "GC pause p95",
+                       "gridPos":  {
+                                       "y":  24,
+                                       "w":  12,
+                                       "h":  8,
+                                       "x":  0
+                                   }
+                   },
+                   {
+                       "description":  "No data means the metric/source is absent or has not emitted samples; it does not mean zero.",
+                       "options":  {
+                                       "legend":  {
+                                                      "placement":  "bottom",
+                                                      "displayMode":  "list"
+                                                  }
+                                   },
+                       "id":  8,
+                       "type":  "timeseries",
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "short"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "targets":  [
+                                       {
+                                           "legendFormat":  "{{application}} {{service}} {{queue}} {{state}} {{status}} {{result}}",
+                                           "expr":  "jvm_threads_live_threads",
+                                           "refId":  "A"
+                                       }
+                                   ],
+                       "title":  "JVM live threads",
+                       "gridPos":  {
+                                       "y":  24,
+                                       "w":  12,
+                                       "h":  8,
+                                       "x":  12
+                                   }
+                   },
+                   {
+                       "description":  "No data means the metric/source is absent or has not emitted samples; it does not mean zero.",
+                       "options":  {
+                                       "legend":  {
+                                                      "placement":  "bottom",
+                                                      "displayMode":  "list"
+                                                  }
+                                   },
+                       "id":  9,
+                       "type":  "timeseries",
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "short"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "targets":  [
+                                       {
+                                           "legendFormat":  "{{application}} {{service}} {{queue}} {{state}} {{status}} {{result}}",
+                                           "expr":  "commerce_outbox_pending",
+                                           "refId":  "A"
+                                       }
+                                   ],
+                       "title":  "Outbox pending (measured gauge)",
+                       "gridPos":  {
+                                       "y":  32,
+                                       "w":  12,
+                                       "h":  8,
+                                       "x":  0
+                                   }
+                   },
+                   {
+                       "description":  "No data means the metric/source is absent or has not emitted samples; it does not mean zero.",
+                       "options":  {
+                                       "legend":  {
+                                                      "placement":  "bottom",
+                                                      "displayMode":  "list"
+                                                  }
+                                   },
+                       "id":  10,
+                       "type":  "timeseries",
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "s"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "targets":  [
+                                       {
+                                           "legendFormat":  "{{application}} {{service}} {{queue}} {{state}} {{status}} {{result}}",
+                                           "expr":  "commerce_outbox_oldest_seconds",
+                                           "refId":  "A"
+                                       }
+                                   ],
+                       "title":  "Oldest pending Outbox age",
+                       "gridPos":  {
+                                       "y":  32,
+                                       "w":  12,
+                                       "h":  8,
+                                       "x":  12
+                                   }
+                   },
+                   {
+                       "description":  "No data means the metric/source is absent or has not emitted samples; it does not mean zero.",
+                       "options":  {
+                                       "legend":  {
+                                                      "placement":  "bottom",
+                                                      "displayMode":  "list"
+                                                  }
+                                   },
+                       "id":  11,
+                       "type":  "timeseries",
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "ops"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "targets":  [
+                                       {
+                                           "legendFormat":  "{{application}} {{service}} {{queue}} {{state}} {{status}} {{result}}",
+                                           "expr":  "sum by (application,result) (rate(commerce_outbox_publish_total[2m]))",
+                                           "refId":  "A"
+                                       }
+                                   ],
+                       "title":  "Outbox publish results",
+                       "gridPos":  {
+                                       "y":  40,
+                                       "w":  12,
+                                       "h":  8,
+                                       "x":  0
+                                   }
+                   },
+                   {
+                       "description":  "No data means the metric/source is absent or has not emitted samples; it does not mean zero.",
+                       "options":  {
+                                       "legend":  {
+                                                      "placement":  "bottom",
+                                                      "displayMode":  "list"
+                                                  }
+                                   },
+                       "id":  12,
+                       "type":  "timeseries",
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "short"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "targets":  [
+                                       {
+                                           "legendFormat":  "{{application}} {{service}} {{queue}} {{state}} {{status}} {{result}}",
+                                           "expr":  "commerce_email_deliveries",
+                                           "refId":  "A"
+                                       }
+                                   ],
+                       "title":  "Email delivery states",
+                       "gridPos":  {
+                                       "y":  40,
+                                       "w":  12,
+                                       "h":  8,
+                                       "x":  12
+                                   }
+                   },
+                   {
+                       "description":  "No data means the metric/source is absent or has not emitted samples; it does not mean zero.",
+                       "options":  {
+                                       "legend":  {
+                                                      "placement":  "bottom",
+                                                      "displayMode":  "list"
+                                                  }
+                                   },
+                       "id":  13,
+                       "type":  "timeseries",
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "bytes"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "targets":  [
+                                       {
+                                           "legendFormat":  "{{application}} {{service}} {{queue}} {{state}} {{status}} {{result}}",
+                                           "expr":  "node_memory_MemAvailable_bytes",
+                                           "refId":  "A"
+                                       }
+                                   ],
+                       "title":  "Host available memory",
+                       "gridPos":  {
+                                       "y":  48,
+                                       "w":  12,
+                                       "h":  8,
+                                       "x":  0
+                                   }
+                   },
+                   {
+                       "description":  "No data means the metric/source is absent or has not emitted samples; it does not mean zero.",
+                       "options":  {
+                                       "legend":  {
+                                                      "placement":  "bottom",
+                                                      "displayMode":  "list"
+                                                  }
+                                   },
+                       "id":  14,
+                       "type":  "timeseries",
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "bytes"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "targets":  [
+                                       {
+                                           "legendFormat":  "{{application}} {{service}} {{queue}} {{state}} {{status}} {{result}}",
+                                           "expr":  "node_filesystem_avail_bytes{fstype!~\"tmpfs|overlay|squashfs\"}",
+                                           "refId":  "A"
+                                       }
+                                   ],
+                       "title":  "Host free disk",
+                       "gridPos":  {
+                                       "y":  48,
+                                       "w":  12,
+                                       "h":  8,
+                                       "x":  12
+                                   }
+                   },
+                   {
+                       "description":  "No data means the metric/source is absent or has not emitted samples; it does not mean zero.",
+                       "options":  {
+                                       "legend":  {
+                                                      "placement":  "bottom",
+                                                      "displayMode":  "list"
+                                                  }
+                                   },
+                       "id":  15,
+                       "type":  "timeseries",
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "percentunit"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "targets":  [
+                                       {
+                                           "legendFormat":  "{{application}} {{service}} {{queue}} {{state}} {{status}} {{result}}",
+                                           "expr":  "1 - avg(rate(node_cpu_seconds_total{mode=\"idle\"}[2m]))",
+                                           "refId":  "A"
+                                       }
+                                   ],
+                       "title":  "Host CPU usage",
+                       "gridPos":  {
+                                       "y":  56,
+                                       "w":  12,
+                                       "h":  8,
+                                       "x":  0
+                                   }
+                   },
+                   {
+                       "description":  "No data means the metric/source is absent or has not emitted samples; it does not mean zero.",
+                       "options":  {
+                                       "legend":  {
+                                                      "placement":  "bottom",
+                                                      "displayMode":  "list"
+                                                  }
+                                   },
+                       "id":  16,
+                       "type":  "timeseries",
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "short"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "targets":  [
+                                       {
+                                           "legendFormat":  "{{application}} {{service}} {{queue}} {{state}} {{status}} {{result}}",
+                                           "expr":  "rabbitmq_detailed_queue_messages_ready",
+                                           "refId":  "A"
+                                       }
+                                   ],
+                       "title":  "RabbitMQ ready / unacked",
+                       "gridPos":  {
+                                       "y":  56,
+                                       "w":  12,
+                                       "h":  8,
+                                       "x":  12
+                                   }
+                   },
+                   {
+                       "description":  "No data means the metric/source is absent or has not emitted samples; it does not mean zero.",
+                       "options":  {
+                                       "legend":  {
+                                                      "placement":  "bottom",
+                                                      "displayMode":  "list"
+                                                  }
+                                   },
+                       "id":  17,
+                       "type":  "timeseries",
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "short"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "targets":  [
+                                       {
+                                           "legendFormat":  "{{application}} {{service}} {{queue}} {{state}} {{status}} {{result}}",
+                                           "expr":  "rabbitmq_detailed_queue_consumers",
+                                           "refId":  "A"
+                                       }
+                                   ],
+                       "title":  "RabbitMQ consumers",
+                       "gridPos":  {
+                                       "y":  64,
+                                       "w":  12,
+                                       "h":  8,
+                                       "x":  0
+                                   }
+                   },
+                   {
+                       "description":  "No data means the metric/source is absent or has not emitted samples; it does not mean zero.",
+                       "options":  {
+                                       "legend":  {
+                                                      "placement":  "bottom",
+                                                      "displayMode":  "list"
+                                                  }
+                                   },
+                       "id":  18,
+                       "type":  "timeseries",
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "short"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "targets":  [
+                                       {
+                                           "legendFormat":  "{{application}} {{service}} {{queue}} {{state}} {{status}} {{result}}",
+                                           "expr":  "pg_up",
+                                           "refId":  "A"
+                                       }
+                                   ],
+                       "title":  "PostgreSQL availability",
+                       "gridPos":  {
+                                       "y":  64,
+                                       "w":  12,
+                                       "h":  8,
+                                       "x":  12
+                                   }
+                   },
+                   {
+                       "description":  "No data means the metric/source is absent or has not emitted samples; it does not mean zero.",
+                       "options":  {
+                                       "legend":  {
+                                                      "placement":  "bottom",
+                                                      "displayMode":  "list"
+                                                  }
+                                   },
+                       "id":  19,
+                       "type":  "timeseries",
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "short"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "targets":  [
+                                       {
+                                           "legendFormat":  "{{application}} {{service}} {{queue}} {{state}} {{status}} {{result}}",
+                                           "expr":  "redis_up",
+                                           "refId":  "A"
+                                       }
+                                   ],
+                       "title":  "Redis availability",
+                       "gridPos":  {
+                                       "y":  72,
+                                       "w":  12,
+                                       "h":  8,
+                                       "x":  0
+                                   }
+                   },
+                   {
+                       "description":  "No data means the metric/source is absent or has not emitted samples; it does not mean zero.",
+                       "options":  {
+                                       "legend":  {
+                                                      "placement":  "bottom",
+                                                      "displayMode":  "list"
+                                                  }
+                                   },
+                       "id":  20,
+                       "type":  "timeseries",
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "short"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "targets":  [
+                                       {
+                                           "legendFormat":  "{{application}} {{service}} {{queue}} {{state}} {{status}} {{result}}",
+                                           "expr":  "commerce_backlog_snapshot_valid or commerce_email_snapshot_valid",
+                                           "refId":  "A"
+                                       }
+                                   ],
+                       "title":  "Business metrics validity",
+                       "gridPos":  {
+                                       "y":  54,
+                                       "w":  12,
+                                       "h":  8,
+                                       "x":  12
+                                   }
+                   },
+                   {
+                       "description":  "No data means the metric/source is absent or has not emitted samples; it does not mean zero.",
+                       "options":  {
+                                       "legend":  {
+                                                      "placement":  "bottom",
+                                                      "displayMode":  "list"
+                                                  }
+                                   },
+                       "id":  21,
+                       "type":  "timeseries",
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "unit":  "s"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "targets":  [
+                                       {
+                                           "legendFormat":  "{{application}} {{service}} {{queue}} {{state}} {{status}} {{result}}",
+                                           "expr":  "histogram_quantile(0.95, sum by (application,le) (rate(commerce_order_product_rpc_duration_seconds_bucket[5m]))) or histogram_quantile(0.95, sum by (application,le) (rate(commerce_product_rpc_duration_seconds_bucket[5m])))",
+                                           "refId":  "A"
+                                       }
+                                   ],
+                       "title":  "gRPC Product and Order p95",
+                       "gridPos":  {
+                                       "y":  60,
+                                       "w":  12,
+                                       "h":  8,
+                                       "x":  12
+                                   }
+                   }
+               ],
+    "tags":  [
+                 "commerce",
+                 "provisioned"
+             ],
+    "editable":  false,
+    "timezone":  "utc",
+    "refresh":  "15s",
+    "title":  "Omnichannel services and dependencies",
+    "uid":  "commerce-overview"
+}

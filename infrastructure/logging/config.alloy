@@ -1,0 +1,54 @@
+discovery.docker "commerce" {
+  host = "unix:///var/run/docker.sock"
+  refresh_interval = "10s"
+  filter {
+    name = "label"
+    values = ["com.docker.compose.project=omnichannel-day1"]
+  }
+}
+
+discovery.relabel "commerce" {
+  targets = discovery.docker.commerce.targets
+  rule {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
+    target_label = "application"
+  }
+  rule {
+    source_labels = ["application"]
+    regex = "auth-service|api-gateway|product-service|order-service|payment-service|notification-service|audit-fixture"
+    action = "keep"
+  }
+}
+
+loki.source.docker "commerce" {
+  host = "unix:///var/run/docker.sock"
+  targets = discovery.relabel.commerce.output
+  forward_to = [loki.process.audit.receiver]
+}
+
+loki.process "audit" {
+  forward_to = [loki.write.private.receiver]
+  stage.match {
+    selector = "{application=~\".+\"} !~ \"COMMERCE_AUDIT action=[a-z_]+ outcome=[a-z_]+ trace_id=[0-9a-f]{32} span_id=[0-9a-f]{16}\""
+    action = "drop"
+  }
+  stage.regex {
+    expression = "COMMERCE_AUDIT action=(?P<action>[a-z_]+) outcome=(?P<outcome>[a-z_]+) trace_id=(?P<trace_id>[0-9a-f]{32}) span_id=(?P<span_id>[0-9a-f]{16})"
+  }
+  stage.template {
+    source = "sanitized"
+    template = "action={{ .action }} outcome={{ .outcome }} trace_id={{ .trace_id }} span_id={{ .span_id }}"
+  }
+  stage.output {
+    source = "sanitized"
+  }
+  stage.labels {
+    values = {"action" = "", "outcome" = ""}
+  }
+}
+
+loki.write "private" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+}
