@@ -1,0 +1,8 @@
+services:
+  payment-service:
+    environment:
+      # Public test-only fixture, never use this override for VPS deployment.
+      VNPAY_ENABLED: 'true'
+      VNPAY_TMN_CODE: FIXTURE1
+      VNPAY_HASH_SECRET: public-fixture-signing-key-only
+      VNPAY_SERVER_IP: 203.0.113.10

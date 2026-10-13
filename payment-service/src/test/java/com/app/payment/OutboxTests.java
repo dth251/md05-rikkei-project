@@ -58,7 +58,10 @@ class OutboxTests {
             return null;
         }).when(rabbit).send(eq("commerce.events"), eq("payment.succeeded"), any(Message.class), any(CorrelationData.class));
         SimpleMeterRegistry registry = new SimpleMeterRegistry();
-        new OutboxRelay(outbox, registry, 200, 10000).relay();
+        var relay = new OutboxRelay(outbox, registry, 200, 10000);
+        for (int tick = 0; tick < 10 && !outbox.pending().isEmpty(); tick++) {
+            relay.relay();
+        }
         assertEquals(101, jdbc.queryForObject("SELECT count(*) FROM outbox_events WHERE published_at IS NOT NULL", Integer.class));
         assertEquals(1, jdbc.queryForObject("SELECT attempts FROM outbox_events WHERE event_id=?", Integer.class, failed.eventId()));
         assertEquals(0, outbox.pending().size());

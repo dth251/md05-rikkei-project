@@ -61,8 +61,8 @@ import org.springframework.util.LinkedMultiValueMap;
 class VnpayRefundTests {
 
     private static final String SECRET = "public-fixture-signing-key-only";
-    private static final AtomicLong IDS = new AtomicLong(9400000);
-    private static final AtomicInteger REQUESTS = new AtomicInteger();
+    private static final AtomicLong IDS = new AtomicLong(Math.floorMod(java.util.UUID.randomUUID().getMostSignificantBits(), 900_000_000_000L) + 1_000_000_000L);
+    protected static final AtomicInteger REQUESTS = new AtomicInteger();
     private static final AtomicReference<String> MODE = new AtomicReference<>("PROCESSING");
     private static final AtomicReference<Map<String, String>> LAST_REQUEST = new AtomicReference<>();
     private static final ObjectMapper JSON = new ObjectMapper();
@@ -202,7 +202,7 @@ class VnpayRefundTests {
         assertEquals(0, REQUESTS.get());
     }
 
-    private Payment lateCapture() {
+    protected Payment lateCapture() {
         var payment = payments.saveAndFlush(new Payment(IDS.incrementAndGet(), 10L, new BigDecimal("12.50")));
         VnpayCheckoutResponse attempt = checkout.checkout(payment.getId(), 10L, "203.0.113.50");
         payment.expireReservation();
