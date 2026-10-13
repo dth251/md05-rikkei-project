@@ -5,6 +5,16 @@ public record EmailTask(
         Long orderId,
         Long userId,
         String eventType,
-        int attempts
+        int attempts,
+        String traceParent
 ) {
+    public EmailTask(
+            String deliveryId,
+            Long orderId,
+            Long userId,
+            String eventType,
+            int attempts
+    ) {
+        this(deliveryId, orderId, userId, eventType, attempts, null);
+    }
 }

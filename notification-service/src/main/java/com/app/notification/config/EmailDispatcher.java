@@ -35,24 +35,33 @@ public class EmailDispatcher {
     @Scheduled(fixedDelayString = "${notification.email.delay-ms:2000}")
     public void dispatch() {
         for (var task : deliveries.claim()) {
-            try {
-                String email = recipients.email(task.userId());
-                transport.send(task, email);
-                deliveries.sent(task);
-                metrics.counter("commerce.email.delivery", "result", "sent").increment();
-            } catch (MailException exception) {
-                if (definitelyNotAccepted(exception)) {
-                    deliveries.failed(task, "SMTP_FAILURE");
-                } else {
-                    deliveries.uncertain(task);
+            var span = CommerceTrace.start(task.traceParent(), "commerce.email.delivery");
+            try (var scope = span.makeCurrent()) {
+                try {
+                    String email = recipients.email(task.userId());
+                    transport.send(task, email);
+                    deliveries.sent(task);
+                    metrics.counter("commerce.email.delivery", "result", "sent").increment();
+                    CommerceTrace.audit("email_delivery", "sent");
+                } catch (MailException exception) {
+                    if (definitelyNotAccepted(exception)) {
+                        deliveries.failed(task, "SMTP_FAILURE");
+                    } else {
+                        deliveries.uncertain(task);
+                    }
+                    metrics.counter("commerce.email.delivery", "result", "smtp_failure").increment();
+                    CommerceTrace.audit("email_delivery", "smtp_failure");
+                } catch (IllegalArgumentException exception) {
+                    deliveries.failed(task, "INVALID_RECIPIENT");
+                    metrics.counter("commerce.email.delivery", "result", "invalid_recipient").increment();
+                    CommerceTrace.audit("email_delivery", "invalid_recipient");
+                } catch (IllegalStateException exception) {
+                    deliveries.failed(task, "RECIPIENT_UNAVAILABLE");
+                    metrics.counter("commerce.email.delivery", "result", "recipient_unavailable").increment();
+                    CommerceTrace.audit("email_delivery", "recipient_unavailable");
                 }
-                metrics.counter("commerce.email.delivery", "result", "smtp_failure").increment();
-            } catch (IllegalArgumentException exception) {
-                deliveries.failed(task, "INVALID_RECIPIENT");
-                metrics.counter("commerce.email.delivery", "result", "invalid_recipient").increment();
-            } catch (IllegalStateException exception) {
-                deliveries.failed(task, "RECIPIENT_UNAVAILABLE");
-                metrics.counter("commerce.email.delivery", "result", "recipient_unavailable").increment();
+            } finally {
+                span.end();
             }
         }
     }

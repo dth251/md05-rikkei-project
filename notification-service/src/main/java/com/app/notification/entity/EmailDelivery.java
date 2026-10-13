@@ -34,6 +34,9 @@ public class EmailDelivery {
     private Instant leaseUntil;
     private Instant sentAt;
 
+    @Column(length = 55)
+    private String traceParent;
+
     protected EmailDelivery() {
     }
 }

@@ -1,6 +1,7 @@
 package com.app.notification.service.impl;
 
 import com.app.notification.dto.event.CommerceEvent;
+import com.app.notification.config.CommerceTrace;
 import com.app.notification.dto.response.EmailTask;
 import com.app.notification.service.EmailDeliveryService;
 import java.sql.Timestamp;
@@ -42,10 +43,10 @@ public class EmailDeliveryServiceImpl implements EmailDeliveryService {
         if (!enabled) {
             return;
         }
-        jdbc.update("INSERT INTO email_deliveries(delivery_id,order_id,user_id,event_type,state,attempts,created_at,next_attempt_at) "
-                        + "VALUES(?,?,?,?,'PENDING',0,CURRENT_TIMESTAMP,CURRENT_TIMESTAMP) "
+        jdbc.update("INSERT INTO email_deliveries(delivery_id,order_id,user_id,event_type,state,attempts,created_at,next_attempt_at,trace_parent) "
+                        + "VALUES(?,?,?,?,'PENDING',0,CURRENT_TIMESTAMP,CURRENT_TIMESTAMP,?) "
                         + "ON CONFLICT(order_id,event_type) DO NOTHING",
-                event.eventId(), event.orderId(), event.userId(), event.type());
+                event.eventId(), event.orderId(), event.userId(), event.type(), CommerceTrace.capture());
     }
 
     @Override
@@ -54,11 +55,11 @@ public class EmailDeliveryServiceImpl implements EmailDeliveryService {
         // SMTP may have accepted a message before a crashed worker saved SENT. Do not resend blindly.
         jdbc.update("UPDATE email_deliveries SET state='UNKNOWN',error_code='LEASE_EXPIRED',lease_until=NULL "
                 + "WHERE state='SENDING' AND lease_until<CURRENT_TIMESTAMP");
-        var tasks = jdbc.query("SELECT delivery_id,order_id,user_id,event_type,attempts FROM email_deliveries "
+        var tasks = jdbc.query("SELECT delivery_id,order_id,user_id,event_type,attempts,trace_parent FROM email_deliveries "
                         + "WHERE state IN ('PENDING','RETRY') AND next_attempt_at<=CURRENT_TIMESTAMP "
                         + "ORDER BY created_at,delivery_id LIMIT ? FOR UPDATE SKIP LOCKED",
                 (row, index) -> new EmailTask(row.getString(1), row.getLong(2), row.getLong(3),
-                        row.getString(4), row.getInt(5) + 1), batchSize);
+                        row.getString(4), row.getInt(5) + 1, row.getString(6)), batchSize);
         for (var task : tasks) {
             jdbc.update("UPDATE email_deliveries SET state='SENDING',attempts=?,lease_until=? WHERE delivery_id=?",
                     task.attempts(), Timestamp.from(Instant.now().plusSeconds(leaseSeconds)), task.deliveryId());
