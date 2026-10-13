@@ -98,6 +98,7 @@ tasks.register('multiUserLoadFixture', JavaExec) {
     dependsOn testClasses
     classpath = sourceSets.test.runtimeClasspath
     mainClass = 'com.app.order.MultiUserLoadFixture'
+    jvmArgs '-Xmx128m', '-XX:MaxMetaspaceSize=128m'
     args providers.gradleProperty('fixtureAction').getOrElse('prepare')
 }
 
