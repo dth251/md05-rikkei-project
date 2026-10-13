@@ -92,6 +92,16 @@ jobs:
           docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --no-deps --wait --wait-timeout 240 "${services[@]}"
           # CI databases are empty: let Hibernate create service-owned base tables first.
           # VPS rollout still applies migrations before recreating an existing service.
+          # The legacy fulfillment migration owns this named Hibernate check.
+          # Refuse to replace it on a database with existing orders.
+          docker compose exec -T postgres psql -U order_user -d order_db -v ON_ERROR_STOP=1 <<'SQL'
+          DO $$ BEGIN
+              IF EXISTS (SELECT 1 FROM orders) THEN
+                  RAISE EXCEPTION 'Expected an empty CI Order database';
+              END IF;
+              ALTER TABLE orders DROP CONSTRAINT IF EXISTS ck_order_fulfillment_v1;
+          END $$;
+          SQL
           for service in auth-service product-service order-service payment-service notification-service; do
             bash infrastructure/scripts/apply-schema.sh "$service"
           done
