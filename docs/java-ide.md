@@ -64,3 +64,34 @@ Checkpoint sau merge main 77: cache mới chỉ có sáu project thật, không 
 lúc 03:03:01–03:03:02 (+07:00); kiểm tra lại marker Java severity error bằng
 0. Worktree đang phát triển đặt trong `C:\md05-rikkei-worktrees`, bên ngoài
 workspace đang mở. PR #21 merge sau CI head 73 toàn bộ Java/live/recovery đạt.
+
+## Lỗi resource đầu ra đã tồn tại của Gateway
+
+Thông báo `Resource already exists on disk: '/api-gateway/bin/main/application.yml'`
+là lỗi trạng thái resource của Java builder trong IDE. File nguồn vẫn là
+`api-gateway/src/main/resources/application.yml`; không xóa hoặc đổi tên file
+nguồn để xử lý output `bin/main`.
+
+Kiểm tra riêng bằng Wrapper:
+
+```powershell
+./api-gateway/gradlew.bat -p api-gateway test bootJar --no-daemon
+```
+
+Khi Gradle đạt, chạy `Java: Reload Projects`, rồi `Java: Rebuild Projects` và chọn
+`api-gateway` trong Command Palette. Đợi build kết thúc rồi kiểm tra Problems.
+Nếu vẫn lỗi, restart Java Language Server rồi reload/rebuild project; không xóa
+output hoặc metadata trong lúc builder đang dùng chúng.
+
+Checkpoint 2026-10-13 19:41:35 +07: lỗi trên đã được tái hiện qua diagnostics của
+IDE. Log có pipe startup timeout/fallback sang stdio, hai standard language servers
+dùng cùng `jdt_ws`, cùng lỗi lưu index; đây là bằng chứng trạng thái IDE không nhất
+quán, không phải lỗi biên dịch Gradle. Metadata riêng Gateway đã được sao lưu private;
+dừng process pipe cũ của đúng workspace, reload cấu hình và full rebuild Gateway
+bằng command của Java extension. Sau xử lý chỉ còn một standard server của workspace,
+diagnostics Gateway và tổng số lỗi Java trong workspace đều bằng 0. Cảnh báo vẫn
+được giữ nguyên, không tắt kiểm tra Java/null analysis.
+
+Gateway `test bootJar --rerun-tasks --no-daemon` đạt 23/23 tests, zero fail/error/skip.
+Không đổi Java source, routes, JWT/rate limit, cấu hình runtime, dữ liệu hoặc container;
+không cần rollout VPS cho việc sửa trạng thái IDE này.

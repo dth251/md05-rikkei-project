@@ -19,3 +19,16 @@ Gateway không truy cập PostgreSQL/RabbitMQ. Redis chỉ phục vụ rate limi
 - [PR #6](https://github.com/dth251/md05-rikkei-project/pull/6) CI verify đạt trên head cuối trước merge `21-api-gateway`.
 - HTTPS domain đã qua Gateway từ rollout `15`: Java live test dùng token thật do Auth phát, kiểm tra 401/403/429 và đổi header X-Real-IP không vượt được quota.
 - Rollout `21` [run main](https://github.com/dth251/md05-rikkei-project/actions/runs/38137082597) kết thúc 2026-10-11 12:01:47 UTC: verify/publish/deploy success, chỉ Gateway được chọn. SSH đối chiếu image `867e87b010698c77dad07ef4ea1e745384ec24c2` và health UP lúc 12:33:55 UTC. Java live test qua HTTPS chạy lại trên image này đạt lúc khoảng 12:35 UTC.
+
+## 146-api-gateway: khôi phục build Java trong IDE
+
+- Ngày 2026-10-13, nhánh `feature/fix-gateway-ide-build`; lỗi project resource
+  `bin/main/application.yml` đã tồn tại được xác nhận qua diagnostics IDE.
+- Gradle `test bootJar --rerun-tasks --no-daemon` chạy lại đạt 23/23 tests,
+  zero fail/error/skip; build kết thúc khoảng 19:33:28 +07.
+- Reload cấu hình và full rebuild Gateway trong Java extension đã đạt. Kiểm tra
+  diagnostics lúc 19:41:35 +07: Gateway không còn lỗi, tổng số lỗi Java workspace
+  bằng 0. Không tắt cảnh báo hoặc null analysis.
+- Chỉ sửa trạng thái IDE và ghi [hướng xử lý](java-ide.md); không đổi source/runtime,
+  không recreate container, chưa push/CI/PR/deploy. SHA/thời gian commit ghi trong
+  [nhật ký](commits-and-deployments.md).
