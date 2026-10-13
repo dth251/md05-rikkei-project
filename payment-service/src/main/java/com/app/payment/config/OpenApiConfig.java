@@ -48,7 +48,7 @@ public class OpenApiConfig {
                 boolean anonymous = method.name().equals("GET") && Set.of(
                         "/api/payments/vnpay/ipn", "/api/payments/vnpay/return").contains(path);
                 boolean admin = path.endsWith("/simulate") || path.endsWith("/vnpay/refund")
-                        || path.endsWith("/vnpay/reconcile");
+                        || path.endsWith("/vnpay/reconcile") || path.endsWith("/cod/collect");
                 if (anonymous) {
                     operation.setSecurity(new ArrayList<>());
                 }

@@ -64,6 +64,36 @@
                          "key":  "invalidToken",
                          "type":  "string",
                          "value":  "invalid"
+                     },
+                     {
+                         "key":  "codOrderId",
+                         "type":  "string",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "codPaymentId",
+                         "type":  "string",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "codAmount",
+                         "type":  "string",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "codOrderKey",
+                         "type":  "string",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "codCollectionKey",
+                         "type":  "string",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "codReceipt",
+                         "type":  "string",
+                         "value":  ""
                      }
                  ],
     "info":  {
@@ -792,6 +822,324 @@
                                                                      }
                                                                  ]
                                                   }
+                                  }
+                              ]
+                 },
+                 {
+                     "description":  "Use a stocked productId. Run requests in order; retry async 404/409 after 1 second. Collection is ADMIN acknowledgement of real cash receipt. Re-run collection with the same key for replay. Clear COD keys/IDs to start a new order.",
+                     "name":  "COD delivery and cash collection",
+                     "item":  [
+                                  {
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{userToken}}"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/orders",
+                                                      "body":  {
+                                                                   "raw":  "{\"channel\":\"WEB\",\"paymentMethod\":\"COD\",\"idempotencyKey\":\"{{codOrderKey}}\",\"items\":[{\"productId\":{{productId}},\"quantity\":1}],\"shippingAddress\":{\"recipientName\":\"COD Fixture\",\"phone\":\"0901234567\",\"street\":\"Fixture street\",\"ward\":\"Ward\",\"district\":\"District\",\"province\":\"Province\"}}",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               },
+                                                                   "mode":  "raw"
+                                                               }
+                                                  },
+                                      "name":  "1 Create COD (product/stock required)",
+                                      "event":  [
+                                                    {
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "if (!pm.collectionVariables.get(\"codOrderKey\")) { pm.collectionVariables.set(\"codOrderKey\", pm.variables.replaceIn(\"{{$guid}}\")); pm.collectionVariables.set(\"codCollectionKey\", pm.variables.replaceIn(\"{{$guid}}\")); pm.collectionVariables.set(\"codReceipt\", \"COD-\" + pm.variables.replaceIn(\"{{$guid}}\")); }"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   },
+                                                        "listen":  "prerequest"
+                                                    },
+                                                    {
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\"COD accepted\", () =\u003e pm.expect(pm.response.code).to.be.oneOf([200,201])); if ([200,201].includes(pm.response.code)) { const data=pm.response.json().data; pm.expect(data.paymentMethod).to.eql(\"COD\"); pm.collectionVariables.set(\"codOrderId\", data.id); }"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   },
+                                                        "listen":  "test"
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{userToken}}"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/payments/by-order/{{codOrderId}}"
+                                                  },
+                                      "name":  "2 Get COD payment - retry while 404",
+                                      "event":  [
+                                                    {
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\"Payment ready (retry 404)\", () =\u003e pm.response.to.have.status(200)); if (pm.response.code===200) { const data=pm.response.json().data; pm.collectionVariables.set(\"codPaymentId\", data.id); pm.collectionVariables.set(\"codAmount\", data.amount); }"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   },
+                                                        "listen":  "test"
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{adminToken}}"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/orders/{{codOrderId}}/ship",
+                                                      "body":  {
+                                                                   "raw":  "{\"carrier\":\"COD Fixture Carrier\",\"trackingNumber\":\"COD-{{codOrderId}}\"}",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               },
+                                                                   "mode":  "raw"
+                                                               }
+                                                  },
+                                      "name":  "3 Ship COD",
+                                      "event":  [
+                                                    {
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\"Shipped\", () =\u003e pm.response.to.have.status(200));"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   },
+                                                        "listen":  "test"
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{adminToken}}"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/payments/{{codPaymentId}}/cod/collect",
+                                                      "body":  {
+                                                                   "raw":  "{\"amount\":{{codAmount}},\"idempotencyKey\":\"{{codCollectionKey}}\",\"receiptNumber\":\"{{codReceipt}}\"}",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               },
+                                                                   "mode":  "raw"
+                                                               }
+                                                  },
+                                      "name":  "4 Collect full cash - retry shipment acknowledgement 409",
+                                      "event":  [
+                                                    {
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\"Collected\", () =\u003e pm.response.to.have.status(200));"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   },
+                                                        "listen":  "test"
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{userToken}}"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/orders/{{codOrderId}}"
+                                                  },
+                                      "name":  "5 Get COD order - wait for codPaidAt before completing",
+                                      "event":  [
+                                                    {
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\"Cash acknowledged\", () =\u003e pm.expect(pm.response.json().data.codPaidAt).to.be.a(\"string\"));"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   },
+                                                        "listen":  "test"
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{adminToken}}"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/orders/{{codOrderId}}/complete"
+                                                  },
+                                      "name":  "6 Complete COD",
+                                      "event":  [
+                                                    {
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\"Completed\", () =\u003e pm.response.to.have.status(200));"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   },
+                                                        "listen":  "test"
+                                                    }
+                                                ]
+                                  }
+                              ]
+                 },
+                 {
+                     "description":  "Creates another COD order, then cancels before shipping. Requires available stock. Retry the GET until FAILED.",
+                     "name":  "COD cancellation before shipment",
+                     "item":  [
+                                  {
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{userToken}}"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/orders",
+                                                      "body":  {
+                                                                   "raw":  "{\"channel\":\"WEB\",\"paymentMethod\":\"COD\",\"idempotencyKey\":\"{{codOrderKey}}\",\"items\":[{\"productId\":{{productId}},\"quantity\":1}],\"shippingAddress\":{\"recipientName\":\"COD Fixture\",\"phone\":\"0901234567\",\"street\":\"Fixture street\",\"ward\":\"Ward\",\"district\":\"District\",\"province\":\"Province\"}}",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               },
+                                                                   "mode":  "raw"
+                                                               }
+                                                  },
+                                      "name":  "1 Create separate COD for cancellation",
+                                      "event":  [
+                                                    {
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.collectionVariables.set(\"codOrderKey\", pm.variables.replaceIn(\"{{$guid}}\"));"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   },
+                                                        "listen":  "prerequest"
+                                                    },
+                                                    {
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\"COD accepted\", () =\u003e pm.expect(pm.response.code).to.be.oneOf([200,201])); if ([200,201].includes(pm.response.code)) { const data=pm.response.json().data; pm.expect(data.paymentMethod).to.eql(\"COD\"); pm.collectionVariables.set(\"codOrderId\", data.id); }"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   },
+                                                        "listen":  "test"
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{adminToken}}"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/orders/{{codOrderId}}/cod/cancel"
+                                                  },
+                                      "name":  "2 Cancel COD before shipment",
+                                      "event":  [
+                                                    {
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\"Cancelled\", () =\u003e pm.response.to.have.status(200));"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   },
+                                                        "listen":  "test"
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{userToken}}"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/payments/by-order/{{codOrderId}}"
+                                                  },
+                                      "name":  "3 Get cancelled COD payment - retry pending/404",
+                                      "event":  [
+                                                    {
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\"Payment failed\", () =\u003e pm.expect(pm.response.json().data.status).to.eql(\"FAILED\"));"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   },
+                                                        "listen":  "test"
+                                                    }
+                                                ]
                                   }
                               ]
                  }

@@ -7,6 +7,7 @@ import com.app.payment.dto.request.VnpayCallback;
 import com.app.payment.dto.response.VnpayCheckoutResponse;
 import com.app.payment.dto.response.VnpayIpnResponse;
 import com.app.payment.entity.PaymentStatus;
+import com.app.payment.entity.PaymentMethod;
 import com.app.payment.entity.VnpayPayment;
 import com.app.payment.mapper.VnpayMapper;
 import com.app.payment.repository.PaymentRepository;
@@ -61,6 +62,9 @@ public class VnpayTransactionServiceImpl implements VnpayTransactionService {
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Payment not found"));
         if (!payment.getUserId().equals(userId)) {
             throw new ApiException(HttpStatus.NOT_FOUND, "Payment not found");
+        }
+        if (payment.getPaymentMethod() == PaymentMethod.COD) {
+            throw new ApiException(HttpStatus.CONFLICT, "COD cannot use VNPay checkout");
         }
         if (payment.getStatus() != PaymentStatus.PENDING || payment.isReservationExpired()) {
             throw new ApiException(HttpStatus.CONFLICT, "Payment is no longer payable");

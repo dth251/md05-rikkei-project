@@ -30,7 +30,10 @@ public class OrderMapper {
                 order.getCreatedAt(),
                 addresses.toResponse(order.getShippingAddress()),
                 order.getShippedAt() == null ? null : new ShipmentResponse(order.getCarrier(), order.getTrackingNumber(),
-                        order.getShippedAt(), order.getCompletedAt())
+                        order.getShippedAt(), order.getCompletedAt()),
+                order.getPaymentMethod(),
+                order.getCodPaymentId(),
+                order.getCodPaidAt()
         );
     }
 }

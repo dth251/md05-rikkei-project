@@ -53,6 +53,8 @@ class OpenApiTests {
         assertFalse(contract.path("paths").has("/v3/api-docs"));
         assertEquals("bearer", contract.path("components").path("securitySchemes").path("bearerAuth").path("scheme").asText());
         assertEquals("ADMIN", contract.path("paths").path("/api/payments/{id}/simulate").path("post").path("x-required-role").asText());
+        assertEquals("ADMIN", contract.path("paths").path("/api/payments/{id}/cod/collect").path("post").path("x-required-role").asText());
+        assertTrue(contract.path("components").path("schemas").has("CollectCodRequest"));
         mvc.perform(get("/swagger-ui/index.html").header("Authorization", "Bearer " + token("ADMIN")))
                 .andExpect(status().isNotFound());
         mvc.perform(get("/v3/api-docs.yaml")).andExpect(status().isUnauthorized());

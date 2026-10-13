@@ -38,4 +38,9 @@ public class OrderFulfillmentController {
     ) {
         return ResponseEntity.ok(ApiResponse.success(fulfillment.complete(id), "Order completed"));
     }
+
+    @PostMapping("/cod/cancel")
+    public ResponseEntity<ApiResponse<OrderResponse>> cancelCod(@PathVariable Long id) {
+        return ResponseEntity.ok(ApiResponse.success(fulfillment.cancelCod(id), "COD order cancelled"));
+    }
 }

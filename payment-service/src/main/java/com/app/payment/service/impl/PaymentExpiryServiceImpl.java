@@ -4,6 +4,7 @@ import com.app.payment.dto.event.CommerceEvent;
 import com.app.payment.entity.ExpiredOrder;
 import com.app.payment.entity.Payment;
 import com.app.payment.entity.PaymentStatus;
+import com.app.payment.entity.PaymentMethod;
 import com.app.payment.repository.EventInbox;
 import com.app.payment.repository.ExpiredOrderRepository;
 import com.app.payment.repository.PaymentOrderLock;
@@ -64,6 +65,9 @@ public class PaymentExpiryServiceImpl implements PaymentExpiryService {
         var marker = expiredOrders.findById(payment.getOrderId());
         if (marker.isEmpty()) {
             return;
+        }
+        if (payment.getPaymentMethod() == PaymentMethod.COD) {
+            throw new IllegalArgumentException("COD cannot expire through online reservation policy");
         }
         if (!marker.get().matches(payment.getUserId(), payment.getAmount())) {
             throw new IllegalArgumentException("Expiration does not match payment");

@@ -36,28 +36,8 @@
               }
             }
           },
-          "400" : {
-            "description" : "Invalid request",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiError"
-                }
-              }
-            }
-          },
-          "401" : {
-            "description" : "Authentication required",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiError"
-                }
-              }
-            }
-          },
-          "403" : {
-            "description" : "Access denied",
+          "503" : {
+            "description" : "Dependency unavailable",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -76,8 +56,28 @@
               }
             }
           },
-          "503" : {
-            "description" : "Dependency unavailable",
+          "403" : {
+            "description" : "Access denied",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Authentication required",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid request",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -144,28 +144,8 @@
               }
             }
           },
-          "400" : {
-            "description" : "Invalid request",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiError"
-                }
-              }
-            }
-          },
-          "401" : {
-            "description" : "Authentication required",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiError"
-                }
-              }
-            }
-          },
-          "403" : {
-            "description" : "Access denied",
+          "503" : {
+            "description" : "Dependency unavailable",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -184,8 +164,28 @@
               }
             }
           },
-          "503" : {
-            "description" : "Dependency unavailable",
+          "403" : {
+            "description" : "Access denied",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Authentication required",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid request",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -232,28 +232,8 @@
               }
             }
           },
-          "400" : {
-            "description" : "Invalid request",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiError"
-                }
-              }
-            }
-          },
-          "401" : {
-            "description" : "Authentication required",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiError"
-                }
-              }
-            }
-          },
-          "403" : {
-            "description" : "Access denied",
+          "503" : {
+            "description" : "Dependency unavailable",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -272,8 +252,116 @@
               }
             }
           },
+          "403" : {
+            "description" : "Access denied",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Authentication required",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "x-required-role" : "ADMIN"
+      }
+    },
+    "/api/orders/{id}/cod/cancel" : {
+      "post" : {
+        "tags" : [ "order-fulfillment-controller" ],
+        "operationId" : "cancelCod",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseOrderResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Conflict",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
           "503" : {
             "description" : "Dependency unavailable",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Not found",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Access denied",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Authentication required",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid request",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -321,28 +409,8 @@
               }
             }
           },
-          "400" : {
-            "description" : "Invalid request",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiError"
-                }
-              }
-            }
-          },
-          "401" : {
-            "description" : "Authentication required",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiError"
-                }
-              }
-            }
-          },
-          "403" : {
-            "description" : "Access denied",
+          "503" : {
+            "description" : "Dependency unavailable",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -361,8 +429,28 @@
               }
             }
           },
-          "503" : {
-            "description" : "Dependency unavailable",
+          "403" : {
+            "description" : "Access denied",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Authentication required",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid request",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -409,28 +497,8 @@
               }
             }
           },
-          "400" : {
-            "description" : "Invalid request",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiError"
-                }
-              }
-            }
-          },
-          "401" : {
-            "description" : "Authentication required",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiError"
-                }
-              }
-            }
-          },
-          "403" : {
-            "description" : "Access denied",
+          "503" : {
+            "description" : "Dependency unavailable",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -449,8 +517,28 @@
               }
             }
           },
-          "503" : {
-            "description" : "Dependency unavailable",
+          "403" : {
+            "description" : "Access denied",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Authentication required",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid request",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -497,28 +585,8 @@
               }
             }
           },
-          "400" : {
-            "description" : "Invalid request",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiError"
-                }
-              }
-            }
-          },
-          "401" : {
-            "description" : "Authentication required",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiError"
-                }
-              }
-            }
-          },
-          "403" : {
-            "description" : "Access denied",
+          "503" : {
+            "description" : "Dependency unavailable",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -537,8 +605,28 @@
               }
             }
           },
-          "503" : {
-            "description" : "Dependency unavailable",
+          "403" : {
+            "description" : "Access denied",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Authentication required",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid request",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -576,6 +664,10 @@
           },
           "shippingAddress" : {
             "$ref" : "#/components/schemas/ShippingAddressRequest"
+          },
+          "paymentMethod" : {
+            "type" : "string",
+            "enum" : [ "ONLINE", "COD" ]
           }
         },
         "required" : [ "channel", "idempotencyKey", "items" ]
@@ -714,6 +806,18 @@
           },
           "shipment" : {
             "$ref" : "#/components/schemas/ShipmentResponse"
+          },
+          "paymentMethod" : {
+            "type" : "string",
+            "enum" : [ "ONLINE", "COD" ]
+          },
+          "codPaymentId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "codPaidAt" : {
+            "type" : "string",
+            "format" : "date-time"
           }
         }
       },

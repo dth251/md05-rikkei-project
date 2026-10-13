@@ -6,6 +6,7 @@ import com.app.order.dto.event.CommerceEvent;
 import com.app.order.dto.response.OrderResponse;
 import com.app.order.dto.response.ProductSnapshot;
 import com.app.order.entity.PurchaseOrder;
+import com.app.order.entity.PaymentMethod;
 import com.app.order.mapper.OrderMapper;
 import com.app.order.mapper.ShippingAddressMapper;
 import com.app.order.repository.OrderRepository;
@@ -70,6 +71,12 @@ public class OrderTransactionsImpl implements OrderTransactions {
         PurchaseOrder order = new PurchaseOrder(userId, request.idempotencyKey(), request.channel());
         order.setRequestFingerprint(fingerprint);
         order.setShippingAddress(addresses.toEntity(request.shippingAddress()));
+        if (request.paymentMethod() == PaymentMethod.COD) {
+            if (request.shippingAddress() == null) {
+                throw new ApiException(HttpStatus.BAD_REQUEST, "COD requires shipping address");
+            }
+            order.confirmCod();
+        }
         for (int index = 0; index < request.items().size(); index++) {
             var product = products.get(index);
             order.addItem(product.id(), product.sku(), product.name(), product.unitPrice(), request.items().get(index).quantity());
@@ -84,7 +91,8 @@ public class OrderTransactionsImpl implements OrderTransactions {
                 throw new ApiException(HttpStatus.CONFLICT, "Insufficient stock");
             }
         }
-        outboxService.append(new CommerceEvent(UUID.randomUUID().toString(), "order.created", order.getId(),
+        String eventType = order.getPaymentMethod() == PaymentMethod.COD ? "order.cod-created" : "order.created";
+        outboxService.append(new CommerceEvent(UUID.randomUUID().toString(), eventType, order.getId(),
                 order.getUserId(), order.getTotalAmount(), null, Instant.now()));
         return orderMapper.toResponse(order);
     }

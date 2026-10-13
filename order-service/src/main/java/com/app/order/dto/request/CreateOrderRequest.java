@@ -1,6 +1,7 @@
 package com.app.order.dto.request;
 
 import com.app.order.entity.SalesChannel;
+import com.app.order.entity.PaymentMethod;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -20,8 +21,23 @@ public record CreateOrderRequest(
         List<@NotNull @Valid OrderItemRequest> items,
 
         @Valid
-        ShippingAddressRequest shippingAddress
+        ShippingAddressRequest shippingAddress,
+
+        PaymentMethod paymentMethod
 ) {
+
+    public CreateOrderRequest {
+        paymentMethod = paymentMethod == null ? PaymentMethod.ONLINE : paymentMethod;
+    }
+
+    public CreateOrderRequest(
+            SalesChannel channel,
+            String idempotencyKey,
+            List<OrderItemRequest> items,
+            ShippingAddressRequest shippingAddress
+    ) {
+        this(channel, idempotencyKey, items, shippingAddress, PaymentMethod.ONLINE);
+    }
 
     public CreateOrderRequest(
             SalesChannel channel,

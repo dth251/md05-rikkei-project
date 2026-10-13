@@ -5,6 +5,8 @@ import com.app.payment.dto.event.CommerceEvent;
 import com.app.payment.dto.response.PaymentResponse;
 import com.app.payment.entity.Payment;
 import com.app.payment.entity.PaymentStatus;
+import com.app.payment.entity.PaymentMethod;
+import com.app.payment.service.CodPaymentService;
 import com.app.payment.mapper.PaymentMapper;
 import com.app.payment.repository.PaymentRepository;
 import com.app.payment.repository.PaymentOrderLock;
@@ -30,6 +32,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final PaymentOrderLock orderLocks;
     private final PaymentExpiryService expiry;
     private final VnpayPaymentRepository providerPayments;
+    private final CodPaymentService cod;
 
     public PaymentServiceImpl(
             PaymentRepository paymentRepository,
@@ -38,7 +41,8 @@ public class PaymentServiceImpl implements PaymentService {
             JdbcTemplate jdbc,
             PaymentOrderLock orderLocks,
             PaymentExpiryService expiry,
-            VnpayPaymentRepository providerPayments
+            VnpayPaymentRepository providerPayments,
+            CodPaymentService cod
     ) {
         this.paymentRepository = paymentRepository;
         this.paymentMapper = paymentMapper;
@@ -47,6 +51,7 @@ public class PaymentServiceImpl implements PaymentService {
         this.orderLocks = orderLocks;
         this.expiry = expiry;
         this.providerPayments = providerPayments;
+        this.cod = cod;
     }
 
     @Override
@@ -58,14 +63,22 @@ public class PaymentServiceImpl implements PaymentService {
         if (claimed == 0) {
             return;
         }
-        jdbc.update("INSERT INTO payments (order_id, user_id, amount, status, created_at, version) "
-                + "VALUES (?, ?, ?, 'PENDING', CURRENT_TIMESTAMP, 0) ON CONFLICT (order_id) DO NOTHING",
-                event.orderId(), event.userId(), event.amount());
+        PaymentMethod method = "order.cod-created".equals(event.type()) ? PaymentMethod.COD : PaymentMethod.ONLINE;
+        jdbc.update("INSERT INTO payments (order_id, user_id, amount, payment_method, status, created_at, version) "
+                + "VALUES (?, ?, ?, ?, 'PENDING', CURRENT_TIMESTAMP, 0) ON CONFLICT (order_id) DO NOTHING",
+                event.orderId(), event.userId(), event.amount(), method.name());
         Payment payment = paymentRepository.findByOrderId(event.orderId()).orElseThrow();
-        if (!payment.getUserId().equals(event.userId()) || payment.getAmount().compareTo(event.amount()) != 0) {
+        if (!payment.getUserId().equals(event.userId()) || payment.getAmount().compareTo(event.amount()) != 0
+                || payment.getPaymentMethod() != method) {
             throw new IllegalArgumentException("Conflicting order event");
         }
-        expiry.apply(payment);
+        if (method == PaymentMethod.COD) {
+            expiry.apply(payment); // Reject any inconsistent online-expiration marker for this order.
+            cod.apply(payment);
+        } else {
+            expiry.apply(payment);
+            cod.apply(payment); // Reject a conflicting COD marker rather than silently accepting it.
+        }
     }
 
     @Override
@@ -96,6 +109,9 @@ public class PaymentServiceImpl implements PaymentService {
             throw new ApiException(HttpStatus.BAD_REQUEST, "Choose SUCCESS or FAILED");
         }
         Payment payment = paymentRepository.findLockedById(id).orElseThrow(this::notFound);
+        if (payment.getPaymentMethod() == PaymentMethod.COD) {
+            throw new ApiException(HttpStatus.CONFLICT, "COD requires recorded cash collection");
+        }
         if (providerPayments.existsById(id)) {
             throw new ApiException(HttpStatus.CONFLICT, "Provider payment requires verified callback");
         }

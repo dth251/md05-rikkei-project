@@ -2,6 +2,7 @@ package com.app.order.dto.response;
 
 import com.app.order.entity.OrderStatus;
 import com.app.order.entity.SalesChannel;
+import com.app.order.entity.PaymentMethod;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
@@ -15,6 +16,9 @@ public record OrderResponse(
         List<OrderItemResponse> items,
         Instant createdAt,
         ShippingAddressResponse shippingAddress,
-        ShipmentResponse shipment
+        ShipmentResponse shipment,
+        PaymentMethod paymentMethod,
+        Long codPaymentId,
+        Instant codPaidAt
 ) {
 }

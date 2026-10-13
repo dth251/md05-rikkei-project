@@ -39,7 +39,7 @@ jobs:
             paths="$(git diff --name-only "$BEFORE" HEAD)"
           fi
           services=()
-          for service in auth-service api-gateway product-service order-service payment-service notification-service; do
+          for service in auth-service api-gateway product-service payment-service order-service notification-service; do
             [[ -f "$service/build.gradle" ]] || continue
             # Test/load/observation tools still run verification, but do not recreate every VPS app.
             # Runtime infrastructure/Compose changes affect all services; module changes select that app.
@@ -106,7 +106,7 @@ jobs:
           if [[ -f payment-service/build.gradle ]]; then
             docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --wait --wait-timeout 180 rabbitmq
             docker compose run --rm --no-deps rabbitmq-topology
-            JWT_SECRET="$(sed -n 's/^JWT_SECRET=//p' .env)" PAYMENT_LIVE_DB_PASSWORD="$(sed -n 's/^PAYMENT_DB_PASSWORD=//p' .env)" RABBITMQ_LIVE_USER="$(sed -n 's/^RABBITMQ_DEFAULT_USER=//p' .env)" RABBITMQ_LIVE_PASSWORD="$(sed -n 's/^RABBITMQ_DEFAULT_PASS=//p' .env)" payment-service/gradlew -p payment-service liveTest --no-daemon
+            JWT_SECRET="$(sed -n 's/^JWT_SECRET=//p' .env)" PAYMENT_LIVE_DB_PASSWORD="$(sed -n 's/^PAYMENT_DB_PASSWORD=//p' .env)" ORDER_LIVE_DB_PASSWORD="$(sed -n 's/^ORDER_DB_PASSWORD=//p' .env)" NOTIFICATION_LIVE_DB_PASSWORD="$(sed -n 's/^NOTIFICATION_DB_PASSWORD=//p' .env)" RABBITMQ_LIVE_USER="$(sed -n 's/^RABBITMQ_DEFAULT_USER=//p' .env)" RABBITMQ_LIVE_PASSWORD="$(sed -n 's/^RABBITMQ_DEFAULT_PASS=//p' .env)" payment-service/gradlew -p payment-service liveTest --no-daemon
           fi
           if [[ -f notification-service/build.gradle ]]; then
             JWT_SECRET="$(sed -n 's/^JWT_SECRET=//p' .env)" NOTIFICATION_LIVE_DB_PASSWORD="$(sed -n 's/^NOTIFICATION_DB_PASSWORD=//p' .env)" RABBITMQ_LIVE_USER="$(sed -n 's/^RABBITMQ_DEFAULT_USER=//p' .env)" RABBITMQ_LIVE_PASSWORD="$(sed -n 's/^RABBITMQ_DEFAULT_PASS=//p' .env)" NOTIFICATION_RECOVERY_TEST=true notification-service/gradlew -p notification-service liveTest --no-daemon
