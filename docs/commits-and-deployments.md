@@ -588,3 +588,55 @@ nhận; Order nhận payment.succeeded rồi mới complete. Hủy chỉ trướ
 Trả hàng/đối soát hãng vận chuyển chưa triển khai. Chi tiết API và Mermaid
 trong [luồng COD](cod-payment.md). CI thêm live COD và rollout Payment trước
 Order. Thay đổi .vscode/settings.json có sẵn không nằm trong commit.
+
+## Trả toàn bộ đơn và hoàn tiền ngày 13/10/2026
+
+Nhánh `feature/returns-refunds`, tiếp nối COD. Phạm vi là toàn bộ đơn đã
+COMPLETED: khách yêu cầu, ADMIN duyệt và nhận đủ hàng, sau đó hoàn đủ tổng
+tiền gốc. Hồ sơ trả hàng có trạng thái riêng, giữ lịch sử Order COMPLETED.
+
+| Mốc | SHA | Thời gian +07:00 | Kiểm tra / deploy thực tế |
+|---|---|---|---|
+| 150-payment-service | `3fd8bc02458b447bdd15fe97b87f7c8ea3499a5f` | 2026-10-13T21:31:03+07:00 | Order 57/57 và Payment 59/59 Java tests, bootJar đạt; live 27/27 đạt, zero fail/error/skip. Docker local Order/Payment build, recreate và healthy. Commit local, chưa push/PR/CI/GHCR/deploy VPS. |
+
+Java tests phủ chủ đơn/quyền ADMIN, replay, từ chối hồ sơ, hàng hỏng không
+restock, nhiều item rollback khi tràn kho, biên nhận trùng, nhận hàng/chi
+hoàn đồng thời và VNPay chưa rõ kết quả. Kho chỉ nhập lại một lần; chi COD
+chỉ ghi một biên nhận. Payment giữ SUCCESS/completedAt và audit thu tiền
+gốc, refundStatus chuyển REQUIRED rồi REFUNDED. Event completion đến trước
+ready hoặc gửi lại không lùi trạng thái hồ sơ. Không hỗ trợ trả một phần;
+REJECTED là kết quả cuối của một hồ sơ trên mỗi đơn.
+
+Live kết thúc 21:30:12 +07:00, BUILD SUCCESSFUL: ReturnRefundLiveTests 4/4
+(COD + 24 request nhận hàng/chi hoàn cùng lúc, từ chối, hàng hỏng, ONLINE
+mô phỏng); VnpayRefundPgLiveTests 10/10 (signed provider ledger, type 01
+không chứng minh hoàn tiền, full return qua Gateway/RabbitMQ, không submit
+lại sau restart); CodPaymentLiveTests 3/3; CodProjectionPgLiveTests 3/3;
+PaymentLiveTests 3/3; VnpayLiveTests 4/4. VNPay dùng HTTP fixture với khóa
+public test-only, không có giao dịch ngân hàng thật. Lần live đầu 25/27:
+fixture trả cố định 1250 minor units trong khi đơn có tổng 2500; Payment
+từ chối đúng số tiền lệch. Đã sửa fixture giữ số tiền theo TxnRef, chạy lại
+toàn bộ 27 ca đạt, không nới kiểm tra chữ ký/số tiền trong production.
+
+Order migration 005 và Payment migration 003 đã apply local, chạy lại
+runner checksum sau live đạt. Topology bổ sung payment.return-received.q,
+order.return-result.q và DLQ/policy/bindings; Bash/PowerShell infrastructure
+verifier đều đạt. Kiểm tra cuối hai queue có một consumer mỗi queue,
+ready/unacked/DLQ đều 0; đủ chín core containers healthy. Không xóa volume
+hoặc dữ liệu. Chỉ rollout ứng dụng local Payment trước Order; các record
+live là dữ liệu kiểm thử, không phải giao dịch khách hàng.
+
+Image Order local: `sha256:082553d0359f132d9ae3ea4877b55d5ace2fca252ece9fea2a063925d234338a`.
+Image Payment local: `sha256:66fe6e3453c3b2b760b3177be0962a81e39cc319b4c77b0a538d95c5a4a26888`.
+SHA-256 JAR trong container khớp build artifact vừa kiểm thử: Order
+`f22f920300205333b77a01a8ffdadf1f02a94e482bd2e789f4fd6d96bea4c308`,
+Payment `e4d9b0da624ad0ece26a8b948f312f562ccfa8262b55f01eaa4253997ed14b3b`.
+
+OpenAPI export 32 paths/41 operations, ID duy nhất; Postman collection
+JSON hợp lệ và 19 scripts COD/return qua node --check, chưa chạy Postman
+Runner. Bash/PowerShell syntax và diff check đạt. CI tự khám phá Java live
+COD/return và stage VNPay chạy full-return/recovery; chưa chạy CI remote
+tại checkpoint này. .env/.verification và thay đổi .vscode/settings.json
+có sẵn không nằm trong commit. Không bổ sung frontend/shared module,
+không thay luồng ONLINE/COD hoặc notification hiện có. API, Mermaid,
+biên nhận cash, giới hạn và rollout trong [luồng trả hàng](returns-refunds.md).
