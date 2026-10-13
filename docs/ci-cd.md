@@ -2,6 +2,11 @@
 
 Workflow: [.github/workflows/ci.yml](../.github/workflows/ci.yml), tên `Services CI/CD`. Sáu ứng dụng hiện có: Gateway, Auth, Product, Order/Inventory, Payment và Notification. Mỗi ứng dụng Java 21/Spring Boot 3.5.6 có Gradle Wrapper riêng.
 
+Sáu service đều dùng `Dockerfile.runtime`, nhận `build/libs/app.jar` sau kiểm thử
+Gradle. Build local bằng Wrapper trước khi chạy `docker compose build`; Auth cũng
+theo cùng luồng này. Dockerfile Auth cũ tự build Gradle trong image đã được bỏ
+vì không còn được Compose hoặc CI sử dụng.
+
 ## Quy tắc push và ghi chú
 
 - Commit và tiêu đề PR giữ format `NN-ten-service: noi dung thay doi`, số tăng dần từ lịch sử Git. CI/CD thuộc `devops`, tài liệu thuộc `docs`. Không giới hạn số lần commit: hoàn thành và kiểm thử phần công việc thì commit.

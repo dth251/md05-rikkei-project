@@ -53,6 +53,11 @@ class OpenApiTests {
         assertFalse(contract.path("paths").has("/v3/api-docs"));
         assertEquals("bearer", contract.path("components").path("securitySchemes").path("bearerAuth").path("scheme").asText());
         assertEquals("ADMIN", contract.path("paths").path("/api/orders/{id}/ship").path("post").path("x-required-role").asText());
+        assertEquals("ADMIN", contract.path("paths").path("/api/orders/{id}/cod/cancel").path("post").path("x-required-role").asText());
+        assertEquals("USER", contract.path("paths").path("/api/orders/{id}/return").path("post").path("x-required-role").asText());
+        assertEquals("ADMIN", contract.path("paths").path("/api/orders/{id}/return/decision").path("post").path("x-required-role").asText());
+        assertEquals("ADMIN", contract.path("paths").path("/api/orders/{id}/return/receive").path("post").path("x-required-role").asText());
+        assertTrue(contract.path("components").path("schemas").path("CreateOrderRequest").path("properties").has("paymentMethod"));
         assertEquals(50, contract.path("components").path("schemas").path("CreateOrderRequest").path("properties").path("items").path("maxItems").asInt());
         mvc.perform(get("/swagger-ui/index.html").header("Authorization", "Bearer " + token("ADMIN")))
                 .andExpect(status().isNotFound());

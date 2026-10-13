@@ -31,10 +31,12 @@ public class OrderEventListener {
                 throw new IllegalArgumentException("Event ID required");
             }
             UUID.fromString(event.eventId());
-            if (!"order.created".equals(event.type()) || !event.type().equals(message.getMessageProperties().getReceivedRoutingKey())
+            if (!("order.created".equals(event.type()) || "order.cod-created".equals(event.type()))
+                    || !event.type().equals(message.getMessageProperties().getReceivedRoutingKey())
                     || event.orderId() == null || event.orderId() <= 0 || event.userId() == null || event.userId() <= 0
                     || event.amount() == null || event.amount().signum() <= 0 || event.amount().scale() > 2
-                    || event.amount().precision() - event.amount().scale() > 16 || event.occurredAt() == null) {
+                    || event.amount().precision() - event.amount().scale() > 16 || event.occurredAt() == null
+                    || event.paymentId() != null) {
                 throw new IllegalArgumentException("Invalid order event");
             }
             paymentService.acceptOrder(event);

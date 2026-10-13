@@ -36,6 +36,20 @@ public class Payment {
     @Column(nullable = false, length = 16)
     private PaymentStatus status = PaymentStatus.PENDING;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20, columnDefinition = "varchar(20) default 'ONLINE'")
+    private PaymentMethod paymentMethod = PaymentMethod.ONLINE;
+
+    @Column(length = 128, unique = true)
+    private String codIdempotencyKey;
+
+    @Column(length = 128, unique = true)
+    private String codReceiptNumber;
+
+    private Long codCollectedBy;
+
+    private Instant codCollectedAt;
+
     @Column(nullable = false)
     private Instant createdAt;
 
@@ -76,6 +90,52 @@ public class Payment {
         }
         status = outcome;
         completedAt = Instant.now();
+    }
+
+    public Payment(
+            Long orderId,
+            Long userId,
+            BigDecimal amount,
+            PaymentMethod paymentMethod
+    ) {
+        this(orderId, userId, amount);
+        this.paymentMethod = java.util.Objects.requireNonNull(paymentMethod);
+    }
+
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public String getCodIdempotencyKey() {
+        return codIdempotencyKey;
+    }
+
+    public String getCodReceiptNumber() {
+        return codReceiptNumber;
+    }
+
+    public Long getCodCollectedBy() {
+        return codCollectedBy;
+    }
+
+    public Instant getCodCollectedAt() {
+        return codCollectedAt;
+    }
+
+    public void collectCod(
+            String key,
+            String receipt,
+            Long collector
+    ) {
+        if (paymentMethod != PaymentMethod.COD || status != PaymentStatus.PENDING || collector == null || collector <= 0
+                || key == null || key.isBlank() || receipt == null || receipt.isBlank()) {
+            throw new IllegalStateException("Pending COD payment and valid receipt required");
+        }
+        complete(PaymentStatus.SUCCESS);
+        codIdempotencyKey = key;
+        codReceiptNumber = receipt;
+        codCollectedBy = collector;
+        codCollectedAt = completedAt;
     }
 
     @PrePersist
@@ -145,5 +205,14 @@ public class Payment {
             throw new IllegalStateException("Captured payment requiring refund expected");
         }
         refundStatus = RefundStatus.REFUNDED;
+    }
+
+    public void requireReturnRefund() {
+        if (status != PaymentStatus.SUCCESS || reservationExpired) {
+            throw new IllegalArgumentException("Return refund requires a captured non-expired payment");
+        }
+        if (refundStatus == RefundStatus.NONE) {
+            refundStatus = RefundStatus.REQUIRED;
+        }
     }
 }

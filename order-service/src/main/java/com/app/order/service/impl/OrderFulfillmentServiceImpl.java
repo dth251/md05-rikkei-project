@@ -6,6 +6,9 @@ import com.app.order.dto.request.ShipOrderRequest;
 import com.app.order.dto.response.OrderResponse;
 import com.app.order.entity.OrderStatus;
 import com.app.order.entity.PurchaseOrder;
+import com.app.order.entity.PaymentMethod;
+import com.app.order.repository.StockRepository;
+import java.util.Comparator;
 import com.app.order.mapper.OrderMapper;
 import com.app.order.mapper.ShippingAddressMapper;
 import com.app.order.repository.OrderRepository;
@@ -24,17 +27,20 @@ public class OrderFulfillmentServiceImpl implements OrderFulfillmentService {
     private final OrderMapper mapper;
     private final ShippingAddressMapper addresses;
     private final OutboxService outbox;
+    private final StockRepository stocks;
 
     public OrderFulfillmentServiceImpl(
             OrderRepository orders,
             OrderMapper mapper,
             ShippingAddressMapper addresses,
-            OutboxService outbox
+            OutboxService outbox,
+            StockRepository stocks
     ) {
         this.orders = orders;
         this.mapper = mapper;
         this.addresses = addresses;
         this.outbox = outbox;
+        this.stocks = stocks;
     }
 
     @Override
@@ -66,8 +72,14 @@ public class OrderFulfillmentServiceImpl implements OrderFulfillmentService {
             order.setShippingAddress(address);
         }
         Instant now = Instant.now();
+        if (order.getPaymentMethod() == PaymentMethod.COD) {
+            finalizeCodStock(order, true);
+        }
         order.ship(carrier, tracking, now);
         append(order, "order.shipped", now);
+        if (order.getPaymentMethod() == PaymentMethod.COD) {
+            append(order, "order.cod-shipped", now);
+        }
         orders.flush();
         return mapper.toResponse(order);
     }
@@ -84,11 +96,42 @@ public class OrderFulfillmentServiceImpl implements OrderFulfillmentService {
         if (order.getStatus() != OrderStatus.SHIPPING) {
             throw new ApiException(HttpStatus.CONFLICT, "Only shipped orders can complete");
         }
+        if (order.getPaymentMethod() == PaymentMethod.COD && order.getCodPaidAt() == null) {
+            throw new ApiException(HttpStatus.CONFLICT, "COD collection has not been acknowledged yet");
+        }
         Instant now = Instant.now();
         order.complete(now);
         append(order, "order.completed", order.getCompletedAt());
         orders.flush();
         return mapper.toResponse(order);
+    }
+
+    @Override
+    @Transactional
+    public OrderResponse cancelCod(Long orderId) {
+        PurchaseOrder order = locked(orderId);
+        if (order.getPaymentMethod() != PaymentMethod.COD) {
+            throw new ApiException(HttpStatus.CONFLICT, "Only COD orders can use this cancellation");
+        }
+        if (order.getStatus() == OrderStatus.CANCELLED) {
+            return mapper.toResponse(order);
+        }
+        if (order.getStatus() != OrderStatus.CONFIRMED) {
+            throw new ApiException(HttpStatus.CONFLICT, "COD cancellation is allowed only before shipment");
+        }
+        finalizeCodStock(order, false);
+        order.cancelCod();
+        append(order, "order.cod-cancelled", Instant.now());
+        orders.flush();
+        return mapper.toResponse(order);
+    }
+
+    private void finalizeCodStock(PurchaseOrder order, boolean successful) {
+        for (var item : order.getItems().stream().sorted(Comparator.comparing(i -> i.getProductId())).toList()) {
+            if (stocks.finalizeReservation(item.getProductId(), item.getQuantity(), successful) != 1) {
+                throw new IllegalStateException("Reserved COD stock inconsistent; transaction rolled back");
+            }
+        }
     }
 
     private PurchaseOrder locked(

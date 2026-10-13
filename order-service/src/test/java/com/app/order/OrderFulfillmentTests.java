@@ -20,6 +20,8 @@ import com.app.order.dto.response.ProductSnapshot;
 import com.app.order.entity.OrderStatus;
 import com.app.order.entity.PurchaseOrder;
 import com.app.order.entity.SalesChannel;
+import com.app.order.entity.PaymentMethod;
+import com.app.order.service.ReservationExpiryService;
 import com.app.order.mapper.ShippingAddressMapper;
 import com.app.order.repository.EventInbox;
 import com.app.order.repository.OrderRepository;
@@ -76,6 +78,8 @@ class OrderFulfillmentTests {
     private ObjectMapper json;
     @Autowired
     private SecretKey key;
+    @Autowired
+    private ReservationExpiryService expiry;
     @MockitoBean
     private ProductCatalog catalog;
     @MockitoBean
@@ -177,6 +181,103 @@ class OrderFulfillmentTests {
                 new CreateOrderRequest(SalesChannel.WEB, idempotency, request.items(), address("Changed street"))))
                 .getStatus().value());
         assertEquals(1, jdbc.queryForObject("SELECT reserved FROM inventory WHERE product_id=?", Integer.class, productId));
+    }
+
+    @Test
+    void codCreateConfirmsWithoutPaymentAndReplaysOnlySameMethod() {
+        var order = cod();
+        assertEquals(OrderStatus.CONFIRMED, order.status());
+        assertEquals(PaymentMethod.COD, order.paymentMethod());
+        assertEquals(null, order.codPaidAt());
+        assertEquals(1, stock(order.id(), "reserved"));
+        assertEquals(1, stock(order.id(), "available"));
+        String requestKey = jdbc.queryForObject("SELECT idempotency_key FROM orders WHERE id=?", String.class, order.id());
+        var request = new CreateOrderRequest(SalesChannel.WEB, requestKey,
+                List.of(new OrderItemRequest(product(order.id()), 1)), address("Original street"), PaymentMethod.COD);
+        assertEquals(false, orderService.create(961L, request).created());
+        assertEquals(409, assertThrows(ApiException.class, () -> orderService.create(961L,
+                new CreateOrderRequest(request.channel(), requestKey, request.items(), request.shippingAddress())))
+                .getStatus().value());
+        assertEquals(false, expiry.expire(order.id(), Instant.now().plusSeconds(3600)));
+        assertEquals(1, stock(order.id(), "reserved"));
+    }
+
+    @Test
+    void codRequiresAddressAndCancellationRequiresAdmin() throws Exception {
+        long productId = PRODUCTS.incrementAndGet();
+        var request = new CreateOrderRequest(SalesChannel.WEB, UUID.randomUUID().toString(),
+                List.of(new OrderItemRequest(productId, 1)), null, PaymentMethod.COD);
+        assertEquals(400, assertThrows(ApiException.class, () -> orderService.create(961L, request)).getStatus().value());
+        var order = cod();
+        mvc.perform(post("/api/orders/" + order.id() + "/cod/cancel")).andExpect(status().isUnauthorized());
+        mvc.perform(post("/api/orders/" + order.id() + "/cod/cancel").header("Authorization", bearer("USER")))
+                .andExpect(status().isForbidden());
+        mvc.perform(post("/api/orders/" + order.id() + "/cod/cancel").header("Authorization", bearer("ADMIN")))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void codConcurrentShipmentFinalizesStockOnceAndCompletionWaitsForCash() throws Exception {
+        var order = cod();
+        var request = new ShipOrderRequest("COD Carrier", "COD-TRACK", null);
+        race(() -> { fulfillment.ship(order.id(), request); return true; });
+        assertEquals(0, stock(order.id(), "reserved"));
+        assertEquals(1, stock(order.id(), "available"));
+        assertEquals(1, count(orders.findById(order.id()).orElseThrow(), "order.cod-shipped"));
+        assertEquals(409, assertThrows(ApiException.class, () -> fulfillment.complete(order.id())).getStatus().value());
+        assertEquals(409, assertThrows(ApiException.class, () -> fulfillment.cancelCod(order.id())).getStatus().value());
+        payments.accept(new CommerceEvent(UUID.randomUUID().toString(), "payment.succeeded", order.id(), 961L,
+                BigDecimal.TEN, 900L, Instant.now()));
+        payments.accept(new CommerceEvent(UUID.randomUUID().toString(), "payment.succeeded", order.id(), 961L,
+                BigDecimal.TEN, 900L, Instant.now()));
+        assertEquals(900L, fulfillment.complete(order.id()).codPaymentId());
+        race(() -> { fulfillment.complete(order.id()); return true; });
+        assertEquals(OrderStatus.COMPLETED, orderService.get(order.id(), 961L, false).status());
+        assertEquals(1, count(orders.findById(order.id()).orElseThrow(), "order.confirmed"));
+        assertEquals(0, stock(order.id(), "reserved"));
+        assertEquals(1, stock(order.id(), "available"));
+    }
+
+    @Test
+    void codConcurrentCancellationRestoresStockOnce() throws Exception {
+        var order = cod();
+        race(() -> { fulfillment.cancelCod(order.id()); return true; });
+        assertEquals(OrderStatus.CANCELLED, fulfillment.cancelCod(order.id()).status());
+        assertEquals(2, stock(order.id(), "available"));
+        assertEquals(0, stock(order.id(), "reserved"));
+        assertEquals(1, count(orders.findById(order.id()).orElseThrow(), "order.cod-cancelled"));
+        assertEquals(409, assertThrows(ApiException.class, () -> fulfillment.ship(order.id(),
+                new ShipOrderRequest("Carrier", "TRACK", null))).getStatus().value());
+        payments.accept(new CommerceEvent(UUID.randomUUID().toString(), "payment.failed", order.id(), 961L,
+                BigDecimal.TEN, 901L, Instant.now()));
+        assertEquals(OrderStatus.CANCELLED, orderService.get(order.id(), 961L, false).status());
+    }
+
+    @Test
+    void codRejectsPrematureOrMismatchedPaymentWithoutChangingStock() {
+        var order = cod();
+        assertThrows(IllegalArgumentException.class, () -> payments.accept(new CommerceEvent(UUID.randomUUID().toString(),
+                "payment.succeeded", order.id(), 961L, BigDecimal.TEN, 900L, Instant.now())));
+        fulfillment.ship(order.id(), new ShipOrderRequest("Carrier", "TRACK", null));
+        assertThrows(IllegalArgumentException.class, () -> payments.accept(new CommerceEvent(UUID.randomUUID().toString(),
+                "payment.succeeded", order.id(), 962L, BigDecimal.TEN, 900L, Instant.now())));
+        assertEquals(null, orderService.get(order.id(), 961L, false).codPaidAt());
+        assertEquals(0, stock(order.id(), "reserved"));
+    }
+
+    private com.app.order.dto.response.OrderResponse cod() {
+        long productId = PRODUCTS.incrementAndGet();
+        jdbc.update("INSERT INTO inventory(product_id,available,reserved,version) VALUES(?,2,0,0)", productId);
+        return orderService.create(961L, new CreateOrderRequest(SalesChannel.WEB, UUID.randomUUID().toString(),
+                List.of(new OrderItemRequest(productId, 1)), address("Original street"), PaymentMethod.COD)).order();
+    }
+
+    private long product(long orderId) {
+        return jdbc.queryForObject("SELECT product_id FROM order_items WHERE order_id=?", Long.class, orderId);
+    }
+
+    private int stock(long orderId, String column) {
+        return jdbc.queryForObject("SELECT " + column + " FROM inventory WHERE product_id=?", Integer.class, product(orderId));
     }
 
     private void race(

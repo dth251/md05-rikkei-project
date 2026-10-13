@@ -2,7 +2,7 @@
 
 Hợp đồng đã export từ controller thực và kiểm thử nằm trong `docs/openapi/`:
 Auth, Product, Order, Payment và bản gộp API Gateway. Bản gộp hiện có
-20 paths, 27 operations, operation IDs duy nhất và `x-service` chỉ service
+32 paths, 41 operations, operation IDs duy nhất và `x-service` chỉ service
 chịu trách nhiệm. Notification nhận event, hợp đồng event được mô tả trong
 `api-contract.md` và `order-fulfillment.md`; không tạo REST nghiệp vụ giả cho nó.
 
@@ -26,7 +26,7 @@ dùng bearer JWT với `x-required-role` PUBLIC/USER/ADMIN. Metadata OpenAPI
 mô tả API, phân quyền thực thi vẫn ở security của từng service/Gateway.
 
 Schema gồm validation DTO, pagination/filter, item limit 50, stock
-idempotency, shipping address/shipment và các HTTP status. Password và
+idempotency, shipping address/shipment, paymentMethod COD/ONLINE, biên nhận COD, trả toàn bộ đơn/hoàn tiền và các HTTP status. Password và
 refresh credential của request là writeOnly. Response lỗi tham chiếu
 schema ApiError thực sự tồn tại; actuator không lọt vào hợp đồng.
 

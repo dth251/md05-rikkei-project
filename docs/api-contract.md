@@ -150,3 +150,19 @@ Notification không có API client hoặc Gateway route. Consumer ghi một noti
 Event JSON của mỗi service tự sở hữu gồm `eventId` (UUID), `type`, `orderId`, `userId`, `amount`, `paymentId`, `occurredAt` (ISO UTC). `paymentId=null` với `order.created`; các outcome/final events có payment ID. Exchange topic durable `commerce.events`; ba durable queues và năm bindings như kế hoạch. Routing: `order.created` → `payment.succeeded/payment.failed` → `order.confirmed/order.cancelled`.
 
 Order/Payment có transactional Outbox, persistent messages và broker confirms/returns. Consumer ACK sau local DB commit và deduplicate. Delivery là at-least-once; không tuyên bố exactly-once transport. Payload sai bị reject, chưa có malformed-event DLQ/replay tool; sự cố DB/MQ tạm thời được thử lại. Reservation chưa có timeout/hủy tự động: Payment dừng hoặc chưa simulate thì order giữ PENDING_PAYMENT đến khi xử lý tiếp.
+
+## Thanh toán COD
+
+Tạo đơn với paymentMethod COD và địa chỉ giao hàng; đơn CONFIRMED giữ kho,
+ship chốt kho, ADMIN thu đủ tiền qua POST /api/payments/{id}/cod/collect rồi
+complete sau acknowledgement. ADMIN hủy trước giao qua POST /api/orders/{id}/cod/cancel.
+Request cũ mặc định ONLINE. Xem [luồng COD](cod-payment.md) cho body, replay,
+trạng thái và giới hạn nghiệp vụ.
+
+## Trả toàn bộ đơn và hoàn tiền
+
+Chủ đơn COMPLETED yêu cầu trả qua POST /api/orders/{id}/return. ADMIN duyệt
+và xác nhận nhận lại toàn bộ hàng trước khi COD/VNPay được hoàn tiền. GET
+/api/orders/{id}/return thể hiện trạng thái riêng; lịch sử giao hàng vẫn
+COMPLETED. Xem [luồng trả hàng và hoàn tiền](returns-refunds.md) cho API,
+body, phân quyền, replay và xử lý provider chưa rõ kết quả.

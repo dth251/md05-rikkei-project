@@ -7,6 +7,7 @@ import com.app.order.dto.response.OrderResponse;
 import com.app.order.service.OrderService;
 import com.app.order.service.OrderTransactions;
 import com.app.order.service.ProductCatalog;
+import com.app.order.entity.PaymentMethod;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -35,6 +36,9 @@ public class OrderServiceImpl implements OrderService {
         Long userId,
         CreateOrderRequest request
     ) {
+        if (request.paymentMethod() == PaymentMethod.COD && request.shippingAddress() == null) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "COD requires shipping address");
+        }
         if (request.items().stream().map(item -> item.productId()).distinct().count() != request.items().size()) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "Duplicate product in order");
         }
@@ -74,6 +78,10 @@ public class OrderServiceImpl implements OrderService {
                 String normalized = value == null ? "" : value.strip();
                 canonical.append('|').append(normalized.length()).append(':').append(normalized);
             }
+        }
+        // Preserve fingerprints already stored for legacy online requests.
+        if (request.paymentMethod() == PaymentMethod.COD) {
+            canonical.append("|paymentMethod:COD");
         }
         try {
             return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")

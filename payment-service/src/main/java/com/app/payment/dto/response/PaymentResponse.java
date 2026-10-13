@@ -2,6 +2,7 @@ package com.app.payment.dto.response;
 
 import com.app.payment.entity.PaymentStatus;
 import com.app.payment.entity.RefundStatus;
+import com.app.payment.entity.PaymentMethod;
 import java.math.BigDecimal;
 import java.time.Instant;
 
@@ -14,6 +15,8 @@ public record PaymentResponse(
         Instant createdAt,
         Instant completedAt,
         boolean reservationExpired,
-        RefundStatus refundStatus
+        RefundStatus refundStatus,
+        PaymentMethod paymentMethod,
+        CodReceiptResponse codReceipt
 ) {
 }

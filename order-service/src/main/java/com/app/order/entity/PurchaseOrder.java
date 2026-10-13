@@ -57,6 +57,16 @@ public class PurchaseOrder {
     @Column(nullable = false, length = 24)
     private OrderStatus status = OrderStatus.PENDING_PAYMENT;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_method", nullable = false, length = 20)
+    private PaymentMethod paymentMethod = PaymentMethod.ONLINE;
+
+    @Column(name = "cod_payment_id")
+    private Long codPaymentId;
+
+    @Column(name = "cod_paid_at")
+    private Instant codPaidAt;
+
     @Column(name = "total_amount", nullable = false, precision = 18, scale = 2)
     private BigDecimal totalAmount = BigDecimal.ZERO;
 
@@ -160,6 +170,42 @@ public class PurchaseOrder {
         status = successful ? OrderStatus.CONFIRMED : OrderStatus.CANCELLED;
     }
 
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public Long getCodPaymentId() {
+        return codPaymentId;
+    }
+
+    public Instant getCodPaidAt() {
+        return codPaidAt;
+    }
+
+    public void confirmCod() {
+        if (status != OrderStatus.PENDING_PAYMENT || shippingAddress == null) {
+            throw new IllegalStateException("COD requires a pending order with shipping address");
+        }
+        paymentMethod = PaymentMethod.COD;
+        status = OrderStatus.CONFIRMED;
+    }
+
+    public void cancelCod() {
+        if (paymentMethod != PaymentMethod.COD || status != OrderStatus.CONFIRMED) {
+            throw new IllegalStateException("Only unshipped COD orders can cancel");
+        }
+        status = OrderStatus.CANCELLED;
+    }
+
+    public void recordCodPayment(Long paymentId, Instant paidAt) {
+        if (paymentMethod != PaymentMethod.COD || status != OrderStatus.SHIPPING
+                || paymentId == null || paymentId <= 0 || paidAt == null || codPaymentId != null) {
+            throw new IllegalStateException("COD collection requires an unpaid shipped order");
+        }
+        codPaymentId = paymentId;
+        codPaidAt = paidAt;
+    }
+
     public void expire() {
         if (status != OrderStatus.PENDING_PAYMENT) {
             throw new IllegalStateException("Only pending reservations can expire");
@@ -209,7 +255,7 @@ public class PurchaseOrder {
     public void complete(
             Instant now
     ) {
-        if (status != OrderStatus.SHIPPING) {
+        if (status != OrderStatus.SHIPPING || (paymentMethod == PaymentMethod.COD && codPaidAt == null)) {
             throw new IllegalStateException("Only shipped orders can complete");
         }
         completedAt = now.isBefore(shippedAt) ? shippedAt : now;

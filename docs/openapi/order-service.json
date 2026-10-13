@@ -26,6 +26,16 @@
           "required" : true
         },
         "responses" : {
+          "503" : {
+            "description" : "Dependency unavailable",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
           "409" : {
             "description" : "Conflict",
             "content" : {
@@ -68,16 +78,6 @@
           },
           "404" : {
             "description" : "Not found",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiError"
-                }
-              }
-            }
-          },
-          "503" : {
-            "description" : "Dependency unavailable",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -134,6 +134,16 @@
               }
             }
           },
+          "503" : {
+            "description" : "Dependency unavailable",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
           "409" : {
             "description" : "Conflict",
             "content" : {
@@ -183,9 +193,379 @@
                 }
               }
             }
+          }
+        },
+        "x-required-role" : "ADMIN"
+      }
+    },
+    "/api/orders/{id}/return" : {
+      "get" : {
+        "tags" : [ "order-return-controller" ],
+        "operationId" : "get",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseOrderReturnResponse"
+                }
+              }
+            }
           },
           "503" : {
             "description" : "Dependency unavailable",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Conflict",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Authentication required",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Access denied",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Not found",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "x-required-role" : "USER"
+      },
+      "post" : {
+        "tags" : [ "order-return-controller" ],
+        "operationId" : "request",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/RequestReturnRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseOrderReturnResponse"
+                }
+              }
+            }
+          },
+          "503" : {
+            "description" : "Dependency unavailable",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Conflict",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Authentication required",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Access denied",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Not found",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "x-required-role" : "USER"
+      }
+    },
+    "/api/orders/{id}/return/receive" : {
+      "post" : {
+        "tags" : [ "order-return-controller" ],
+        "operationId" : "receive",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ReceiveReturnRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseOrderReturnResponse"
+                }
+              }
+            }
+          },
+          "503" : {
+            "description" : "Dependency unavailable",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Conflict",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Authentication required",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Access denied",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Not found",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "x-required-role" : "ADMIN"
+      }
+    },
+    "/api/orders/{id}/return/decision" : {
+      "post" : {
+        "tags" : [ "order-return-controller" ],
+        "operationId" : "decide",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/DecideReturnRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseOrderReturnResponse"
+                }
+              }
+            }
+          },
+          "503" : {
+            "description" : "Dependency unavailable",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Conflict",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Authentication required",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Access denied",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Not found",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -222,6 +602,16 @@
               }
             }
           },
+          "503" : {
+            "description" : "Dependency unavailable",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
           "409" : {
             "description" : "Conflict",
             "content" : {
@@ -271,9 +661,87 @@
                 }
               }
             }
+          }
+        },
+        "x-required-role" : "ADMIN"
+      }
+    },
+    "/api/orders/{id}/cod/cancel" : {
+      "post" : {
+        "tags" : [ "order-fulfillment-controller" ],
+        "operationId" : "cancelCod",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseOrderResponse"
+                }
+              }
+            }
           },
           "503" : {
             "description" : "Dependency unavailable",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Conflict",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Authentication required",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Access denied",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Not found",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -289,7 +757,7 @@
     "/api/inventory/stocks" : {
       "post" : {
         "tags" : [ "inventory-controller" ],
-        "operationId" : "receive",
+        "operationId" : "receive_1",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -311,6 +779,16 @@
               }
             }
           },
+          "503" : {
+            "description" : "Dependency unavailable",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
           "409" : {
             "description" : "Conflict",
             "content" : {
@@ -360,16 +838,6 @@
                 }
               }
             }
-          },
-          "503" : {
-            "description" : "Dependency unavailable",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiError"
-                }
-              }
-            }
           }
         },
         "x-required-role" : "ADMIN"
@@ -378,7 +846,7 @@
     "/api/orders/{id}" : {
       "get" : {
         "tags" : [ "order-controller" ],
-        "operationId" : "get",
+        "operationId" : "get_1",
         "parameters" : [ {
           "name" : "id",
           "in" : "path",
@@ -399,6 +867,16 @@
               }
             }
           },
+          "503" : {
+            "description" : "Dependency unavailable",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
           "409" : {
             "description" : "Conflict",
             "content" : {
@@ -448,16 +926,6 @@
                 }
               }
             }
-          },
-          "503" : {
-            "description" : "Dependency unavailable",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiError"
-                }
-              }
-            }
           }
         },
         "x-required-role" : "USER"
@@ -466,7 +934,7 @@
     "/api/inventory/{productId}" : {
       "get" : {
         "tags" : [ "inventory-controller" ],
-        "operationId" : "get_1",
+        "operationId" : "get_2",
         "parameters" : [ {
           "name" : "productId",
           "in" : "path",
@@ -487,6 +955,16 @@
               }
             }
           },
+          "503" : {
+            "description" : "Dependency unavailable",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
           "409" : {
             "description" : "Conflict",
             "content" : {
@@ -529,16 +1007,6 @@
           },
           "404" : {
             "description" : "Not found",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiError"
-                }
-              }
-            }
-          },
-          "503" : {
-            "description" : "Dependency unavailable",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -576,6 +1044,10 @@
           },
           "shippingAddress" : {
             "$ref" : "#/components/schemas/ShippingAddressRequest"
+          },
+          "paymentMethod" : {
+            "type" : "string",
+            "enum" : [ "ONLINE", "COD" ]
           }
         },
         "required" : [ "channel", "idempotencyKey", "items" ]
@@ -714,6 +1186,18 @@
           },
           "shipment" : {
             "$ref" : "#/components/schemas/ShipmentResponse"
+          },
+          "paymentMethod" : {
+            "type" : "string",
+            "enum" : [ "ONLINE", "COD" ]
+          },
+          "codPaymentId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "codPaidAt" : {
+            "type" : "string",
+            "format" : "date-time"
           }
         }
       },
@@ -780,6 +1264,129 @@
           }
         },
         "required" : [ "carrier", "trackingNumber" ]
+      },
+      "RequestReturnRequest" : {
+        "type" : "object",
+        "properties" : {
+          "idempotencyKey" : {
+            "type" : "string",
+            "maxLength" : 128,
+            "minLength" : 0
+          },
+          "reason" : {
+            "type" : "string",
+            "maxLength" : 500,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "idempotencyKey", "reason" ]
+      },
+      "ApiResponseOrderReturnResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "message" : {
+            "type" : "string"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/OrderReturnResponse"
+          },
+          "errors" : { },
+          "timestamp" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }
+      },
+      "OrderReturnResponse" : {
+        "type" : "object",
+        "properties" : {
+          "orderId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "userId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "amount" : {
+            "type" : "number"
+          },
+          "status" : {
+            "type" : "string",
+            "enum" : [ "REQUESTED", "APPROVED", "REJECTED", "RECEIVED", "REFUND_PENDING", "REFUNDED" ]
+          },
+          "reason" : {
+            "type" : "string"
+          },
+          "requestedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "decidedBy" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "decidedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "decisionNote" : {
+            "type" : "string"
+          },
+          "receivedBy" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "receivedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "warehouseReceipt" : {
+            "type" : "string"
+          },
+          "restock" : {
+            "type" : "boolean"
+          },
+          "paymentId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "refundedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }
+      },
+      "ReceiveReturnRequest" : {
+        "type" : "object",
+        "properties" : {
+          "warehouseReceipt" : {
+            "type" : "string",
+            "maxLength" : 128,
+            "minLength" : 0
+          },
+          "restock" : {
+            "type" : "boolean"
+          }
+        },
+        "required" : [ "restock", "warehouseReceipt" ]
+      },
+      "DecideReturnRequest" : {
+        "type" : "object",
+        "properties" : {
+          "approved" : {
+            "type" : "boolean"
+          },
+          "note" : {
+            "type" : "string",
+            "maxLength" : 500,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "approved", "note" ]
       },
       "StockRequest" : {
         "type" : "object",

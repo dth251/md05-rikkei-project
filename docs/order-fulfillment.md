@@ -68,3 +68,8 @@ Java unit: Order 33, Notification 10 đạt (roles, validation, immutable snapsh
 qua Gateway và recovery có kết quả cuối trong nhật ký/PR; không suy ra deploy
 từ unit. Worktree ngoài IDE đặt `ORDER_SMOKE_PROJECT_DIR`,
 `NOTIFICATION_SMOKE_PROJECT_DIR` tới thư mục Compose có private `.env` cho recovery.
+
+## COD
+
+COD được ship khi payment còn PENDING; kho chốt tại ship. Complete yêu cầu
+Order đã nhận kết quả thu tiền. Hủy COD chỉ trước ship. Xem [luồng COD](cod-payment.md).

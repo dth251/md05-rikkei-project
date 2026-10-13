@@ -2,6 +2,7 @@ package com.app.order.service.impl;
 
 import com.app.order.dto.event.CommerceEvent;
 import com.app.order.entity.OrderStatus;
+import com.app.order.entity.PaymentMethod;
 import com.app.order.repository.OrderRepository;
 import com.app.order.repository.StockRepository;
 import com.app.order.service.OutboxService;
@@ -38,7 +39,7 @@ public class ReservationExpiryServiceImpl implements ReservationExpiryService {
     @Override
     @Transactional(readOnly = true)
     public List<Long> candidates(Instant cutoff) {
-        return jdbc.queryForList("SELECT id FROM orders WHERE status='PENDING_PAYMENT' "
+        return jdbc.queryForList("SELECT id FROM orders WHERE status='PENDING_PAYMENT' AND payment_method='ONLINE' "
                 + "AND created_at<=? ORDER BY created_at,id LIMIT 50", Long.class, Timestamp.from(cutoff));
     }
 
@@ -46,7 +47,8 @@ public class ReservationExpiryServiceImpl implements ReservationExpiryService {
     @Transactional
     public boolean expire(Long orderId, Instant cutoff) {
         var order = orders.findLockedById(orderId).orElseThrow();
-        if (order.getStatus() != OrderStatus.PENDING_PAYMENT || order.getCreatedAt().isAfter(cutoff)) {
+        if (order.getPaymentMethod() != PaymentMethod.ONLINE
+                || order.getStatus() != OrderStatus.PENDING_PAYMENT || order.getCreatedAt().isAfter(cutoff)) {
             return false;
         }
         for (var item : order.getItems().stream().sorted(Comparator.comparing(item -> item.getProductId())).toList()) {

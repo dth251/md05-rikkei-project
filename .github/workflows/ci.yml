@@ -39,7 +39,7 @@ jobs:
             paths="$(git diff --name-only "$BEFORE" HEAD)"
           fi
           services=()
-          for service in auth-service api-gateway product-service order-service payment-service notification-service; do
+          for service in auth-service api-gateway product-service payment-service order-service notification-service; do
             [[ -f "$service/build.gradle" ]] || continue
             # Test/load/observation tools still run verification, but do not recreate every VPS app.
             # Runtime infrastructure/Compose changes affect all services; module changes select that app.
@@ -80,9 +80,6 @@ jobs:
           docker compose up -d --wait --wait-timeout 180 postgres rabbitmq
           docker compose run --rm --no-deps rabbitmq-topology
           bash infrastructure/scripts/verify-infrastructure.sh
-          for service in auth-service product-service order-service payment-service notification-service; do
-            bash infrastructure/scripts/apply-schema.sh "$service"
-          done
           services=(auth-service)
           for service in api-gateway product-service order-service payment-service notification-service; do
             [[ ! -f "$service/build.gradle" ]] || services+=("$service")
@@ -93,6 +90,21 @@ jobs:
           fi
           docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --wait --wait-timeout 180 postgres rabbitmq
           docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --no-deps --wait --wait-timeout 240 "${services[@]}"
+          # CI databases are empty: let Hibernate create service-owned base tables first.
+          # VPS rollout still applies migrations before recreating an existing service.
+          # The legacy fulfillment migration owns this named Hibernate check.
+          # Refuse to replace it on a database with existing orders.
+          docker compose exec -T postgres psql -U order_user -d order_db -v ON_ERROR_STOP=1 <<'SQL'
+          DO $$ BEGIN
+              IF EXISTS (SELECT 1 FROM orders) THEN
+                  RAISE EXCEPTION 'Expected an empty CI Order database';
+              END IF;
+              ALTER TABLE orders DROP CONSTRAINT IF EXISTS ck_order_fulfillment_v1;
+          END $$;
+          SQL
+          for service in auth-service product-service order-service payment-service notification-service; do
+            bash infrastructure/scripts/apply-schema.sh "$service"
+          done
           OPENAPI_LIVE_TEST=true bash infrastructure/scripts/test-auth-live.sh
           if [[ -f api-gateway/build.gradle ]]; then
             (cd api-gateway && GATEWAY_FAILURE_TEST=true ./gradlew liveTest --no-daemon)
@@ -106,12 +118,12 @@ jobs:
           if [[ -f payment-service/build.gradle ]]; then
             docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --wait --wait-timeout 180 rabbitmq
             docker compose run --rm --no-deps rabbitmq-topology
-            JWT_SECRET="$(sed -n 's/^JWT_SECRET=//p' .env)" PAYMENT_LIVE_DB_PASSWORD="$(sed -n 's/^PAYMENT_DB_PASSWORD=//p' .env)" RABBITMQ_LIVE_USER="$(sed -n 's/^RABBITMQ_DEFAULT_USER=//p' .env)" RABBITMQ_LIVE_PASSWORD="$(sed -n 's/^RABBITMQ_DEFAULT_PASS=//p' .env)" payment-service/gradlew -p payment-service liveTest --no-daemon
+            JWT_SECRET="$(sed -n 's/^JWT_SECRET=//p' .env)" PAYMENT_LIVE_DB_PASSWORD="$(sed -n 's/^PAYMENT_DB_PASSWORD=//p' .env)" ORDER_LIVE_DB_PASSWORD="$(sed -n 's/^ORDER_DB_PASSWORD=//p' .env)" NOTIFICATION_LIVE_DB_PASSWORD="$(sed -n 's/^NOTIFICATION_DB_PASSWORD=//p' .env)" RABBITMQ_LIVE_USER="$(sed -n 's/^RABBITMQ_DEFAULT_USER=//p' .env)" RABBITMQ_LIVE_PASSWORD="$(sed -n 's/^RABBITMQ_DEFAULT_PASS=//p' .env)" payment-service/gradlew -p payment-service liveTest --no-daemon
           fi
           if [[ -f notification-service/build.gradle ]]; then
             JWT_SECRET="$(sed -n 's/^JWT_SECRET=//p' .env)" NOTIFICATION_LIVE_DB_PASSWORD="$(sed -n 's/^NOTIFICATION_DB_PASSWORD=//p' .env)" RABBITMQ_LIVE_USER="$(sed -n 's/^RABBITMQ_DEFAULT_USER=//p' .env)" RABBITMQ_LIVE_PASSWORD="$(sed -n 's/^RABBITMQ_DEFAULT_PASS=//p' .env)" NOTIFICATION_RECOVERY_TEST=true notification-service/gradlew -p notification-service liveTest --no-daemon
           fi
-      - name: Verify VNPay callbacks and durable refund recovery on PostgreSQL
+      - name: Verify VNPay callbacks, full-order returns and durable refund recovery on PostgreSQL
         run: |
           set -euo pipefail
           docker compose -f docker-compose.yml -f docker-compose.local.yml -f docker-compose.vnpay-test.yml up -d --no-deps --wait --wait-timeout 180 payment-service

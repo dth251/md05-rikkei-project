@@ -46,7 +46,9 @@ public class OpenApiConfig {
                     .addProperty("timestamp", new StringSchema().format("date-time")));
             api.getPaths().forEach((path, item) -> item.readOperationsMap().forEach((method, operation) -> {
                 boolean anonymous = false;
-                boolean admin = path.equals("/api/inventory/stocks") || path.endsWith("/ship") || path.endsWith("/complete");
+                boolean admin = path.equals("/api/inventory/stocks") || path.endsWith("/ship") || path.endsWith("/complete")
+                        || path.endsWith("/cod/cancel") || path.endsWith("/return/decision")
+                        || path.endsWith("/return/receive");
                 if (anonymous) {
                     operation.setSecurity(new ArrayList<>());
                 }
