@@ -90,6 +90,18 @@ class NotificationTests {
                 new Message("{}".getBytes(java.nio.charset.StandardCharsets.UTF_8), new MessageProperties())));
     }
 
+    @Test
+    void expiredSnapshotHasNoPaymentWhileConfirmedRequiresPayment() {
+        long order = ORDER_IDS.incrementAndGet();
+        var expired = new CommerceEvent(UUID.randomUUID().toString(), "order.expired", order, 1L,
+                BigDecimal.TEN, null, Instant.now());
+        notifications.saveAndFlush(new NotificationLog(expired));
+        assertEquals("order.expired", mapper.toResponse(notifications.findByOrderId(order).orElseThrow()).eventType());
+        var invalid = new CommerceEvent(UUID.randomUUID().toString(), "order.confirmed",
+                ORDER_IDS.incrementAndGet(), 1L, BigDecimal.TEN, null, Instant.now());
+        assertThrows(DataIntegrityViolationException.class, () -> notifications.saveAndFlush(new NotificationLog(invalid)));
+    }
+
     private CommerceEvent event(long orderId) {
         return new CommerceEvent(UUID.randomUUID().toString(), "order.confirmed", orderId, 1L,
                 new BigDecimal("12.50"), 1L, Instant.now());

@@ -43,9 +43,7 @@ abstract class NotificationLiveFixture {
         return fixture;
     }
 
-    protected Fixture finalized(
-            String outcome,
-            String expected,
+    protected Fixture pending(
             String channel
     ) throws Exception {
         String email = "day2-e2e-" + UUID.randomUUID() + "@example.com";
@@ -75,6 +73,20 @@ abstract class NotificationLiveFixture {
         JsonNode order = json.readTree(created.body()).path("data");
         long orderId = order.path("id").asLong();
         JsonNode payment = awaitPayment(orderId, userToken);
+        return new Fixture(order, payment, email, userToken);
+    }
+
+    protected Fixture finalized(
+            String outcome,
+            String expected,
+            String channel
+    ) throws Exception {
+        Fixture fixture = pending(channel);
+        JsonNode order = fixture.order();
+        JsonNode payment = fixture.payment();
+        long orderId = order.path("id").asLong();
+        long productId = order.path("items").get(0).path("productId").asLong();
+        String userToken = fixture.userToken();
         assertEquals(200, send("POST", "/api/payments/" + payment.path("id").asLong() + "/simulate",
                 Map.of("status", outcome), adminToken()).statusCode());
         Instant deadline = Instant.now().plusSeconds(45);
@@ -88,7 +100,7 @@ abstract class NotificationLiveFixture {
                 JsonNode stock = json.readTree(inventory.body()).path("data");
                 assertEquals(outcome.equals("FAILED") ? 1 : 0, stock.path("available").asInt());
                 assertEquals(0, stock.path("reserved").asInt());
-                return new Fixture(order, payment, email);
+                return fixture;
             }
             Thread.sleep(300);
         }
@@ -203,7 +215,8 @@ abstract class NotificationLiveFixture {
     protected record Fixture(
             JsonNode order,
             JsonNode payment,
-            String email
+            String email,
+            String userToken
     ) {
     }
 }

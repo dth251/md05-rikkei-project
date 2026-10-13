@@ -9,6 +9,8 @@ import com.app.order.repository.OrderRepository;
 import com.app.order.repository.StockRepository;
 import com.app.order.service.OrderPaymentService;
 import com.app.order.service.OutboxService;
+import com.app.order.service.ReservationExpiryService;
+import com.app.order.config.ReservationPolicy;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.UUID;
@@ -22,17 +24,23 @@ public class OrderPaymentServiceImpl implements OrderPaymentService {
     private final OrderRepository orderRepository;
     private final StockRepository stockRepository;
     private final OutboxService outboxService;
+    private final ReservationExpiryService expiry;
+    private final ReservationPolicy reservationPolicy;
 
     public OrderPaymentServiceImpl(
             EventInbox eventInbox,
             OrderRepository orderRepository,
             StockRepository stockRepository,
-            OutboxService outboxService
+            OutboxService outboxService,
+            ReservationExpiryService expiry,
+            ReservationPolicy reservationPolicy
     ) {
         this.eventInbox = eventInbox;
         this.orderRepository = orderRepository;
         this.stockRepository = stockRepository;
         this.outboxService = outboxService;
+        this.expiry = expiry;
+        this.reservationPolicy = reservationPolicy;
     }
 
     @Override
@@ -68,6 +76,11 @@ public class OrderPaymentServiceImpl implements OrderPaymentService {
             }
             orderRepository.flush();
             return;
+        }
+        // Check the deadline after acquiring the same row lock as the scheduler.
+        // A delayed scan cannot let a late capture confirm an overdue reservation.
+        if (order.getStatus() == OrderStatus.PENDING_PAYMENT) {
+            expiry.expire(order.getId(), reservationPolicy.cutoff(Instant.now()));
         }
         if (order.getStatus() == OrderStatus.EXPIRED && "payment.succeeded".equals(event.type())) {
             // Expiration already released stock. Never confirm or reserve again after late payment.

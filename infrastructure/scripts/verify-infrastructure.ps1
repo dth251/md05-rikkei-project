@@ -19,8 +19,8 @@ $expected = @($names | ForEach-Object { "${_}_db:${_}_user" } | Sort-Object)
 if (($owners -join ',') -ne ($expected -join ',')) { throw 'Expected five owned databases' }
 $queues = docker compose exec -T rabbitmq rabbitmqctl -q list_queues name durable
 if ($LASTEXITCODE -ne 0) { throw 'Cannot list RabbitMQ queues' }
-foreach ($queue in @('payment.order-created.q', 'order.payment-result.q', 'notification.order.q',
-        'payment.order-created.q.dlq', 'order.payment-result.q.dlq', 'notification.order.q.dlq', 'payment.order-expired.q', 'payment.order-expired.q.dlq',
+foreach ($queue in @('notification.expiry.q', 'payment.order-created.q', 'order.payment-result.q', 'notification.order.q',
+        'notification.expiry.q.dlq', 'payment.order-created.q.dlq', 'order.payment-result.q.dlq', 'notification.order.q.dlq', 'payment.order-expired.q', 'payment.order-expired.q.dlq',
         'notification.fulfillment.q', 'notification.fulfillment.q.dlq', 'payment.cod-lifecycle.q', 'payment.cod-lifecycle.q.dlq',
         'payment.return-received.q', 'payment.return-received.q.dlq', 'order.return-result.q', 'order.return-result.q.dlq')) {
     if (($queues -join "`n") -notmatch ([regex]::Escape($queue) + '\s+true')) {
@@ -29,7 +29,7 @@ foreach ($queue in @('payment.order-created.q', 'order.payment-result.q', 'notif
 }
 $policies = docker compose exec -T rabbitmq rabbitmqctl -q list_policies
 if ($LASTEXITCODE -ne 0) { throw 'Cannot list RabbitMQ policies' }
-foreach ($queue in @('payment.order-created.q', 'order.payment-result.q', 'notification.order.q', 'payment.order-expired.q', 'notification.fulfillment.q', 'payment.cod-lifecycle.q', 'payment.return-received.q', 'order.return-result.q')) {
+foreach ($queue in @('notification.expiry.q', 'payment.order-created.q', 'order.payment-result.q', 'notification.order.q', 'payment.order-expired.q', 'notification.fulfillment.q', 'payment.cod-lifecycle.q', 'payment.return-received.q', 'order.return-result.q')) {
     if (($policies -join "`n") -notmatch [regex]::Escape("dlx-$queue")) {
         throw "Missing scoped DLX policy: $queue"
     }

@@ -23,7 +23,7 @@ public class OrderEventListener {
         this.notificationService = notificationService;
     }
 
-    @RabbitListener(queues = "notification.order.q")
+    @RabbitListener(queues = {"notification.order.q", "notification.expiry.q"})
     public void receive(Message message) {
         try {
             CommerceEvent event = objectMapper.readValue(message.getBody(), CommerceEvent.class);
@@ -31,12 +31,13 @@ public class OrderEventListener {
                 throw new IllegalArgumentException("Event ID required");
             }
             UUID.fromString(event.eventId());
-            if (!("order.confirmed".equals(event.type()) || "order.cancelled".equals(event.type()))
+            boolean expired = "order.expired".equals(event.type());
+            if (!("order.confirmed".equals(event.type()) || "order.cancelled".equals(event.type()) || expired)
                     || !event.type().equals(message.getMessageProperties().getReceivedRoutingKey())
                     || event.orderId() == null || event.orderId() <= 0 || event.userId() == null || event.userId() <= 0
                     || event.amount() == null || event.amount().signum() <= 0 || event.amount().scale() > 2
                     || event.amount().precision() - event.amount().scale() > 16 || event.occurredAt() == null
-                    || event.paymentId() == null || event.paymentId() <= 0) {
+                    || (expired ? event.paymentId() != null : event.paymentId() == null || event.paymentId() <= 0)) {
                 throw new IllegalArgumentException("Invalid terminal order event");
             }
             notificationService.accept(event);

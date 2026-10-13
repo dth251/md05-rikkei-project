@@ -21,7 +21,7 @@ Queue hợp lệ: `payment.order-created.q`, `order.payment-result.q`, `notifica
 
 ## Hết hạn reservation
 
-Mặc định giữ kho 30 phút, quét 50 đơn mỗi 10 giây; `commerce.reservation.ttl`, `scan-delay-ms`, `expiry-enabled` điều chỉnh riêng Order. Chỉ đơn PENDING_PAYMENT đủ tuổi mới đổi EXPIRED. Quét và payment consumer khóa cùng row, hoàn stock và ghi Outbox cùng transaction; không hoàn hai lần. Sai reserved stock rollback để điều tra, không tự sửa số kho.
+Mặc định giữ kho 5 phút, quét 50 đơn mỗi giây; `commerce.reservation.ttl`, `scan-delay-ms`, `expiry-enabled` điều chỉnh riêng Order. Chỉ đơn ONLINE PENDING_PAYMENT đủ tuổi mới đổi EXPIRED. Scheduler và payment consumer khóa cùng row; consumer kiểm tra deadline sau khi khóa, kể cả scheduler chưa quét. Hoàn stock và ghi Outbox cùng transaction, không hoàn hai lần. Sai reserved stock rollback để điều tra, không tự sửa số kho. COD không chịu timeout ONLINE. Email hủy do hết hạn đi qua queue riêng `notification.expiry.q`; xem [expiry/email/monitoring](expiry-email-monitoring.md).
 
 `order.expired` gửi tới `payment.order-expired.q`. Payment lưu marker trước khi payment tồn tại và khóa advisory theo order trong transaction để xử lý event đảo thứ tự. Payment pending đổi FAILED/`reservationExpired=true`; không được simulate SUCCESS sau đó. Payment đã SUCCESS giữ nguyên chứng cứ tiền đã nhận và chuyển `refundStatus=REQUIRED`. SUCCESS đến Order đã EXPIRED tạo `order.refund-requested`, không xác nhận đơn hoặc giữ kho lại. Chưa được coi REQUIRED là đã hoàn tiền; cần tích hợp provider/đối soát trước khi xác nhận REFUNDED.
 
