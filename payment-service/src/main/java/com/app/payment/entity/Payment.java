@@ -127,4 +127,23 @@ public class Payment {
             refundStatus = RefundStatus.REQUIRED;
         }
     }
+
+    public void recordExternalCapture() {
+        if (status == PaymentStatus.SUCCESS) {
+            throw new IllegalStateException("Payment capture already recorded");
+        }
+        boolean failedBeforeCapture = status == PaymentStatus.FAILED;
+        status = PaymentStatus.SUCCESS;
+        completedAt = Instant.now();
+        if (reservationExpired || failedBeforeCapture) {
+            refundStatus = RefundStatus.REQUIRED;
+        }
+    }
+
+    public void recordRefund() {
+        if (status != PaymentStatus.SUCCESS || refundStatus != RefundStatus.REQUIRED) {
+            throw new IllegalStateException("Captured payment requiring refund expected");
+        }
+        refundStatus = RefundStatus.REFUNDED;
+    }
 }

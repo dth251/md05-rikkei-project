@@ -31,11 +31,12 @@ import reactor.core.publisher.Mono;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
         properties = "JWT_SECRET=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=")
-@AutoConfigureWebTestClient
+@AutoConfigureWebTestClient(timeout = "15000")
 @org.springframework.boot.test.autoconfigure.actuate.observability.AutoConfigureObservability
 class GatewaySecurityTests {
 
     private static final HttpServer backend = startBackend();
+    private static final int unavailablePort = unusedPort();
 
     @Autowired
     private WebTestClient client;
@@ -54,12 +55,20 @@ class GatewaySecurityTests {
         properties.add("AUTH_URI", () -> uri);
         properties.add("PRODUCT_URI", () -> uri);
         properties.add("ORDER_URI", () -> uri);
-        properties.add("PAYMENT_URI", () -> "http://127.0.0.1:1");
+        properties.add("PAYMENT_URI", () -> "http://127.0.0.1:" + unavailablePort);
     }
 
     @AfterAll
     static void stopBackend() {
         backend.stop(0);
+    }
+
+    private static int unusedPort() {
+        try (var socket = new java.net.ServerSocket(0, 1, java.net.InetAddress.getLoopbackAddress())) {
+            return socket.getLocalPort();
+        } catch (java.io.IOException exception) {
+            throw new IllegalStateException("Cannot allocate unavailable backend fixture", exception);
+        }
     }
 
     @Test

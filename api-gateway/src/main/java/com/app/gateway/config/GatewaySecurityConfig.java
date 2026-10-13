@@ -27,6 +27,7 @@ public class GatewaySecurityConfig {
                         .pathMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login",
                                 "/api/auth/refresh", "/api/auth/logout").permitAll()
                         .pathMatchers(HttpMethod.GET, "/api/products", "/api/products/**").permitAll()
+                        .pathMatchers(HttpMethod.GET, "/api/payments/vnpay/ipn", "/api/payments/vnpay/return").permitAll()
                         .anyExchange().authenticated()
                 )
                 .exceptionHandling(errors -> errors
