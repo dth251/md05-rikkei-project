@@ -552,3 +552,39 @@ server của workspace. Không tắt cảnh báo/null analysis, không sửa sou
 JWT/rate limit, không thay đổi dữ liệu hoặc recreate container. Thay đổi
 `.vscode/settings.json` có sẵn vẫn giữ nguyên ngoài commit. Hướng xử lý trong
 [tài liệu IDE](java-ide.md), kết quả trong [Gateway tests](gateway-test-results.md).
+
+## Phát triển COD ngày 13/10/2026
+
+Nhánh feature/cod-payment; tiếp nối feature/fix-gateway-ide-build.
+
+| Mốc | SHA | Thời gian +07:00 | Kiểm tra / deploy thực tế |
+|---|---|---|---|
+| 148-payment-service | e5a6ec771789452800000a4955083b0d2906a7bb | 2026-10-13T20:44:28+07:00 | Order 50/50 và Payment 50/50 Java tests đạt; bootJar đạt. Kiểm tra lại OpenAPI Order/Payment và COD Payment đạt; Product OpenAPI 1/1 đạt. Live 13/13 đạt, không fail/error/skip. Docker local Order/Payment build, recreate và healthy; chưa push/PR/CI/GHCR/deploy VPS. |
+
+Chi tiết live: CodPaymentLiveTests 3/3 (thu tiền + 24 request đồng thời,
+complete chờ acknowledgement, hủy trước giao, tranh chấp giao/hủy và terminal
+Notification); CodProjectionPgLiveTests 3/3 (lifecycle trước creation,
+Inbox/advisory lock PostgreSQL, mismatch phương thức và CHECK từ chối SUCCESS
+thiếu biên nhận); PaymentLiveTests 3/3; VnpayLiveTests 4/4. Kết thúc lúc
+20:43:45 +07:00, BUILD SUCCESSFUL. Lần chạy đầu có hai lỗi 503 qua Gateway
+sau recreate service; đã thêm readiness GET qua Gateway trước assertions
+nghiệp vụ, chạy lại toàn bộ 13 ca đạt. Không đổi timeout/routing/rate limit.
+
+Migration Order 004 và Payment 002 đã áp dụng qua runner checksum và chạy
+lại đạt; các hàng cũ mặc định ONLINE. RabbitMQ thêm queue COD/lifecycle,
+DLQ/policy/bindings; cả Bash và PowerShell infrastructure verifier đạt.
+Compose config và cú pháp scripts đạt; 11 script COD Postman parse đạt,
+chưa chạy Postman Runner. OpenAPI export thành công: 27 paths/34 operations,
+operation IDs không trùng. Không đổi payload event ONLINE/fingerprint cũ.
+
+Image local Order: sha256:00f4afc8a20036229f5201a32b2156b05d54e2d4fb72c561ce1725fca15067cf.
+Image local Payment: sha256:38aef0091054cf525c92a6b68005a0f4afd4e329adab6ed2658183fc6b788759.
+Chỉ rollout hai container ứng dụng local và bổ sung schema/topology;
+không xóa volume. Payment local bật fixture VNPay public test-only để chạy
+regression. Không thay đổi cấu hình VPS. Các fixture COD là dữ liệu kiểm thử.
+
+Luồng: COD CONFIRMED giữ kho; ship chốt kho; ADMIN ghi nhận đủ tiền và biên
+nhận; Order nhận payment.succeeded rồi mới complete. Hủy chỉ trước ship.
+Trả hàng/đối soát hãng vận chuyển chưa triển khai. Chi tiết API và Mermaid
+trong [luồng COD](cod-payment.md). CI thêm live COD và rollout Payment trước
+Order. Thay đổi .vscode/settings.json có sẵn không nằm trong commit.
