@@ -80,9 +80,6 @@ jobs:
           docker compose up -d --wait --wait-timeout 180 postgres rabbitmq
           docker compose run --rm --no-deps rabbitmq-topology
           bash infrastructure/scripts/verify-infrastructure.sh
-          for service in auth-service product-service order-service payment-service notification-service; do
-            bash infrastructure/scripts/apply-schema.sh "$service"
-          done
           services=(auth-service)
           for service in api-gateway product-service order-service payment-service notification-service; do
             [[ ! -f "$service/build.gradle" ]] || services+=("$service")
@@ -93,6 +90,11 @@ jobs:
           fi
           docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --wait --wait-timeout 180 postgres rabbitmq
           docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --no-deps --wait --wait-timeout 240 "${services[@]}"
+          # CI databases are empty: let Hibernate create service-owned base tables first.
+          # VPS rollout still applies migrations before recreating an existing service.
+          for service in auth-service product-service order-service payment-service notification-service; do
+            bash infrastructure/scripts/apply-schema.sh "$service"
+          done
           OPENAPI_LIVE_TEST=true bash infrastructure/scripts/test-auth-live.sh
           if [[ -f api-gateway/build.gradle ]]; then
             (cd api-gateway && GATEWAY_FAILURE_TEST=true ./gradlew liveTest --no-daemon)

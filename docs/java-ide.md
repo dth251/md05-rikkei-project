@@ -95,3 +95,12 @@ diagnostics Gateway và tổng số lỗi Java trong workspace đều bằng 0. 
 Gateway `test bootJar --rerun-tasks --no-daemon` đạt 23/23 tests, zero fail/error/skip.
 Không đổi Java source, routes, JWT/rate limit, cấu hình runtime, dữ liệu hoặc container;
 không cần rollout VPS cho việc sửa trạng thái IDE này.
+
+Checkpoint 2026-10-13 21:50 +07: IDE có 1.055 lỗi thiếu class nội bộ sau khi
+phát triển COD/returns; Gradle vẫn kiểm thử/build đạt. Full rebuild cả sáu
+project giảm còn 82 lỗi gRPC của Order. Reload `order-service/build.gradle`
+khôi phục các source roots `build/generated/sources/proto/main/java` và
+`main/grpc`; diagnostics về 0. Restart Java server và đọc lại project model
+xác nhận đủ sáu Gradle projects, 0 errors. Không tắt kiểm tra hoặc sửa file
+Java để che lỗi. Source sinh bởi protobuf nằm ở `generated/sources`, không
+phải `generated/source`; kiểm tra source roots trước khi xóa cache.

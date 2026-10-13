@@ -111,7 +111,9 @@ thay đổi kho, hồ sơ, biên nhận và Outbox commit trong cùng transactio
 Order chấp nhận completion đến trước ready mà không lùi REFUNDED.
 
 Migration mới: Order 005-full-order-returns.sql và Payment
-003-full-order-refunds.sql. Giữ nguyên file đã checksum và dữ liệu cũ;
+003-full-order-refunds.sql. Migration Order 006 và Payment 004 bảo đảm FK/
+CHECK của hồ sơ/biên nhận khi Hibernate đã tạo bảng trên database CI mới.
+Giữ nguyên file đã checksum và dữ liệu cũ;
 COD CHECK v2 cho phép trạng thái refund của payment đã thu tiền. Deploy
 topology/schema và Payment trước Order. Rollback cần giữ consumer đọc
 được event/hồ sơ đã tạo; không hạ về phiên bản chưa hỗ trợ returns khi
