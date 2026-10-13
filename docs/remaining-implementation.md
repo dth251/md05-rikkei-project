@@ -126,5 +126,14 @@ R11 (Elasticsearch/Mongo/SMS/HA) giữ ngoài phạm vi bốn nhóm đã thống
 - CI đã thêm kiểm tra trace nghiệp vụ sáu service, trace context bền vững trong
   Order/Payment/email, nghiệp vụ khi collector dừng và Docker audit privacy ở Loki.
   Các bài mới cần chạy ở head PR; chưa ghi đạt từ cấu hình hoặc kiểm tra cú pháp.
+- CI head `f457e4279175edba5722ba4eb895dbdd7dedfc39`, push run 38377774329:
+  unit/build, infrastructure/live, VNPay, SMTP và multi-account load/reconciliation đạt.
+  Monitoring thất bại vì fresh TSDB chưa có đủ ba samples. Verifier đã thêm bounded wait
+  qua scrape intervals và giữ cùng cửa sổ query để kiểm chứng retention sau restart.
+  Tracing/logging stages chưa chạy trong lần CI này; cần CI head sửa.
+- Local chạy lại khi đã dừng backend quan sát: warm-up 11 requests/p95 357 ms,
+  catalog 10/p95 136 ms, orders tạo 10 đơn/p95 1.139 ms đều qua threshold. Bước
+  finalize gặp HTTP 504 khi thêm JVM fixture, nên không ghi load tổng thể đạt hoặc
+  E2E đã chạy. Đã bổ sung guard trước cả Java fixture, giữ dữ liệu để đối chiếu.
 
 Kết quả kiểm thử, SHA và deploy thực tế được cập nhật trong [nhật ký](commits-and-deployments.md).

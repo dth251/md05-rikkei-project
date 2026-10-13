@@ -28,8 +28,12 @@ function Wait-Targets {
     throw 'Six service scrape targets are not UP'
 }
 $targets = Wait-Targets
-$dependencies = Read-Query 'up{job=~"host|postgres|redis|rabbitmq|rabbitmq-queues"}'
-if (@($dependencies).Count -ne 5 -or @($dependencies | Where-Object {$_.value[1] -ne '1'}).Count) {throw 'Dependency scrape targets are not UP'}
+for ($retry=0; $retry -lt 30; $retry++) {
+    $dependencies = Read-Query 'up{job=~"host|postgres|redis|rabbitmq|rabbitmq-queues"}'
+    if (@($dependencies).Count -eq 5 -and @($dependencies | Where-Object {$_.value[1] -ne '1'}).Count -eq 0) {break}
+    if ($retry -eq 29) {throw 'Dependency scrape targets are not UP'}
+    Start-Sleep -Seconds 2
+}
 $backlog = Read-Query 'commerce_backlog_snapshot_valid'
 if (@($backlog).Count -ne 2 -or @($backlog | Where-Object {$_.value[1] -ne '1'}).Count) {throw 'Outbox snapshot is not valid for Order and Payment'}
 $sources = Invoke-RestMethod http://127.0.0.1:13000/api/datasources -Headers $headers -TimeoutSec 15
@@ -38,11 +42,17 @@ foreach ($uid in @('prometheus','tempo','loki')) {
 }
 $dashboard = Invoke-RestMethod http://127.0.0.1:13000/api/dashboards/uid/commerce-overview -Headers $headers -TimeoutSec 15
 if (@($dashboard.dashboard.panels).Count -lt 21) {throw 'Dashboard provisioning is incomplete'}
-$start = [DateTimeOffset]::UtcNow.AddMinutes(-2).ToUnixTimeSeconds()
-$end = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
-$url = 'http://127.0.0.1:19090/api/v1/query_range?query=' + [Uri]::EscapeDataString('up{job="services"}') + "&start=$start&end=$end&step=15"
-$history = (Invoke-RestMethod $url -TimeoutSec 5).data.result
-if (@($history).Count -ne 6 -or @($history | Where-Object {@($_.values).Count -lt 3}).Count) {throw 'Insufficient scrape history'}
+# A fresh CI TSDB needs two more scrape intervals after its first UP sample.
+# Advance the query end while waiting; keep the passing window fixed across restart.
+for ($retry=0; $retry -lt 30; $retry++) {
+    $start = [DateTimeOffset]::UtcNow.AddMinutes(-2).ToUnixTimeSeconds()
+    $end = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+    $url = 'http://127.0.0.1:19090/api/v1/query_range?query=' + [Uri]::EscapeDataString('up{job="services"}') + "&start=$start&end=$end&step=15"
+    $history = (Invoke-RestMethod $url -TimeoutSec 5).data.result
+    if (@($history).Count -eq 6 -and @($history | Where-Object {@($_.values).Count -lt 3}).Count -eq 0) {break}
+    if ($retry -eq 29) {throw 'Insufficient scrape history'}
+    Start-Sleep -Seconds 2
+}
 if (-not $SkipRestart) {
     # Windows PowerShell treats Docker progress on stderr as a terminating error.
     try {
@@ -56,7 +66,8 @@ if (-not $SkipRestart) {
         try {
             $health = Invoke-RestMethod http://127.0.0.1:13000/api/health -TimeoutSec 5
             $retained = (Invoke-RestMethod $url -TimeoutSec 5).data.result
-            if ($health.database -eq 'ok' -and @($retained).Count -eq 6) {$ready=$true;break}
+            if ($health.database -eq 'ok' -and @($retained).Count -eq 6 -and
+                @($retained | Where-Object {@($_.values).Count -lt 3}).Count -eq 0) {$ready=$true;break}
         } catch { }
         Start-Sleep -Seconds 2
     }

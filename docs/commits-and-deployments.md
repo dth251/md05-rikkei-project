@@ -466,3 +466,18 @@ health UP; HTTPS catalog 200. Đồng hồ sai +25.200 giây; đã sửa lúc 09
 HTTPS Date Google/Cloudflare, hai nguồn chênh 1 giây. Drop-in timesyncd IPv4 Cloudflare/
 Google đã cấu hình; NTP vẫn timeout và `NTPSynchronized=no`. Không xóa dữ liệu/volume,
 chưa rollout app hoặc monitoring, chưa chạy dependency demo VPS.
+
+Mốc 139-docs: `f457e4279175edba5722ba4eb895dbdd7dedfc39`, 16:38:28 +07.
+[PR #31](https://github.com/dth251/md05-rikkei-project/pull/31) draft.
+[Push CI 38377774329](https://github.com/dth251/md05-rikkei-project/actions/runs/38377774329)
+đạt unit/build, live infrastructure, VNPay, SMTP và multi-user load/reconciliation;
+monitoring thất bại do kiểm tra fresh TSDB trước khi đủ ba samples. PR CI 38377824082
+cùng head cũng chạy đến monitoring. Không merge/deploy ở checkpoint này.
+Verifier đã thêm bounded wait qua scrape intervals và kiểm tra cùng lịch sử sau restart;
+PowerShell parser/actionlint/diff check đạt, cần CI ở head sửa. Windows local rerun có
+warm-up/catalog/orders đạt, nhưng finalize HTTP 504, E2E không chạy; guard hiện cũng
+kiểm tra tài nguyên trước Java fixture. Không ghi toàn bộ tải local đạt.
+
+VPS HTTPS smoke sau sửa giờ: register/login/me đạt, 401/403/409 đúng; actuator public
+và internal recipient public trả 404. RabbitMQ queues ready/unacked/DLQ đều 0, năm
+consumer hoạt động; hostname/Mnesia node được giữ bằng private `RABBITMQ_HOSTNAME`.

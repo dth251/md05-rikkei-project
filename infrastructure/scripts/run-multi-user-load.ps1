@@ -29,8 +29,13 @@ $env:BASE_URL = $BaseUrl
 $env:RATE = [string]$Rate
 $env:DURATION = "${Seconds}s"
 function Invoke-Fixture([string]$Action) {
-    & ./order-service/gradlew.bat -p order-service multiUserLoadFixture "-PfixtureAction=$Action" --no-daemon --max-workers=2 '-Dorg.gradle.jvmargs=-Xmx256m -XX:MaxMetaspaceSize=256m' *> (Join-Path $privateRun "$Action.log")
-    if ($LASTEXITCODE) {throw "Fixture $Action failed; see private log"}
+    Assert-Resources
+    try {
+        $ErrorActionPreference = 'Continue'
+        & ./order-service/gradlew.bat -p order-service multiUserLoadFixture "-PfixtureAction=$Action" --no-daemon --max-workers=2 '-Dorg.gradle.jvmargs=-Xmx256m -XX:MaxMetaspaceSize=256m' *> (Join-Path $privateRun "$Action.log")
+        $fixtureExit = $LASTEXITCODE
+    } finally {$ErrorActionPreference = 'Stop'}
+    if ($fixtureExit) {throw "Fixture $Action failed (exit $fixtureExit); see private log"}
 }
 function Save-Snapshot([string]$Name) {
     $report = Join-Path $privateRun "$Name.txt"
