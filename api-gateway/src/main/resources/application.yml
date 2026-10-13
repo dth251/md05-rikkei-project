@@ -63,6 +63,28 @@ spring:
               uri: ${ORDER_URI:http://order-service:8083}
               predicates:
                 - Path=/api/inventory/**
+            - id: payment-vnpay-callback
+              uri: ${PAYMENT_URI:http://payment-service:8085}
+              predicates:
+                - Path=/api/payments/vnpay/ipn,/api/payments/vnpay/return
+                - Method=GET
+              filters:
+                - name: RequestRateLimiter
+                  args:
+                    key-resolver: '#{@clientIpKeyResolver}'
+                    redis-rate-limiter.replenishRate: 10
+                    redis-rate-limiter.burstCapacity: 20
+            - id: payment-vnpay-checkout
+              uri: ${PAYMENT_URI:http://payment-service:8085}
+              predicates:
+                - Path=/api/payments/*/vnpay/checkout
+                - Method=POST
+              filters:
+                - name: RequestRateLimiter
+                  args:
+                    key-resolver: '#{@userKeyResolver}'
+                    redis-rate-limiter.replenishRate: 2
+                    redis-rate-limiter.burstCapacity: 5
             - id: payment-service
               uri: ${PAYMENT_URI:http://payment-service:8085}
               predicates:
@@ -70,6 +92,13 @@ spring:
 
 management:
   metrics:
+    distribution:
+      percentiles-histogram:
+        jvm.gc.pause: true
+        http.server.requests: true
+        spring.cloud.gateway.requests: true
+        commerce.order.product.rpc.duration: true
+        commerce.product.rpc.duration: true
     tags:
       application: api-gateway
   endpoints:

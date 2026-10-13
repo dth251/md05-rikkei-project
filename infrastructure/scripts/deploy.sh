@@ -36,6 +36,7 @@ export "$tag_variable=$IMAGE_TAG"
 mkdir -p "$DEPLOY_ROOT/infrastructure/postgres" "$DEPLOY_ROOT/infrastructure/rabbitmq"
 cp infrastructure/postgres/init-databases.sh "$DEPLOY_ROOT/infrastructure/postgres/"
 cp infrastructure/rabbitmq/definitions.json "$DEPLOY_ROOT/infrastructure/rabbitmq/"
+cp infrastructure/rabbitmq/enabled_plugins "$DEPLOY_ROOT/infrastructure/rabbitmq/"
 compose=(docker compose --project-directory "$DEPLOY_ROOT" --env-file "$DEPLOY_ROOT/.env" -f "$release/docker-compose.yml" -f "$release/docker-compose.production.yml")
 "${compose[@]}" config --quiet
 "${compose[@]}" pull "$service"

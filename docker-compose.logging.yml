@@ -1,0 +1,29 @@
+services:
+  loki:
+    image: grafana/loki:3.7.8
+    profiles: [logging]
+    restart: unless-stopped
+    mem_limit: 192m
+    command: [-config.file=/etc/loki/config.yml]
+    volumes:
+      - ./infrastructure/logging/loki.yml:/etc/loki/config.yml:ro
+      - loki-data:/loki
+    ports: [127.0.0.1:13100:3100]
+  alloy:
+    image: grafana/alloy:v1.20.1
+    profiles: [logging]
+    restart: unless-stopped
+    mem_limit: 128m
+    cpus: 1.0
+    environment:
+      GOMEMLIMIT: 96MiB
+      GOMAXPROCS: '2'
+    command: [run, --storage.path=/var/lib/alloy, /etc/alloy/config.alloy]
+    volumes:
+      - ./infrastructure/logging/config.alloy:/etc/alloy/config.alloy:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - alloy-data:/var/lib/alloy
+
+volumes:
+  loki-data:
+  alloy-data:

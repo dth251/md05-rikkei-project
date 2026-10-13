@@ -26,6 +26,13 @@ public class OutboxEvent {
 
     private Instant publishedAt;
 
+    @Column(length = 55)
+    private String traceParent;
+
+    public void setTraceParent(String value) {
+        traceParent = value;
+    }
+
     @Column(nullable = false, columnDefinition = "integer default 0")
     private int attempts;
 

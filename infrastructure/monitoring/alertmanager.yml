@@ -1,0 +1,12 @@
+# Default intentionally retains alerts without sending messages to an external recipient.
+# Set ALERTMANAGER_CONFIG to an absolute private config path to enable an approved channel.
+global:
+  resolve_timeout: 5m
+route:
+  receiver: retained-only
+  group_by: [alertname, application, service]
+  group_wait: 10s
+  group_interval: 1m
+  repeat_interval: 4h
+receivers:
+  - name: retained-only

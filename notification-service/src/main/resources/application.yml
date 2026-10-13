@@ -4,6 +4,19 @@ server:
     include-message: never
     include-stacktrace: never
 spring:
+  mail:
+    host: ${SMTP_HOST:localhost}
+    port: ${SMTP_PORT:587}
+    username: ${SMTP_USERNAME:}
+    password: ${SMTP_PASSWORD:}
+    properties:
+      mail.smtp.auth: ${SMTP_AUTH:true}
+      mail.smtp.starttls.enable: ${SMTP_STARTTLS:true}
+      mail.smtp.starttls.required: ${SMTP_STARTTLS:true}
+      mail.smtp.ssl.checkserveridentity: true
+      mail.smtp.connectiontimeout: 3000
+      mail.smtp.timeout: 5000
+      mail.smtp.writetimeout: 5000
   application:
     name: notification-service
   datasource:
@@ -32,9 +45,18 @@ spring:
         default-requeue-rejected: true
 management:
   metrics:
+    distribution:
+      percentiles-histogram:
+        jvm.gc.pause: true
+        http.server.requests: true
+        spring.cloud.gateway.requests: true
+        commerce.order.product.rpc.duration: true
+        commerce.product.rpc.duration: true
     tags:
       application: notification-service
   health:
+    mail:
+      enabled: false
     rabbit:
       enabled: false
   endpoints:
@@ -47,3 +69,13 @@ management:
 logging:
   level:
     org.hibernate.engine.jdbc.spi.SqlExceptionHelper: OFF
+
+notification:
+  auth-url: ${NOTIFICATION_AUTH_URL:http://auth-service:8081}
+  recipient-token: ${NOTIFICATION_RECIPIENT_TOKEN:}
+  email:
+    enabled: ${SMTP_ENABLED:false}
+    from: ${SMTP_FROM:}
+    max-attempts: 5
+    batch-size: 1
+    lease-seconds: 120

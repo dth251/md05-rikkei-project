@@ -1,0 +1,98 @@
+x-tracing: &tracing
+  OTEL_SERVICE_NAME: overridden-per-service
+  OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
+  OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
+  OTEL_EXPORTER_OTLP_TIMEOUT: '3000'
+  OTEL_TRACES_EXPORTER: otlp
+  OTEL_METRICS_EXPORTER: none
+  OTEL_LOGS_EXPORTER: none
+  OTEL_PROPAGATORS: tracecontext
+  OTEL_TRACES_SAMPLER: parentbased_traceidratio
+  OTEL_TRACES_SAMPLER_ARG: ${TRACE_SAMPLE_RATIO:-0.1}
+  OTEL_BSP_MAX_QUEUE_SIZE: '512'
+  OTEL_BSP_MAX_EXPORT_BATCH_SIZE: '128'
+  OTEL_BSP_EXPORT_TIMEOUT: '3000'
+  OTEL_INSTRUMENTATION_JDBC_ENABLED: 'false'
+  OTEL_INSTRUMENTATION_COMMON_DB_STATEMENT_SANITIZER_ENABLED: 'true'
+  JAVA_TOOL_OPTIONS: -javaagent:/otel/opentelemetry-javaagent.jar -Xms32m -Xmx160m -XX:MaxMetaspaceSize=160m -XX:ReservedCodeCacheSize=32m -XX:ActiveProcessorCount=2 -Xss256k
+
+x-instrumented: &instrumented
+  mem_limit: 480m
+  volumes:
+    - otel-agent:/otel:ro
+  depends_on:
+    otel-agent-init:
+      condition: service_completed_successfully
+
+services:
+  otel-agent-init:
+    image: curlimages/curl:8.16.0
+    profiles: [tracing]
+    user: '0:0'
+    restart: 'no'
+    mem_limit: 64m
+    volumes: [otel-agent:/otel]
+    entrypoint: [/bin/sh, -ec]
+    command:
+      - |
+        if ! printf '%s  %s\n' 'f787eb6c7f3d18e69a431e108a15278d25ee37f83d68b678f621e063f3988f82' /otel/opentelemetry-javaagent.jar | sha256sum -c - >/dev/null 2>&1; then
+          curl --fail --silent --show-error --location --max-time 120 https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v2.32.0/opentelemetry-javaagent.jar -o /otel/agent.download
+          printf '%s  %s\n' 'f787eb6c7f3d18e69a431e108a15278d25ee37f83d68b678f621e063f3988f82' /otel/agent.download | sha256sum -c - >/dev/null
+          mv /otel/agent.download /otel/opentelemetry-javaagent.jar
+          chmod 644 /otel/opentelemetry-javaagent.jar
+        fi
+
+  api-gateway:
+    <<: *instrumented
+    environment:
+      <<: *tracing
+      OTEL_SERVICE_NAME: api-gateway
+  auth-service:
+    <<: *instrumented
+    environment:
+      <<: *tracing
+      OTEL_SERVICE_NAME: auth-service
+  product-service:
+    <<: *instrumented
+    environment:
+      <<: *tracing
+      OTEL_SERVICE_NAME: product-service
+  order-service:
+    <<: *instrumented
+    environment:
+      <<: *tracing
+      OTEL_SERVICE_NAME: order-service
+  payment-service:
+    <<: *instrumented
+    environment:
+      <<: *tracing
+      OTEL_SERVICE_NAME: payment-service
+  notification-service:
+    <<: *instrumented
+    environment:
+      <<: *tracing
+      OTEL_SERVICE_NAME: notification-service
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.162.0
+    profiles: [tracing]
+    restart: unless-stopped
+    mem_limit: 160m
+    command: [--config=/etc/otel/config.yml]
+    volumes:
+      - ./infrastructure/tracing/collector.yml:/etc/otel/config.yml:ro
+
+  tempo:
+    image: grafana/tempo:3.1.0
+    profiles: [tracing]
+    restart: unless-stopped
+    mem_limit: 256m
+    command: [-config.file=/etc/tempo/config.yml]
+    volumes:
+      - ./infrastructure/tracing/tempo.yml:/etc/tempo/config.yml:ro
+      - tempo-data:/var/tempo
+    ports: [127.0.0.1:13200:3200]
+
+volumes:
+  otel-agent:
+  tempo-data:

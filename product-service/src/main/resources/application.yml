@@ -23,6 +23,13 @@ spring:
 
 management:
   metrics:
+    distribution:
+      percentiles-histogram:
+        jvm.gc.pause: true
+        http.server.requests: true
+        spring.cloud.gateway.requests: true
+        commerce.order.product.rpc.duration: true
+        commerce.product.rpc.duration: true
     tags:
       application: product-service
   endpoints:

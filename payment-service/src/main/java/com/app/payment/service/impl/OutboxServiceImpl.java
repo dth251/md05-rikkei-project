@@ -1,6 +1,7 @@
 package com.app.payment.service.impl;
 
 import com.app.payment.dto.event.CommerceEvent;
+import com.app.payment.config.CommerceTrace;
 import com.app.payment.entity.OutboxEvent;
 import com.app.payment.service.OutboxService;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -48,8 +49,10 @@ public class OutboxServiceImpl implements OutboxService {
     @Transactional
     public void append(CommerceEvent event) {
         try {
-            entityManager.persist(new OutboxEvent(event.eventId(), event.type(),
-                    objectMapper.writeValueAsString(event), event.occurredAt()));
+            var record = new OutboxEvent(event.eventId(), event.type(),
+                    objectMapper.writeValueAsString(event), event.occurredAt());
+            record.setTraceParent(CommerceTrace.capture());
+            entityManager.persist(record);
         } catch (JsonProcessingException exception) {
             throw new IllegalStateException("Cannot serialize commerce event", exception);
         }
@@ -66,34 +69,50 @@ public class OutboxServiceImpl implements OutboxService {
     @Override
     @Transactional
     public void publish(String eventId) {
-        var records = jdbc.query("SELECT event_type, payload FROM outbox_events WHERE event_id=? "
+        var records = jdbc.query("SELECT event_type, payload, trace_parent FROM outbox_events WHERE event_id=? "
                 + "AND published_at IS NULL AND (next_attempt_at IS NULL OR next_attempt_at<=CURRENT_TIMESTAMP) "
                 + "FOR UPDATE SKIP LOCKED",
-                (row, index) -> new String[]{row.getString(1), row.getString(2)}, eventId);
+                (row, index) -> new String[]{row.getString(1), row.getString(2), row.getString(3)}, eventId);
         if (records.isEmpty()) {
             return;
         }
         var record = records.getFirst();
-        MessageProperties properties = new MessageProperties();
-        properties.setContentType(MessageProperties.CONTENT_TYPE_JSON);
-        properties.setDeliveryMode(MessageDeliveryMode.PERSISTENT);
-        properties.setMessageId(eventId);
-        CorrelationData correlation = new CorrelationData(eventId);
-        rabbitTemplate.send("commerce.events", record[0],
-                new Message(record[1].getBytes(StandardCharsets.UTF_8), properties), correlation);
-        try {
-            var confirm = correlation.getFuture().get(5, TimeUnit.SECONDS);
-            if (!confirm.isAck() || correlation.getReturned() != null) {
-                throw new IllegalStateException("Broker did not accept routed event");
+        var span = CommerceTrace.start(record[2], "commerce.outbox.publish");
+        try (var scope = span.makeCurrent()) {
+            MessageProperties properties = new MessageProperties();
+            String traceParent = CommerceTrace.capture();
+            if (traceParent != null) {
+                properties.setHeader("traceparent", traceParent);
             }
-        } catch (InterruptedException exception) {
-            Thread.currentThread().interrupt();
-            throw new IllegalStateException("Publish interrupted", exception);
-        } catch (java.util.concurrent.ExecutionException | java.util.concurrent.TimeoutException exception) {
-            throw new IllegalStateException("Broker confirmation unavailable", exception);
+            properties.setContentType(MessageProperties.CONTENT_TYPE_JSON);
+            properties.setDeliveryMode(MessageDeliveryMode.PERSISTENT);
+            properties.setMessageId(eventId);
+            CorrelationData correlation = new CorrelationData(eventId);
+            rabbitTemplate.send("commerce.events", record[0],
+                    new Message(record[1].getBytes(StandardCharsets.UTF_8), properties), correlation);
+            try {
+                var confirm = correlation.getFuture().get(5, TimeUnit.SECONDS);
+                if (!confirm.isAck() || correlation.getReturned() != null) {
+                    throw new IllegalStateException("Broker did not accept routed event");
+                }
+            } catch (InterruptedException exception) {
+                Thread.currentThread().interrupt();
+                throw new IllegalStateException("Publish interrupted", exception);
+            } catch (java.util.concurrent.ExecutionException | java.util.concurrent.TimeoutException exception) {
+                throw new IllegalStateException("Broker confirmation unavailable", exception);
+            }
+            // A crash after broker ACK may redeliver this event. Consumers must deduplicate eventId.
+            jdbc.update("UPDATE outbox_events SET published_at=CURRENT_TIMESTAMP, next_attempt_at=NULL WHERE event_id=?", eventId);
+            CommerceTrace.audit("outbox_publish", "completed");
+        } catch (RuntimeException exception) {
+            span.setStatus(io.opentelemetry.api.trace.StatusCode.ERROR);
+            try (var scope = span.makeCurrent()) {
+                CommerceTrace.audit("outbox_publish", "deferred");
+            }
+            throw exception;
+        } finally {
+            span.end();
         }
-        // A crash after broker ACK may redeliver this event. Consumers must deduplicate eventId.
-        jdbc.update("UPDATE outbox_events SET published_at=CURRENT_TIMESTAMP, next_attempt_at=NULL WHERE event_id=?", eventId);
     }
 
     @Override

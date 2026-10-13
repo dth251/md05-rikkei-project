@@ -67,7 +67,7 @@
                      }
                  ],
     "info":  {
-                 "description":  "Run folders sequentially. Configure ADMIN credentials privately after assigning role on server. Retry async payment/final-order requests; login quota may return 429. Notification/Prometheus remain private. Clear credentials/tokens before exporting. Runner polls asynchronous payment/final order up to 30 times; use delay-request 1000ms.",
+                 "description":  "Run folders sequentially. Configure ADMIN credentials privately after assigning role on server. Retry async payment/final-order requests; login quota may return 429. Notification/Prometheus remain private. Clear credentials/tokens before exporting. Runner polls asynchronous payment/final order up to 30 times; use delay-request 1000ms. VNPay callbacks are provider GET requests signed by HMAC; use Java fixture or actual provider, never export signing keys. SMTP is internal; inspect private Mailpit during tests.",
                  "name":  "MD05 six apps - Gateway Auth Product Order Payment Saga",
                  "schema":  "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
              },
@@ -412,7 +412,7 @@
                                   {
                                       "request":  {
                                                       "body":  {
-                                                                   "raw":  "{\"channel\":\"WEB\",\"idempotencyKey\":\"{{orderKey}}\",\"items\":[{\"productId\":{{productId}},\"quantity\":1,\"idempotencyKey\":\"receipt-{{orderKey}}\"}]}",
+                                                                   "raw":  "{\"channel\":\"WEB\",\"idempotencyKey\":\"{{orderKey}}\",\"items\":[{\"productId\":{{productId}},\"quantity\":1}]}",
                                                                    "options":  {
                                                                                    "raw":  {
                                                                                                "language":  "json"
@@ -450,7 +450,7 @@
                                   {
                                       "request":  {
                                                       "body":  {
-                                                                   "raw":  "{\"channel\":\"WEB\",\"idempotencyKey\":\"{{orderKey}}\",\"items\":[{\"productId\":{{productId}},\"quantity\":1,\"idempotencyKey\":\"receipt-{{orderKey}}\"}]}",
+                                                                   "raw":  "{\"channel\":\"WEB\",\"idempotencyKey\":\"{{orderKey}}\",\"items\":[{\"productId\":{{productId}},\"quantity\":1}]}",
                                                                    "options":  {
                                                                                    "raw":  {
                                                                                                "language":  "json"
@@ -709,6 +709,89 @@
                                                         "listen":  "test"
                                                     }
                                                 ]
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "VNPay sandbox",
+                     "item":  [
+                                  {
+                                      "name":  "Checkout VNPay",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "url":  {
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "raw":  "{{baseUrl}}/api/payments/{{paymentId}}/vnpay/checkout",
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "payments",
+                                                                               "{{paymentId}}",
+                                                                               "vnpay",
+                                                                               "checkout"
+                                                                           ]
+                                                              },
+                                                      "description":  "Requires configured private sandbox. Refund only after capture requires refund; reconcile is not proof of a completed refund.",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{userToken}}"
+                                                                     }
+                                                                 ]
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Refund VNPay (ADMIN)",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "url":  {
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "raw":  "{{baseUrl}}/api/payments/{{paymentId}}/vnpay/refund",
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "payments",
+                                                                               "{{paymentId}}",
+                                                                               "vnpay",
+                                                                               "refund"
+                                                                           ]
+                                                              },
+                                                      "description":  "Requires configured private sandbox. Refund only after capture requires refund; reconcile is not proof of a completed refund.",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{adminToken}}"
+                                                                     }
+                                                                 ]
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Reconcile VNPay (ADMIN)",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "url":  {
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "raw":  "{{baseUrl}}/api/payments/{{paymentId}}/vnpay/reconcile",
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "payments",
+                                                                               "{{paymentId}}",
+                                                                               "vnpay",
+                                                                               "reconcile"
+                                                                           ]
+                                                              },
+                                                      "description":  "Requires configured private sandbox. Refund only after capture requires refund; reconcile is not proof of a completed refund.",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{adminToken}}"
+                                                                     }
+                                                                 ]
+                                                  }
                                   }
                               ]
                  }

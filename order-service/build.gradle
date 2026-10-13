@@ -20,6 +20,7 @@ repositories {
 }
 
 dependencies {
+    implementation 'io.opentelemetry:opentelemetry-api'
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-api:2.8.17'
     implementation enforcedPlatform('io.grpc:grpc-bom:1.84.1')
     implementation 'io.grpc:grpc-netty-shaded'
@@ -88,6 +89,16 @@ tasks.register('loadFixture', JavaExec) {
     dependsOn testClasses
     classpath = sourceSets.test.runtimeClasspath
     mainClass = 'com.app.order.OrderLoadFixture'
+    args providers.gradleProperty('fixtureAction').getOrElse('prepare')
+}
+
+tasks.register('multiUserLoadFixture', JavaExec) {
+    description = 'Prepare and reconcile private multi-account k6 fixtures using real Auth and PostgreSQL'
+    group = 'verification'
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'com.app.order.MultiUserLoadFixture'
+    jvmArgs '-Xmx128m', '-XX:MaxMetaspaceSize=128m'
     args providers.gradleProperty('fixtureAction').getOrElse('prepare')
 }
 

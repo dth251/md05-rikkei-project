@@ -5,7 +5,7 @@ target="${1:-.env}"
 umask 077
 set -o noclobber
 lines=('POSTGRES_USER=postgres')
-for variable in POSTGRES_PASSWORD AUTH_DB_PASSWORD PRODUCT_DB_PASSWORD ORDER_DB_PASSWORD PAYMENT_DB_PASSWORD NOTIFICATION_DB_PASSWORD RABBITMQ_DEFAULT_PASS PRODUCT_RPC_TOKEN; do
+for variable in POSTGRES_PASSWORD AUTH_DB_PASSWORD PRODUCT_DB_PASSWORD ORDER_DB_PASSWORD PAYMENT_DB_PASSWORD NOTIFICATION_DB_PASSWORD RABBITMQ_DEFAULT_PASS PRODUCT_RPC_TOKEN NOTIFICATION_RECIPIENT_TOKEN MONITOR_DB_PASSWORD GRAFANA_ADMIN_PASSWORD; do
     value="$(openssl rand -hex 32)" || { echo 'Secret generation failed' >&2; exit 1; }
     [[ "$value" =~ ^[0-9a-f]{64}$ ]] || { echo 'Invalid generated secret' >&2; exit 1; }
     lines+=("$variable=$value")
@@ -14,6 +14,9 @@ value="$(openssl rand -base64 32)" || { echo 'JWT key generation failed' >&2; ex
 [[ "$value" =~ ^[a-zA-Z0-9+/]{43}=$ ]] || { echo 'Invalid generated JWT key' >&2; exit 1; }
 lines+=('RABBITMQ_DEFAULT_USER=commerce_app' "JWT_SECRET=$value"
     'DOMAIN=md05-rikkei-project.duckdns.org'
-    'AUTH_IMAGE=ghcr.io/dth251/md05-rikkei-project/auth-service')
+    'AUTH_IMAGE=ghcr.io/dth251/md05-rikkei-project/auth-service'
+    'SMTP_ENABLED=false' 'SMTP_HOST=' 'SMTP_USERNAME=' 'SMTP_PASSWORD=' 'SMTP_FROM='
+    'VNPAY_ENABLED=false' 'VNPAY_TMN_CODE=' 'VNPAY_HASH_SECRET=' 'VNPAY_SERVER_IP='
+    'VNPAY_RETURN_URL=https://md05-rikkei-project.duckdns.org/api/payments/vnpay/return')
 printf '%s\n' "${lines[@]}" > "$target"
 printf 'Created private environment file: %s\n' "$target"

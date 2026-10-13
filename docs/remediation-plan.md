@@ -56,3 +56,16 @@ Sau đồng bộ readiness, Order 43 unit/bootJar đạt; docs live trên bốn
 container đạt. OpenAPI chưa VPS tại checkpoint; các hạng mục còn lại
 tiếp tục theo bằng chứng trong nhật ký. VNPay bắt đầu ở feature riêng,
 chưa có merchant private và chưa phát sinh giao dịch sandbox thực tế.
+
+Checkpoint 2026-10-12 09:41 +07: main 115 RPC readiness đã deploy và smoke mua
+hàng VPS đạt. OpenAPI PR #28 đã qua CI, merge main 119; main CI 38194787693
+success. SSH 02:34:49 UTC xác nhận sáu image 119 healthy, probe docs private
+02:40:20 UTC xác nhận Auth/Product/Order/Payment anonymous 401, USER 403,
+ADMIN 200 và schema lỗi. OpenAPI runtime trên VPS đã được kiểm chứng.
+
+Theo yêu cầu tiếp theo, README gốc đã xóa bằng PR #29, head 124 CI
+38195920870 success, merge main 125. Thay đổi tài liệu không rollout service.
+VNPay đang ở feature, 42 Payment unit/bootJar và fixture HTTP refund đạt;
+chưa kiểm thử callback PostgreSQL/Gateway thật, chưa merchant sandbox thực tế
+hay deploy VNPay. Xem `vnpay-sandbox.md`. SMTP, dashboard/tracing, profiling/k6
+nhiều tài khoản và demo sự cố VPS vẫn còn công việc.

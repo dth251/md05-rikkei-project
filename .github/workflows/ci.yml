@@ -53,7 +53,7 @@ jobs:
   verify:
     needs: changes
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -111,6 +111,107 @@ jobs:
           if [[ -f notification-service/build.gradle ]]; then
             JWT_SECRET="$(sed -n 's/^JWT_SECRET=//p' .env)" NOTIFICATION_LIVE_DB_PASSWORD="$(sed -n 's/^NOTIFICATION_DB_PASSWORD=//p' .env)" RABBITMQ_LIVE_USER="$(sed -n 's/^RABBITMQ_DEFAULT_USER=//p' .env)" RABBITMQ_LIVE_PASSWORD="$(sed -n 's/^RABBITMQ_DEFAULT_PASS=//p' .env)" NOTIFICATION_RECOVERY_TEST=true notification-service/gradlew -p notification-service liveTest --no-daemon
           fi
+      - name: Verify VNPay callbacks and durable refund recovery on PostgreSQL
+        run: |
+          set -euo pipefail
+          docker compose -f docker-compose.yml -f docker-compose.local.yml -f docker-compose.vnpay-test.yml up -d --no-deps --wait --wait-timeout 180 payment-service
+          export JWT_SECRET="$(sed -n 's/^JWT_SECRET=//p' .env)"
+          export PAYMENT_LIVE_DB_PASSWORD="$(sed -n 's/^PAYMENT_DB_PASSWORD=//p' .env)"
+          export ORDER_LIVE_DB_PASSWORD="$(sed -n 's/^ORDER_DB_PASSWORD=//p' .env)"
+          export VNPAY_LIVE_TEST=true VNPAY_RECOVERY_TEST=true
+          export VNPAY_LIVE_HASH_SECRET=public-fixture-signing-key-only
+          payment-service/gradlew -p payment-service liveTest --tests '*VnpayLiveTests' --tests '*VnpayRefundPgLiveTests' --no-daemon
+      - name: Verify SMTP recipient, replay, outage and Notification restart
+        run: |
+          set -euo pipefail
+          docker compose -f docker-compose.yml -f docker-compose.local.yml -f docker-compose.smtp-test.yml --profile smtp-test up -d --wait --wait-timeout 180 mailpit
+          docker compose -f docker-compose.yml -f docker-compose.local.yml -f docker-compose.smtp-test.yml --profile smtp-test up -d --no-deps --wait --wait-timeout 180 notification-service
+          export JWT_SECRET="$(sed -n 's/^JWT_SECRET=//p' .env)"
+          export NOTIFICATION_LIVE_DB_PASSWORD="$(sed -n 's/^NOTIFICATION_DB_PASSWORD=//p' .env)"
+          export RABBITMQ_LIVE_USER="$(sed -n 's/^RABBITMQ_DEFAULT_USER=//p' .env)"
+          export RABBITMQ_LIVE_PASSWORD="$(sed -n 's/^RABBITMQ_DEFAULT_PASS=//p' .env)"
+          SMTP_LIVE_TEST=true notification-service/gradlew -p notification-service liveTest --tests '*EmailLiveTests' --no-daemon
+      - name: Verify multi-account catalog, orders and payment Saga at small load
+        run: |
+          set -euo pipefail
+          mkdir -p .verification ci-diagnostics
+          curl -fLsS --max-time 120 https://github.com/grafana/k6/releases/download/v2.3.0/k6-v2.3.0-linux-amd64.tar.gz -o .verification/k6.tar.gz
+          echo '39c3117b6af817592dcd0ce4242105c0a7af10948c2a425306f0be8f7a8a8ab1  .verification/k6.tar.gz' | sha256sum -c -
+          tar -xzf .verification/k6.tar.gz -C .verification
+          export JWT_SECRET="$(sed -n 's/^JWT_SECRET=//p' .env)"
+          export ORDER_LIVE_DB_PASSWORD="$(sed -n 's/^ORDER_DB_PASSWORD=//p' .env)"
+          export ORDER_LIVE_DB_URL=jdbc:postgresql://localhost:15432/order_db
+          export LOAD_BASE_URL=http://127.0.0.1:8080 BASE_URL=http://127.0.0.1:8080
+          export LOAD_FIXTURE_FILE="$PWD/.verification/multi-fixture.json" FIXTURE_FILE="$PWD/.verification/multi-fixture.json"
+          export LOAD_ACCOUNTS=2 LOAD_STOCK=50 RATE=1 DURATION=10s
+          order-service/gradlew -p order-service multiUserLoadFixture -PfixtureAction=prepare --no-daemon
+          bash infrastructure/scripts/sample-resources.sh 300 > ci-diagnostics/load-resources.csv &
+          sampler=$!
+          trap 'kill "$sampler" 2>/dev/null || true' EXIT
+          bash infrastructure/scripts/profile-snapshot.sh > ci-diagnostics/load-before.txt
+          for phase in warmup catalog orders e2e; do
+            (( $(awk '/^MemAvailable:/ {print $2}' /proc/meminfo) >= 524288 ))
+            (( $(df -Pk . | awk 'NR==2 {print $4}') >= 4194304 ))
+            export PHASE="$phase"
+            [[ "$phase" != warmup ]] || export PHASE=catalog
+            export SUMMARY_FILE="$PWD/ci-diagnostics/$phase-load.json"
+            .verification/k6-v2.3.0-linux-amd64/k6 run tests/k6/multi-user-load.js
+            bash infrastructure/scripts/profile-snapshot.sh > "ci-diagnostics/$phase-after.txt"
+            export LOAD_RESULT_FILE="$PWD/ci-diagnostics/$phase-reconciliation.json"
+            if [[ "$phase" == orders ]]; then order-service/gradlew -p order-service multiUserLoadFixture -PfixtureAction=finish --no-daemon; fi
+            if [[ "$phase" == e2e ]]; then order-service/gradlew -p order-service multiUserLoadFixture -PfixtureAction=verify --no-daemon; fi
+          done
+      - name: Verify monitoring targets, dashboards and persisted history
+        run: |
+          set -euo pipefail
+          export MONITOR_DB_PASSWORD="$(sed -n 's/^MONITOR_DB_PASSWORD=//p' .env)"
+          export GRAFANA_ADMIN_PASSWORD="$(sed -n 's/^GRAFANA_ADMIN_PASSWORD=//p' .env)"
+          bash infrastructure/scripts/provision-monitoring.sh
+          docker compose -f docker-compose.yml -f docker-compose.local.yml -f docker-compose.monitoring.yml --profile monitoring up -d --no-deps --wait --wait-timeout 240 prometheus grafana node-exporter postgres-exporter redis-exporter
+          mkdir -p .verification ci-diagnostics
+          pwsh -File infrastructure/scripts/verify-observability-live.ps1 -EvidenceFile ci-diagnostics/observability.json
+      - name: Verify trace privacy against persisted Tempo data
+        run: |
+          set -euo pipefail
+          docker compose -f docker-compose.yml -f docker-compose.tracing.yml --profile tracing up -d --no-deps tempo otel-collector
+          for attempt in {1..60}; do
+            curl -fsS --max-time 5 http://127.0.0.1:13200/ready >/dev/null && break || sleep 2
+          done
+          pwsh -File infrastructure/scripts/verify-trace-privacy.ps1 -EvidenceFile ci-diagnostics/trace-privacy.json
+      - name: Verify instrumented business trace and exporter outage recovery
+        run: |
+          set -euo pipefail
+          docker compose -f docker-compose.yml -f docker-compose.tracing.yml --profile tracing up -d otel-agent-init
+          docker compose -f docker-compose.yml -f docker-compose.local.yml -f docker-compose.smtp-test.yml -f docker-compose.tracing.yml --profile smtp-test --profile tracing up -d --no-deps --wait --wait-timeout 240 auth-service api-gateway product-service order-service payment-service notification-service
+          export JWT_SECRET="$(sed -n 's/^JWT_SECRET=//p' .env)"
+          export ORDER_LIVE_DB_PASSWORD="$(sed -n 's/^ORDER_DB_PASSWORD=//p' .env)"
+          export ORDER_LIVE_DB_URL=jdbc:postgresql://localhost:15432/order_db
+          export LOAD_BASE_URL=http://127.0.0.1:8080 BASE_URL=http://127.0.0.1:8080
+          export LOAD_FIXTURE_FILE="$PWD/.verification/trace-fixture.json" FIXTURE_FILE="$PWD/.verification/trace-fixture.json"
+          trace_id="$(openssl rand -hex 16)"
+          export TRACEPARENT="00-$trace_id-$(openssl rand -hex 8)-01"
+          export LOAD_ACCOUNTS=2 LOAD_STOCK=20 RATE=1 DURATION=5s PHASE=e2e REQUEST_RUN=trace
+          export SUMMARY_FILE="$PWD/ci-diagnostics/trace-business-load.json"
+          order-service/gradlew -p order-service multiUserLoadFixture -PfixtureAction=prepare --no-daemon
+          .verification/k6-v2.3.0-linux-amd64/k6 run tests/k6/multi-user-load.js
+          export LOAD_RESULT_FILE="$PWD/ci-diagnostics/trace-business-reconciliation.json"
+          order-service/gradlew -p order-service multiUserLoadFixture -PfixtureAction=verify --no-daemon
+          pwsh -File infrastructure/scripts/verify-tracing-live.ps1 -TraceId "$trace_id" -EvidenceFile ci-diagnostics/tracing-business.json
+          collector="$(docker compose -f docker-compose.yml -f docker-compose.tracing.yml --profile tracing ps -q otel-collector)"
+          test -n "$collector"
+          trap 'docker start "$collector" >/dev/null' EXIT
+          docker stop --time 5 "$collector" >/dev/null
+          export REQUEST_RUN=outage DURATION=3s SUMMARY_FILE="$PWD/ci-diagnostics/trace-outage-load.json"
+          .verification/k6-v2.3.0-linux-amd64/k6 run tests/k6/multi-user-load.js
+          export LOAD_RESULT_FILE="$PWD/ci-diagnostics/trace-outage-reconciliation.json"
+          order-service/gradlew -p order-service multiUserLoadFixture -PfixtureAction=verify --no-daemon
+          docker start "$collector" >/dev/null
+          trap - EXIT
+      - name: Verify Docker audit collection and privacy in Loki
+        run: |
+          set -euo pipefail
+          docker compose -f docker-compose.yml -f docker-compose.logging.yml --profile logging up -d --no-deps loki alloy
+          pwsh -File infrastructure/scripts/verify-logging-live.ps1 -EvidenceFile ci-diagnostics/logging.json
       - name: Save bounded failure diagnostics
         if: failure()
         run: |
@@ -142,7 +243,7 @@ jobs:
           retention-days: 7
       - name: Stop CI containers
         if: always()
-        run: docker compose down
+        run: docker compose -f docker-compose.yml -f docker-compose.local.yml -f docker-compose.smtp-test.yml -f docker-compose.monitoring.yml -f docker-compose.tracing.yml -f docker-compose.logging.yml --profile smtp-test --profile monitoring --profile tracing --profile logging down
       - name: Record verification by numbered milestone
         if: always()
         env:
@@ -159,8 +260,16 @@ jobs:
             printf -- '- Reports: java-test-reports\n'
           } >> "$GITHUB_STEP_SUMMARY"
 
+  observability-config:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate collector, logging and alert configurations with pinned images
+        run: bash infrastructure/scripts/verify-observability-config.sh
+
   publish:
-    needs: [changes, verify]
+    needs: [changes, verify, observability-config]
     if: github.event_name != 'pull_request' && needs.changes.outputs.services != '[]'
     strategy:
       matrix:

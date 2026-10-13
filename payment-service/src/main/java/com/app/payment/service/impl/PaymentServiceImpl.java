@@ -8,6 +8,7 @@ import com.app.payment.entity.PaymentStatus;
 import com.app.payment.mapper.PaymentMapper;
 import com.app.payment.repository.PaymentRepository;
 import com.app.payment.repository.PaymentOrderLock;
+import com.app.payment.repository.VnpayPaymentRepository;
 import com.app.payment.service.OutboxService;
 import com.app.payment.service.PaymentService;
 import com.app.payment.service.PaymentExpiryService;
@@ -28,6 +29,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final JdbcTemplate jdbc;
     private final PaymentOrderLock orderLocks;
     private final PaymentExpiryService expiry;
+    private final VnpayPaymentRepository providerPayments;
 
     public PaymentServiceImpl(
             PaymentRepository paymentRepository,
@@ -35,7 +37,8 @@ public class PaymentServiceImpl implements PaymentService {
             OutboxService outboxService,
             JdbcTemplate jdbc,
             PaymentOrderLock orderLocks,
-            PaymentExpiryService expiry
+            PaymentExpiryService expiry,
+            VnpayPaymentRepository providerPayments
     ) {
         this.paymentRepository = paymentRepository;
         this.paymentMapper = paymentMapper;
@@ -43,6 +46,7 @@ public class PaymentServiceImpl implements PaymentService {
         this.jdbc = jdbc;
         this.orderLocks = orderLocks;
         this.expiry = expiry;
+        this.providerPayments = providerPayments;
     }
 
     @Override
@@ -92,6 +96,9 @@ public class PaymentServiceImpl implements PaymentService {
             throw new ApiException(HttpStatus.BAD_REQUEST, "Choose SUCCESS or FAILED");
         }
         Payment payment = paymentRepository.findLockedById(id).orElseThrow(this::notFound);
+        if (providerPayments.existsById(id)) {
+            throw new ApiException(HttpStatus.CONFLICT, "Provider payment requires verified callback");
+        }
         if (payment.getStatus() != PaymentStatus.PENDING) {
             if (payment.getStatus() != status) {
                 throw new ApiException(HttpStatus.CONFLICT, "Payment already completed with another outcome");

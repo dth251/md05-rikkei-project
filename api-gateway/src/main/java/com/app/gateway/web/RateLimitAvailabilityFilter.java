@@ -35,7 +35,9 @@ public class RateLimitAvailabilityFilter implements WebFilter {
         boolean limited = (("/api/auth/login".equals(path) || "/api/auth/refresh".equals(path)
                 || "/api/auth/logout".equals(path))
                 && exchange.getRequest().getMethod() == HttpMethod.POST)
-                || path.equals("/api/orders") || path.startsWith("/api/orders/");
+                || path.equals("/api/orders") || path.startsWith("/api/orders/")
+                || path.startsWith("/api/payments/vnpay/")
+                || path.matches("/api/payments/[1-9][0-9]*/vnpay/checkout");
         if (!limited) {
             return chain.filter(exchange);
         }

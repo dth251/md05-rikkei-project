@@ -385,3 +385,99 @@ Merge 115 `37e8173df2863991fe20e2e7a160e3b5a132f813`, 08:56:08 +07.
 Main CI 38193814101 đang kiểm thử tích hợp tại checkpoint, chưa có
 image/health VPS của mốc 115. Nhánh OpenAPI đã merge origin/main qua
 116 `598ed87d939f20108c724c95f3b9ab11482b5cba`, 08:56:23 +07.
+
+## Tài liệu checklist và hướng dẫn Postman
+
+| Mốc | SHA | Thời gian +07:00, 2026-10-12 | Kiểm tra / deploy thực tế |
+|---|---|---|---|
+| 130-docs | `e3289e590a937cd8edaa0f95624940c5fa72e0d2` | 10:02:25 | 55 checklist items, relative links/diff check đạt; PR #30 head 130 CI 38198221287 completed success; chưa merge/deploy từ PR này |
+| 131-tests | `0baaa6984d048b620fb42bfdb23257f45249eac9` | 10:32:11 | Sửa hai body Order trong collection: bỏ key phiếu nhập kho khỏi item; JSON/21 scripts parse đạt, 19 requests/2 body Order khớp fields DTO; chưa chạy lại collection qua HTTP |
+
+Hướng dẫn `postman-testing-guide.md` đối chiếu controller/DTO của main 125
+và API VNPay trên feature riêng. Kiểm tra tài liệu lúc 10:40 +07: relative
+links tồn tại, 6 JavaScript blocks/10 JSON examples/1 PowerShell block parse
+đạt. Phân biệt hướng dẫn/expected với kết quả API đã thực thi; không ghi
+Postman, load hoặc failure demo đã PASS từ các kiểm tra cú pháp này.
+
+Không đổi runtime hoặc deploy trong các mốc tài liệu/collection trên. Bản
+ứng dụng VPS kiểm chứng gần nhất vẫn image main 119; README đã xóa ở main
+125. Nhánh VNPay head 129 CI 38196864016 completed success, chưa merge/deploy
+VNPay. PR #30 cần kiểm tra lại ở head mới trước khi tích hợp các thay đổi tiếp.
+## Checkpoint VNPay, OpenAPI VPS và xóa README
+
+| Mốc | SHA | Thời gian +07:00, 2026-10-12 | Kiểm tra / deploy thực tế |
+|---|---|---|---|
+| 117-payment-service | `009a193c380bb70e6788891e5d16674541c6d9a3` | 08:56:35 | 6 signature tests gồm RFC vector/bootJar đạt; chưa deploy VNPay |
+| 119-infrastructure | `b253c9528c764fc24dded222ee464dc4ba99b206` | 09:11:00 | PR #28 CI 38194092002 đạt; main CI 38194787693 success, deploy sáu service |
+| 120-payment-service | `428752f84a31a8191e9b4c826072788bedb4c8c8` | 09:15:43 | 33 unit/bootJar, thêm 2 facade tests đạt riêng; checkout/IPN vẫn feature |
+| 121-api-gateway | `9c594971f9f88fe2a76f7893d8b7b8b97201bc36` | 09:15:43 | 20 unit/bootJar, thêm 3 routing tests đạt riêng; chưa deploy VNPay route |
+| 122-payment-service | `448ac52483096653f7a1dbef5982f4ebe52d92dd` | 09:16:44 | Merge main 119 vào feature; chưa deploy VNPay |
+| 123-infrastructure | `0454c406a70aed28ef464985f6b5fedc7ea514bf` | 09:18:41 | Compose config/bâsh syntax đạt; provider mặc định disabled |
+| 124-docs | `99ff0d1b49884cf9e67d374f25759b60b1c3c939` | 09:28:13 | Chỉ xóa README gốc, diff check đạt; PR #29 CI 38195920870 Java/live/recovery success |
+| 125-docs | `f7c5e8b0dc411482e38edb64b8141c8531240217` | 09:36:44 | Merge PR #29 sau CI; origin/main không còn README.md; không chọn service deploy |
+| 126-payment-service | `254e43ffdc1f7322d68a157d02ddca2a1af9ffed` | 09:40:13 | 42/42 unit zero fail/error/skip và bootJar đạt; HTTP fixture refund, chưa sandbox/PG live/CI/deploy VNPay |
+| 127-payment-service | `8800ee1840752fd231d78b0ad49c871901ae2121` | 09:40:13 | Merge main 125; feature giữ việc xóa README; chưa deploy VNPay |
+| 128-infrastructure | `e342b1572fce18b206a670915d4a3458b72cc047` | 09:41:05 | Compose config/syntax Bash/diff check đạt; server IP private cho ledger; chưa rollout |
+
+Readiness main 115 CI 38193814101 success; SSH 02:06:24 UTC xác nhận
+Product/Order image 115 healthy, bốn ứng dụng khác image 86. Smoke mua biến
+thể thực qua HTTPS VPS sau rollout đạt 1/1, gồm stock/order/payment mô phỏng/
+CONFIRMED/snapshot. Không ghi đây là giao dịch VNPay.
+
+OpenAPI main 119 SSH 02:34:49 UTC: cả sáu image 119 healthy. Probe read-only
+qua SSH 02:40:20 UTC: bốn service docs anonymous 401, USER 403, ADMIN 200,
+title đúng và ApiError schema tồn tại; Auth/Product/Order/Payment có 8/3/6/3
+paths. PR #28 đã cập nhật bằng chứng rollout cuối cùng.
+
+Full Payment lần đầu sau refund có 42 tests/1 fail: checkout trả expiry theo
+nanosecond khác giá trị reload database. Chuẩn hóa timestamp theo giây đúng
+protocol; full chạy lại 09:38:44 +07 đạt 42/42, không bỏ test hoặc bỏ assert.
+VNPay vẫn ở feature; không có cấu hình merchant/SMTP private hoặc giao dịch
+thực với provider. Phần việc còn lại được ghi tại `remediation-plan.md`.
+
+## Bổ sung remaining-work ngày 13/10/2026
+
+Nhánh `feature/remaining-work-implementation`; chưa merge/deploy code mới ở checkpoint này.
+
+| Mốc | SHA | Thời gian +07:00 | Kiểm tra / deploy thực tế |
+|---|---|---|---|
+| 133-payment-service | `e51c901f93469f88350efa1651857511c0fb1f56` | 14:42:00 | Kết hợp VNPay mốc 129, sửa fixture Gateway bằng port chưa dùng; Gateway 23 tests đạt; chưa deploy |
+| 134-notification-service | `6e13a635b2587d10ed4996541ec478f7a2dd5aff` | 15:43:55 | Auth 23/Notification 16 unit, 3 PG/Mailpit live đạt; API recipient private, durable SMTP/retry/dedup; chưa SMTP ngoài/deploy |
+| 135-payment-service | `32365474c8f1bf2d5a2e137a5106792e4c5fedd5` | 15:46:32 | Order 45/Payment 42 unit, 12 VNPay PG/Gateway/refund-restart live đạt; measured backlog/Outbox trace; chưa provider thật/deploy |
+| 136-notification-service | `d6f8f877ebae379d2bf50b3bdf603e5916372495` | 16:36:04 | Notification 16 unit/bootJar và 3 SMTP PG live chạy lại đạt; trace lưu trong delivery, span riêng lúc gửi; chưa deploy |
+| 137-infrastructure | `efc011cd8093cecd2255e7f1260a8b4e5dffcf37` | 16:36:50 | Compose/Bash/Collector/Alloy/Loki/Prometheus/Alertmanager config đạt; 11 rules hợp lệ/2 firing-resolved fixture đạt; local targets/history/Grafana restart, Tempo privacy và Docker audit Loki privacy đạt; chưa VPS deploy |
+| 138-tests | `a91f3793f9a03a9d88ab4e2044277b279d8823cf` | 16:37:50 | Java multi-user fixture compile, PowerShell parser/actionlint đạt; bổ sung stage VNPay/SMTP/load/monitoring/tracing/privacy/exporter outage. Các stage mới cần chạy ở head CI; không ghi runtime đạt từ cú pháp |
+
+Tổng unit sáu service: 171, zero fail/error. BootJar đạt. VNPay provider dùng HTTP
+fixture công khai, SMTP dùng Mailpit private; chưa có merchant hoặc SMTP ngoài.
+Trace privacy kiểm chứng bằng gửi fixture rồi đọc trace đã lưu từ Tempo, không chỉ validate
+YAML. Logging lần đầu không tìm thấy audit; chuyển targets sang relabel output, giới hạn
+phạm vi service và CPU/Go memory, chạy lại tìm được audit theo trace ID và marker bị loại.
+Không chuyển raw log ứng dụng vào Loki.
+
+Tải Windows lần đầu: 11 HTTP thành công, zero 429/transport/drop, warm-up p95 8.304 ms,
+p99 8.509 ms, vượt threshold 2.000 ms. Harness dừng các pha sau; không coi load đạt.
+Resource guard 512 MiB available trước pha, 256 MiB khi đang chạy, 4 GiB disk; không hạ
+threshold để biến thất bại thành thành công. Chưa xác nhận mục tiêu 500–1.000 RPS.
+
+VPS sau nâng cấp root disk: 40 GB, used 19 GB, available 19 GB (50%); RAM 4.926 MiB,
+available khoảng 2.830 MiB. Sáu image vẫn `b253c9528c764fc24dded222ee464dc4ba99b206`,
+health UP; HTTPS catalog 200. Đồng hồ sai +25.200 giây; đã sửa lúc 09:21:48 UTC bằng
+HTTPS Date Google/Cloudflare, hai nguồn chênh 1 giây. Drop-in timesyncd IPv4 Cloudflare/
+Google đã cấu hình; NTP vẫn timeout và `NTPSynchronized=no`. Không xóa dữ liệu/volume,
+chưa rollout app hoặc monitoring, chưa chạy dependency demo VPS.
+
+Mốc 139-docs: `f457e4279175edba5722ba4eb895dbdd7dedfc39`, 16:38:28 +07.
+[PR #31](https://github.com/dth251/md05-rikkei-project/pull/31) draft.
+[Push CI 38377774329](https://github.com/dth251/md05-rikkei-project/actions/runs/38377774329)
+đạt unit/build, live infrastructure, VNPay, SMTP và multi-user load/reconciliation;
+monitoring thất bại do kiểm tra fresh TSDB trước khi đủ ba samples. PR CI 38377824082
+cùng head cũng chạy đến monitoring. Không merge/deploy ở checkpoint này.
+Verifier đã thêm bounded wait qua scrape intervals và kiểm tra cùng lịch sử sau restart;
+PowerShell parser/actionlint/diff check đạt, cần CI ở head sửa. Windows local rerun có
+warm-up/catalog/orders đạt, nhưng finalize HTTP 504, E2E không chạy; guard hiện cũng
+kiểm tra tài nguyên trước Java fixture. Không ghi toàn bộ tải local đạt.
+
+VPS HTTPS smoke sau sửa giờ: register/login/me đạt, 401/403/409 đúng; actuator public
+và internal recipient public trả 404. RabbitMQ queues ready/unacked/DLQ đều 0, năm
+consumer hoạt động; hostname/Mnesia node được giữ bằng private `RABBITMQ_HOSTNAME`.
