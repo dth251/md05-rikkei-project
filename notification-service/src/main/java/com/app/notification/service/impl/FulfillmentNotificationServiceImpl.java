@@ -6,6 +6,7 @@ import com.app.notification.mapper.FulfillmentMapper;
 import com.app.notification.repository.EventInbox;
 import com.app.notification.repository.FulfillmentRepository;
 import com.app.notification.service.FulfillmentNotificationService;
+import com.app.notification.service.EmailDeliveryService;
 import java.sql.Timestamp;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -18,17 +19,20 @@ public class FulfillmentNotificationServiceImpl implements FulfillmentNotificati
     private final JdbcTemplate jdbc;
     private final FulfillmentRepository logs;
     private final FulfillmentMapper mapper;
+    private final EmailDeliveryService emailDeliveries;
 
     public FulfillmentNotificationServiceImpl(
             EventInbox inbox,
             JdbcTemplate jdbc,
             FulfillmentRepository logs,
-            FulfillmentMapper mapper
+            FulfillmentMapper mapper,
+            EmailDeliveryService emailDeliveries
     ) {
         this.inbox = inbox;
         this.jdbc = jdbc;
         this.logs = logs;
         this.mapper = mapper;
+        this.emailDeliveries = emailDeliveries;
     }
 
     @Override
@@ -49,6 +53,8 @@ public class FulfillmentNotificationServiceImpl implements FulfillmentNotificati
         if (!log.getUserId().equals(event.userId()) || log.getAmount().compareTo(event.amount()) != 0) {
             throw new IllegalArgumentException("Conflicting fulfillment event");
         }
+        emailDeliveries.enqueue(event);
+        com.app.notification.config.CommerceTrace.audit("fulfillment_accept", "completed");
         return mapper.toResponse(log);
     }
 }

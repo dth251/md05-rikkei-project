@@ -6,6 +6,7 @@ import com.app.notification.mapper.NotificationMapper;
 import com.app.notification.repository.EventInbox;
 import com.app.notification.repository.NotificationRepository;
 import com.app.notification.service.NotificationService;
+import com.app.notification.service.EmailDeliveryService;
 import java.sql.Timestamp;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -18,17 +19,20 @@ public class NotificationServiceImpl implements NotificationService {
     private final JdbcTemplate jdbc;
     private final NotificationRepository notificationRepository;
     private final NotificationMapper notificationMapper;
+    private final EmailDeliveryService emailDeliveries;
 
     public NotificationServiceImpl(
             EventInbox eventInbox,
             JdbcTemplate jdbc,
             NotificationRepository notificationRepository,
-            NotificationMapper notificationMapper
+            NotificationMapper notificationMapper,
+            EmailDeliveryService emailDeliveries
     ) {
         this.eventInbox = eventInbox;
         this.jdbc = jdbc;
         this.notificationRepository = notificationRepository;
         this.notificationMapper = notificationMapper;
+        this.emailDeliveries = emailDeliveries;
     }
 
     @Override
@@ -45,6 +49,8 @@ public class NotificationServiceImpl implements NotificationService {
                 || log.getAmount().compareTo(event.amount()) != 0 || !log.getPaymentId().equals(event.paymentId())) {
             throw new IllegalArgumentException("Conflicting terminal order event");
         }
+        emailDeliveries.enqueue(event);
+        com.app.notification.config.CommerceTrace.audit("notification_accept", "completed");
         return notificationMapper.toResponse(log);
     }
 }

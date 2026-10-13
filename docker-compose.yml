@@ -30,6 +30,7 @@ services:
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:?Set RABBITMQ_DEFAULT_PASS}
     volumes:
       - rabbitmq-data:/var/lib/rabbitmq
+      - ./infrastructure/rabbitmq/enabled_plugins:/etc/rabbitmq/enabled_plugins:ro
     healthcheck:
       test: [CMD, rabbitmq-diagnostics, -q, check_running]
       interval: 5s
@@ -176,6 +177,16 @@ services:
     environment:
       DB_URL: jdbc:postgresql://postgres:5432/notification_db
       DB_USERNAME: notification_user
+      SMTP_ENABLED: ${SMTP_ENABLED:-false}
+      SMTP_HOST: ${SMTP_HOST:-localhost}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USERNAME: ${SMTP_USERNAME:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_FROM: ${SMTP_FROM:-}
+      SMTP_AUTH: ${SMTP_AUTH:-true}
+      SMTP_STARTTLS: ${SMTP_STARTTLS:-true}
+      NOTIFICATION_RECIPIENT_TOKEN: ${NOTIFICATION_RECIPIENT_TOKEN:-}
+      NOTIFICATION_AUTH_URL: http://auth-service:8081
       DB_PASSWORD: ${NOTIFICATION_DB_PASSWORD:?Set NOTIFICATION_DB_PASSWORD}
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_PORT: 5672
@@ -234,6 +245,7 @@ services:
     environment:
       DB_URL: jdbc:postgresql://postgres:5432/auth_db
       DB_USERNAME: auth_user
+      NOTIFICATION_RECIPIENT_TOKEN: ${NOTIFICATION_RECIPIENT_TOKEN:-}
       DB_PASSWORD: ${AUTH_DB_PASSWORD:?Set AUTH_DB_PASSWORD}
       JAVA_TOOL_OPTIONS: -Xms32m -Xmx112m -XX:MaxMetaspaceSize=128m -XX:ReservedCodeCacheSize=32m -XX:ActiveProcessorCount=2 -Xss256k
       JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET}
