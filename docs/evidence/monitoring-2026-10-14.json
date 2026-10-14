@@ -1,0 +1,145 @@
+{
+    "recordedAtUtc":  "2026-10-14T03:49:55Z",
+    "deployedAppRevision":  "d2779d1595fb5541675e65604eb07ac633ccf91b",
+    "dashboardUid":  "commerce-overview",
+    "dashboardPanels":  22,
+    "dashboardSourceSha256":  "df833477a00a08ab82dbb4e32a3a6e25fb15563c03fb22e695b092297d50aae8",
+    "services":  [
+                     {
+                         "service":  "order-service",
+                         "up":  true
+                     },
+                     {
+                         "service":  "product-service",
+                         "up":  true
+                     },
+                     {
+                         "service":  "api-gateway",
+                         "up":  true
+                     },
+                     {
+                         "service":  "notification-service",
+                         "up":  true
+                     },
+                     {
+                         "service":  "payment-service",
+                         "up":  true
+                     },
+                     {
+                         "service":  "auth-service",
+                         "up":  true
+                     }
+                 ],
+    "dependencies":  [
+                         {
+                             "job":  "rabbitmq-queues",
+                             "up":  true
+                         },
+                         {
+                             "job":  "redis",
+                             "up":  true
+                         },
+                         {
+                             "job":  "rabbitmq",
+                             "up":  true
+                         },
+                         {
+                             "job":  "host",
+                             "up":  true
+                         },
+                         {
+                             "job":  "postgres",
+                             "up":  true
+                         }
+                     ],
+    "httpRequestsPerSecond2m":  [
+                                    {
+                                        "application":  "order-service",
+                                        "value":  0.1714318367968914
+                                    },
+                                    {
+                                        "application":  "product-service",
+                                        "value":  0.16190476190476188
+                                    },
+                                    {
+                                        "application":  "api-gateway",
+                                        "value":  0.17142857142857143
+                                    },
+                                    {
+                                        "application":  "notification-service",
+                                        "value":  0.16190476190476188
+                                    },
+                                    {
+                                        "application":  "payment-service",
+                                        "value":  0.16190476190476188
+                                    },
+                                    {
+                                        "application":  "auth-service",
+                                        "value":  0.16190476190476188
+                                    }
+                                ],
+    "httpP95Seconds5m":  [
+                             {
+                                 "application":  "notification-service",
+                                 "value":  0.054945380125
+                             },
+                             {
+                                 "application":  "payment-service",
+                                 "value":  0.18685526945559244
+                             },
+                             {
+                                 "application":  "auth-service",
+                                 "value":  0.2387957051750001
+                             },
+                             {
+                                 "application":  "order-service",
+                                 "value":  0.08079843426360128
+                             },
+                             {
+                                 "application":  "product-service",
+                                 "value":  0.1474732187505666
+                             },
+                             {
+                                 "application":  "api-gateway",
+                                 "value":  0.19371883102870657
+                             }
+                         ],
+    "hostCpuPercent1m":  [
+                             {
+                                 "application":  null,
+                                 "value":  41.13333333333786
+                             }
+                         ],
+    "hostAvailableMemoryMiB":  [
+                                   {
+                                       "application":  null,
+                                       "value":  2191.64453125
+                                   }
+                               ],
+    "note":  "Snapshot at low traffic; empty/null means no usable sample. Not a capacity test. No customer identifiers or credentials.",
+    "historyBeforeRolloutRetained":  true,
+    "retainedWindowUtc":  [
+                              "2026-10-14T02:55:20Z",
+                              "2026-10-14T02:57:20Z"
+                          ],
+    "mainCiRun":  38505256214,
+    "smtpVpsTests":  [
+                         {
+                             "name":  "unpaid150SecondDeadlineReleasesStockAndSendsExpiryEmail()",
+                             "seconds":  164.984,
+                             "passed":  true
+                         },
+                         {
+                             "name":  "cancellationSendsRealEmailToRegisteredOrderOwner()",
+                             "seconds":  4.062,
+                             "passed":  true
+                         },
+                         {
+                             "name":  "postgresDeduplicatesReplayAndSmtpReceivesRealAuthRecipient()",
+                             "seconds":  7.151,
+                             "passed":  true
+                         }
+                     ],
+    "dashboardSourceMatched":  true,
+    "reservationTtlSeconds":  150
+}

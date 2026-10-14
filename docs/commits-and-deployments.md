@@ -816,3 +816,49 @@ millisecond và toàn bộ 60 ca hồi quy chạy lại đạt.
 CI/PR và deploy của nhánh mới chưa hoàn tất tại checkpoint này. Mức tải
 500/1.000 requests/s trước đó vẫn không đạt; không chạy tải lớn lại để
 khẳng định capacity. Xem báo cáo tải/monitoring và runbook tương ứng.
+
+## CI/CD và kiểm chứng VPS mốc 168 ngày 14/10/2026
+
+| Mốc | SHA | Thời gian +07 | Kiểm tra / deploy thực tế |
+|---|---|---|---|
+| 167-docs | `38423e2a004d7a651f26acb0ac6b764e3b4ec293` | 2026-10-14T09:49:26+07:00 | Lần SMTP local giảm heap đạt 5/5, zero fail/error/skip; case chờ đủ 150 giây gồm setup/SMTP/replay mất 155.285s. PR CI 38503120433 success toàn bộ Java/live/VNPay/SMTP/tải nhỏ/monitoring/tracing/logging. |
+| 168-infrastructure | `d2779d1595fb5541675e65604eb07ac633ccf91b` | 2026-10-14T10:14:52+07:00 | Merge PR #36 sau CI đạt. Main CI/CD 38505256214: verify/observability-config, publish sáu image và deploy success. Deploy hoàn tất 10:41:31 +07; SSH sau rollout xác nhận sáu revision đúng SHA, healthy, restart=0. |
+
+Thời điểm container khởi động +07: Auth 10:33:06, Gateway 10:34:40,
+Product 10:35:55, Payment 10:37:31, Order 10:39:09, Notification
+10:40:45. Health/smoke từng service đạt trước khi rollout service tiếp;
+không dùng startedAt thay cho thời điểm deploy job hoàn tất.
+
+Private TTL đã chuẩn bị PT150S trước merge; backup `.env` private giữ
+trên VPS, không đưa vào Git/log. Order container mới xác nhận
+`RESERVATION_TTL=PT150S`; Notification database có versions 001–005.
+Không đổi checksum migration 004, không xóa volume hay dữ liệu.
+
+SSH 10:42 và sau Java live: Prometheus/Grafana healthy, sáu service và
+năm dependency targets UP; dashboard 22 panel/query/unit khớp file nguồn.
+Truy lại đúng cửa sổ **02:55:20–02:57:20 UTC trước rollout** sau recreate
+vẫn có sáu UP series, mỗi series ít nhất ba mẫu. Đây là kiểm chứng history
+đã lưu, không chỉ dữ liệu mới thu sau restart. HTTPS gateway-status UP.
+
+Java live VPS hoàn tất **10:47:16 +07**, 3/3, zero fail/error/skip:
+confirmation/recipient/replay, cancellation và expiry 150 giây. Case
+expiry mất 164.984s tính cả setup/SMTP/replay; clock fixture không sửa
+createdAt, kiểm tra PENDING trước hạn và EXPIRED sau hạn, reserved hoàn
+available, một email đúng chủ đơn, replay không thêm delivery và thanh
+toán mô phỏng tới muộn trả 409. SMTP là Mailpit sandbox thực, không gửi
+Internet hoặc giao dịch ngân hàng thật. Không stop/restart app VPS trong
+bài kiểm thử này; tunnel riêng đã đóng trong finally.
+
+Đối soát cuối: mọi queue ready/unacked/DLQ=0, queue expiry một consumer,
+Order/Payment pending Outbox=0; email SENT=6, không có FAILED/UNKNOWN.
+Snapshot 10:49:55 +07 có CPU khoảng 41,13% theo cửa sổ 1 phút và RAM
+available 2.191,64 MiB, dữ liệu throughput/p95 theo cửa sổ 2/5 phút.
+[JSON đã loại thông tin riêng tư](evidence/monitoring-2026-10-14.json)
+ghi revision, query snapshot và kết quả ba Java tests. Không dùng snapshot
+tải thấp để tuyên bố đạt 500–1.000 requests/s; báo cáo capacity trước đó
+vẫn không đạt. UI helper lỗi sandbox qua retry/reset nên chưa lưu ảnh;
+không đánh dấu ảnh/video hoặc visual QA hoàn tất từ API checks.
+
+[PR #36](https://github.com/dth251/md05-rikkei-project/pull/36),
+[PR CI đạt](https://github.com/dth251/md05-rikkei-project/actions/runs/38503120433),
+[main CI/CD và deploy đạt](https://github.com/dth251/md05-rikkei-project/actions/runs/38505256214).

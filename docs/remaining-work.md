@@ -1,15 +1,15 @@
 # Danh sách các phần còn cần bổ sung
 
-Cập nhật: **13/10/2026, múi giờ +07:00**. Đây là checklist công việc còn lại,
+Cập nhật: **14/10/2026, múi giờ +07:00**. Đây là checklist công việc còn lại,
 không phải xác nhận dự án đã đáp ứng đầy đủ đề bài.
 
-Checkpoint mới **14/10/2026, 09:48 +07**: Prometheus/Grafana đã chạy trên
-VPS cùng bản ứng dụng mốc 157. Sáu service và năm dependency targets UP;
-dashboard 22 panel, datasource, history và query/unit khớp provisioning
-đã kiểm chứng lại qua SSH. Nhánh `feature/expiry-150s-email-monitoring`
-tích hợp mốc 160, chuyển đường dẫn runtime sang `docs/infrastructure/`
-và đổi deadline từ 5 phút sang 150 giây. Bản 150 giây chưa deploy tại
-checkpoint này. Các đoạn bên dưới ghi ngày 13/10 là lịch sử;
+Checkpoint mới **14/10/2026, 10:50 +07**: main mốc 168 `d2779d1` đã qua
+CI/CD và rollout sáu service healthy, revision đúng SHA, restart=0.
+Prometheus/Grafana có sáu service/năm dependency targets UP, dashboard
+22 panel/query/unit khớp provisioning; history trước rollout vẫn còn sau
+recreate. Ba Java SMTP HTTPS/PostgreSQL/Mailpit tests VPS đạt, gồm chờ đủ
+150 giây thực tế. Hạ tầng runtime ở `docs/infrastructure/`.
+Các đoạn bên dưới ghi ngày 13/10 là lịch sử;
 xem [nhật ký](commits-and-deployments.md) để đối chiếu SHA mới.
 
 ## 1. Mốc đối chiếu và trạng thái hiện tại
@@ -66,7 +66,7 @@ Các mức ưu tiên này dùng cho checklist này.
 | Mã | Phần còn thiếu | Trạng thái | Ưu tiên |
 |---|---|---|---|
 | R01 | Hoàn tất tích hợp VNPay | 12 live fixture/PG/Gateway tests và head CI đạt, đã merge; còn deploy/merchant thật | P0 |
-| R02 | Gửi email SMTP | Code, 3 PG/Mailpit tests và head CI đạt, đã merge; còn deploy/SMTP ngoài | P0 |
+| R02 | Gửi email SMTP | Đã deploy; 5 local/3 HTTPS VPS sandbox tests đạt; SMTP ngoài còn chờ cấu hình | P0 |
 | R03 | Prometheus server | Đã deploy VPS; sáu service/năm dependency UP, history đã kiểm chứng | P0 |
 | R04 | Grafana dashboard | VPS 22 panel; datasource/query/unit khớp nguồn; còn ảnh/video demo | P0 |
 | R05 | Distributed tracing | Trace sáu service/durable context/privacy/exporter outage đạt CI; chưa VPS | P0 |
@@ -117,7 +117,7 @@ Phần sandbox thực phụ thuộc cấu hình merchant chưa được cung c�
 - [x] Kiểm thử bằng SMTP server thử nghiệm: nội dung/người nhận, duplicate
   event, SMTP mất kết nối và restart Notification.
 - [ ] Cấu hình SMTP/TLS/credential private và thử nhận email ngoài thực tế.
-- [ ] Chạy CI, PR và deploy Notification cùng các service liên quan nếu có.
+- [x] Chạy CI, PR và deploy Notification cùng các service liên quan nếu có.
 
 **Hoàn tất khi:** có thư nhận được và trạng thái gửi được đối chiếu; lỗi SMTP
 không làm mất event hoặc cản trở các service nghiệp vụ độc lập. Không tuyên
@@ -126,7 +126,9 @@ bố gửi đúng một lần tuyệt đối nếu còn cửa sổ crash sau khi
 ## 5. R03 — Prometheus server
 
 Stack local/CI đã thu thập định kỳ, query lịch sử và giữ dữ liệu qua restart.
-Trên VPS chưa deploy Prometheus; endpoint Actuator vẫn chỉ xuất metrics tại thời điểm gọi.
+Trên VPS đã deploy Prometheus/Grafana; cửa sổ history trước rollout
+02:55:20–02:57:20 UTC vẫn trả sáu series UP sau recreate. Bằng chứng mới
+trong [snapshot đã loại thông tin riêng tư](evidence/monitoring-2026-10-14.json).
 
 - [x] Tạo cấu hình scrape cho sáu service bằng DNS/mạng private; kiểm tra
   từng target, thời gian scrape và lỗi timeout.
@@ -136,7 +138,7 @@ Trên VPS chưa deploy Prometheus; endpoint Actuator vẫn chỉ xuất metrics 
   ngân sách disk; kiểm tra dữ liệu còn sau restart.
 - [x] Kiểm tra cấu hình bằng công cụ Prometheus và test query trên stack thử.
 - [x] Giữ endpoint nội bộ; cách truy cập quản trị qua SSH/private network.
-- [ ] Chọn môi trường có ngân sách tài nguyên đủ trước khi deploy stack.
+- [x] Chọn môi trường có ngân sách tài nguyên đủ trước khi deploy stack.
 
 **Hoàn tất khi:** targets cần theo dõi UP, query trả dữ liệu có nhãn service,
 có lịch sử qua nhiều lần scrape và dữ liệu được lưu đúng retention.
@@ -151,10 +153,12 @@ có lịch sử qua nhiều lần scrape và dữ liệu được lưu đúng re
   chỉ hiển thị khi đã bổ sung nguồn metrics phù hợp.
 - [x] Dashboard nghiệp vụ: publish/retry Outbox, độ trễ gRPC và các trạng
   thái/kết quả thực sự có metric; không tự suy ra pending backlog từ counter.
-- [ ] Đánh dấu rõ metric còn thiếu dữ liệu; kiểm tra đơn vị, nhãn và bộ lọc
+- [x] Đánh dấu rõ metric còn thiếu dữ liệu; kiểm tra đơn vị, nhãn và bộ lọc
   thời gian trên dữ liệu thật.
-- [ ] Kiểm tra sau restart provisioning còn hoạt động; lưu ảnh và JSON
-  dashboard cùng checkpoint của stack đã chạy.
+- [x] Kiểm tra sau restart provisioning còn hoạt động; đối chiếu JSON
+  dashboard/query/unit với file nguồn và lưu snapshot tại SHA triển khai.
+- [ ] Lưu ảnh/video dashboard. Công cụ UI lỗi khởi tạo sandbox; API/history
+  đã kiểm chứng, chưa ghi rằng đã kiểm tra giao diện bằng ảnh.
 
 **Hoàn tất khi:** dashboard hiển thị dữ liệu thực, truy được lịch sử và giúp
 đối chiếu một luồng mua hàng hoặc một sự cố có thời gian xác định.

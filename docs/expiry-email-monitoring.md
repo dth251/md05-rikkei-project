@@ -5,6 +5,15 @@ worktree đêm trước và đổi thời hạn 5 phút thành 150 giây. Hạ t
 nằm trong `docs/infrastructure/`; Compose, CI, release và scripts đều dùng
 đường dẫn này. SHA/deploy theo từng checkpoint ở `commits-and-deployments.md`.
 
+Checkpoint **14/10/2026, 10:50 +07**: [PR #36](https://github.com/dth251/md05-rikkei-project/pull/36)
+đã merge main mốc 168 `d2779d1595fb5541675e65604eb07ac633ccf91b`;
+[CI/CD main](https://github.com/dth251/md05-rikkei-project/actions/runs/38505256214)
+success, rollout hoàn tất 10:41:31 +07. Sáu app đúng revision/healthy,
+restart=0; Order runtime PT150S, Notification migrations 001–005.
+Monitoring/history/query/unit và 3/3 SMTP VPS tests đạt. Snapshot
+[metrics sau rollout](evidence/monitoring-2026-10-14.json) không chứa
+credential/định danh khách hàng và không phải kết quả capacity.
+
 ## Thời hạn thanh toán
 
 Order ONLINE ở PENDING_PAYMENT có thời hạn 150 giây kể từ createdAt.
