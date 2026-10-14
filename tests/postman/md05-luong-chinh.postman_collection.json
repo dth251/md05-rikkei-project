@@ -2,13 +2,13 @@
     "info":  {
                  "name":  "MD05 - Các luồng nghiệp vụ chính - Tiếng Việt",
                  "schema":  "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-                 "description":  "42 requests, 8 luồng chính: một khách hàng và ADMIN; sản phẩm/kho; COD; trả/hoàn COD; chờ thanh toán 150 giây; VNPay sandbox; giao/hoàn tất; trả/hoàn VNPay. Dùng environment production private. Chạy 01–06 rồi mở vnpayCheckoutUrl; sau thanh toán chạy riêng 07–08. Không tạo User B, không có bài JWT sai/phân quyền/replay. Xem docs/test-luong-chinh.md."
+                 "description":  "42 requests, 8 luồng chính; chọn No environment. URL production có sẵn. Nhập email/password trực tiếp trong Body của Đăng ký/Đăng nhập khách hàng và Đăng nhập ADMIN. Nếu đã có USER, bỏ qua đăng ký. Token và ID tự lưu vào Variables của collection; không lưu mật khẩu vào biến. Sản phẩm/kho; COD; trả/hoàn COD; chờ 150 giây; VNPay sandbox; giao/hoàn tất; trả/hoàn VNPay. Chạy 01–06 rồi mở vnpayCheckoutUrl trong collection Variables; sau thanh toán chạy riêng 07–08. Xem docs/test-luong-chinh.md."
              },
     "variable":  [
                      {
-                         "key":  "invalidToken",
-                         "value":  "invalid",
-                         "type":  "string"
+                         "key":  "baseUrl",
+                         "type":  "string",
+                         "value":  "https://md05-rikkei-project.duckdns.org"
                      }
                  ],
     "event":  [
@@ -17,7 +17,7 @@
                       "script":  {
                                      "type":  "text/javascript",
                                      "exec":  [
-                                                  "if (!pm.environment.get(\u0027baseUrl\u0027)) { pm.execution.setNextRequest(null); throw new Error(\u0027Chọn environment và điền baseUrl trước khi chạy.\u0027); }"
+                                                  "if (!pm.collectionVariables.get(\u0027baseUrl\u0027)) { pm.execution.setNextRequest(null); throw new Error(\u0027Điền baseUrl trong Variables của collection. URL production đã có sẵn khi import.\u0027); }"
                                               ]
                                  }
                   }
@@ -40,10 +40,10 @@
                                                       "auth":  {
                                                                    "type":  "noauth"
                                                                },
-                                                      "description":  "Tạo một khách hàng mới cho lượt demo; không tạo User B. ID và JWT được lưu tự động.",
+                                                      "description":  "Chọn No environment. Nhập fullName, email nhận thư và password trực tiếp trong Body. Dùng email chưa đăng ký. Nếu đã có tài khoản, bỏ qua request này và bắt đầu ở Đăng nhập khách hàng.",
                                                       "body":  {
                                                                    "mode":  "raw",
-                                                                   "raw":  "{\n  \"fullName\": \"Khách hàng demo\",\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}",
+                                                                   "raw":  "{\n  \"fullName\": \"Khách hàng demo\",\n  \"email\": \"\",\n  \"password\": \"\"\n}",
                                                                    "options":  {
                                                                                    "raw":  {
                                                                                                "language":  "json"
@@ -57,22 +57,18 @@
                                                         "script":  {
                                                                        "type":  "text/javascript",
                                                                        "exec":  [
-                                                                                    "// Kiểm tra biến sau bước khởi tạo riêng của request.",
-                                                                                    "const run = pm.variables.replaceIn(\u0027{{$randomUUID}}\u0027);",
-                                                                                    "pm.environment.set(\u0027runId\u0027, run);",
-                                                                                    "const mailbox = String(pm.environment.get(\u0027notificationMailbox\u0027) || \u0027\u0027).trim().toLowerCase();",
-                                                                                    "const requireMailbox = String(pm.environment.get(\u0027requireRealMailbox\u0027) || \u0027\u0027).toLowerCase() === \u0027true\u0027;",
-                                                                                    "if ((requireMailbox \u0026\u0026 !mailbox) || (mailbox \u0026\u0026 !/^[a-z0-9._%+-]+@gmail\\.com$/.test(mailbox))) { pm.execution.setNextRequest(null); throw new Error(\u0027Điền notificationMailbox bằng Gmail nhận thử của bạn trước khi chạy production.\u0027); }",
-                                                                                    "const local = mailbox ? mailbox.split(\u0027@\u0027)[0].split(\u0027+\u0027)[0] : \u0027\u0027;",
-                                                                                    "const tag = run.replace(/-/g, \u0027\u0027).slice(0, 20);",
-                                                                                    "pm.environment.set(\u0027email\u0027, mailbox ? local+\u0027+md05-main-\u0027+tag+\u0027@gmail.com\u0027 : \u0027postman-main-\u0027+run+\u0027@example.com\u0027);",
-                                                                                    "if (!pm.environment.get(\u0027password\u0027)) pm.environment.set(\u0027password\u0027, \u0027Vi!\u0027+pm.variables.replaceIn(\u0027{{$randomUUID}}\u0027));",
-                                                                                    "for (const key of Object.keys(pm.environment.toObject())) {",
-                                                                                    "    if (/(Token|Id|Key|Baseline|Amount|CreatedAt)$/.test(key) \u0026\u0026 key !== \u0027runId\u0027) pm.environment.unset(key);",
-                                                                                    "    if (key.startsWith(\u0027_cho_\u0027)) pm.environment.unset(key);",
+                                                                                    "let payload;",
+                                                                                    "try { payload = JSON.parse(pm.request.body.raw); }",
+                                                                                    "catch (_) { pm.execution.setNextRequest(null); throw new Error(\u0027Body phải là JSON hợp lệ.\u0027); }",
+                                                                                    "if (!String(payload.fullName || \u0027\u0027).trim() || !String(payload.email || \u0027\u0027).trim() || !String(payload.password || \u0027\u0027).trim()) {",
+                                                                                    "    pm.execution.setNextRequest(null);",
+                                                                                    "    throw new Error(\u0027Nhập fullName, email và password trực tiếp trong Body của request đăng ký.\u0027);",
                                                                                     "}",
-                                                                                    "const thieu = [\"baseUrl\",\"email\",\"password\"].filter(key =\u003e { const value = pm.variables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy folder tiền đề hoặc cấu hình environment trước.\u0027); }"
+                                                                                    "for (const key of Object.keys(pm.collectionVariables.toObject())) {",
+                                                                                    "    if (key !== \u0027baseUrl\u0027) pm.collectionVariables.unset(key);",
+                                                                                    "}",
+                                                                                    "pm.collectionVariables.set(\u0027runId\u0027, pm.variables.replaceIn(\u0027{{$randomUUID}}\u0027));",
+                                                                                    "pm.collectionVariables.set(\u0027email\u0027, payload.email.trim());"
                                                                                 ]
                                                                    }
                                                     },
@@ -92,7 +88,7 @@
                                                                                     "const json = pm.response.json();",
                                                                                     "kiemTra(\u0027Cờ success đúng kết quả\u0027, () =\u003e pm.expect(json.success).to.eql(true));",
                                                                                     "const d = json.data;",
-                                                                                    "pm.environment.set(\u0027userId\u0027, d.id);",
+                                                                                    "pm.collectionVariables.set(\u0027userId\u0027, d.id);",
                                                                                     "kiemTra(\u0027Đăng ký công khai chỉ tạo USER\u0027, () =\u003e pm.expect(d.role).to.eql(\u0027USER\u0027));",
                                                                                     "}"
                                                                                 ]
@@ -114,10 +110,10 @@
                                                       "auth":  {
                                                                    "type":  "noauth"
                                                                },
-                                                      "description":  "Kỳ vọng HTTP 200. Kiểm tra dữ liệu trong trường data của ApiResponse.",
+                                                      "description":  "Nhập email và password của USER trực tiếp trong Body rồi Send. Token tự lưu vào collection, không cần environment. Không tự điền mật khẩu từ request đăng ký.",
                                                       "body":  {
                                                                    "mode":  "raw",
-                                                                   "raw":  "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}",
+                                                                   "raw":  "{\n  \"email\": \"\",\n  \"password\": \"\"\n}",
                                                                    "options":  {
                                                                                    "raw":  {
                                                                                                "language":  "json"
@@ -131,9 +127,16 @@
                                                         "script":  {
                                                                        "type":  "text/javascript",
                                                                        "exec":  [
-                                                                                    "// Kiểm tra biến sau bước khởi tạo riêng của request.",
-                                                                                    "const thieu = [\"baseUrl\",\"email\",\"password\"].filter(key =\u003e { const value = pm.variables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy folder tiền đề hoặc cấu hình environment trước.\u0027); }"
+                                                                                    "let payload;",
+                                                                                    "try { payload = JSON.parse(pm.request.body.raw); }",
+                                                                                    "catch (_) { pm.execution.setNextRequest(null); throw new Error(\u0027Body phải là JSON hợp lệ.\u0027); }",
+                                                                                    "if (!String(payload.email || \u0027\u0027).trim() || !String(payload.password || \u0027\u0027).trim()) {",
+                                                                                    "    pm.execution.setNextRequest(null);",
+                                                                                    "    throw new Error(\u0027Nhập email và password trực tiếp trong Body của request đăng nhập.\u0027);",
+                                                                                    "}",
+                                                                                    "if (!pm.collectionVariables.get(\u0027runId\u0027)) {",
+                                                                                    "    pm.collectionVariables.set(\u0027runId\u0027, pm.variables.replaceIn(\u0027{{$randomUUID}}\u0027));",
+                                                                                    "}"
                                                                                 ]
                                                                    }
                                                     },
@@ -153,13 +156,15 @@
                                                                                     "const json = pm.response.json();",
                                                                                     "kiemTra(\u0027Cờ success đúng kết quả\u0027, () =\u003e pm.expect(json.success).to.eql(true));",
                                                                                     "const d = json.data;",
-                                                                                    "pm.environment.set(\u0027userToken\u0027, d.accessToken);",
-                                                                                    "pm.environment.set(\u0027refreshToken\u0027, d.refreshToken);",
-                                                                                    "pm.environment.set(\u0027userId\u0027, d.user.id);",
+                                                                                    "pm.collectionVariables.set(\u0027userToken\u0027, d.accessToken);",
+                                                                                    "pm.collectionVariables.set(\u0027refreshToken\u0027, d.refreshToken);",
+                                                                                    "pm.collectionVariables.set(\u0027userId\u0027, d.user.id);",
                                                                                     "kiemTra(\u0027Vai trò tài khoản đúng\u0027, () =\u003e pm.expect(d.user.role).to.eql(\u0027USER\u0027));",
                                                                                     "kiemTra(\u0027Có cặp access/refresh token\u0027,()=\u003e{pm.expect(d.accessToken).to.be.a(\u0027string\u0027).and.not.empty;pm.expect(d.refreshToken).to.be.a(\u0027string\u0027).and.not.empty;});",
                                                                                     "kiemTra(\u0027Không cache thông tin phiên\u0027, () =\u003e pm.expect(pm.response.headers.get(\u0027Cache-Control\u0027)).to.eql(\u0027no-store\u0027));",
-                                                                                    "}"
+                                                                                    "}",
+                                                                                    "if (pm.response.code === 200 \u0026\u0026 pm.response.json().success) pm.collectionVariables.set(\u0027userEmail\u0027, pm.response.json().data.user.email);",
+                                                                                    "if (pm.response.code === 200 \u0026\u0026 pm.response.json().success) pm.collectionVariables.set(\u0027email\u0027, pm.response.json().data.user.email);"
                                                                                 ]
                                                                    }
                                                     }
@@ -192,8 +197,8 @@
                                                                        "type":  "text/javascript",
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
-                                                                                    "const thieu = [\"baseUrl\",\"userToken\"].filter(key =\u003e { const value = pm.variables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy folder tiền đề hoặc cấu hình environment trước.\u0027); }"
+                                                                                    "const thieu = [\"baseUrl\",\"userToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
+                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
                                                                                 ]
                                                                    }
                                                     },
@@ -213,7 +218,7 @@
                                                                                     "const json = pm.response.json();",
                                                                                     "kiemTra(\u0027Cờ success đúng kết quả\u0027, () =\u003e pm.expect(json.success).to.eql(true));",
                                                                                     "const d = json.data;",
-                                                                                    "kiemTra(\u0027Đúng người dùng đã đăng nhập\u0027, () =\u003e pm.expect(d.id).to.eql(Number(pm.environment.get(\u0027userId\u0027))));",
+                                                                                    "kiemTra(\u0027Đúng người dùng đã đăng nhập\u0027, () =\u003e pm.expect(d.id).to.eql(Number(pm.collectionVariables.get(\u0027userId\u0027))));",
                                                                                     "}"
                                                                                 ]
                                                                    }
@@ -239,10 +244,10 @@
                                                       "auth":  {
                                                                    "type":  "noauth"
                                                                },
-                                                      "description":  "Kỳ vọng HTTP 200. Kiểm tra dữ liệu trong trường data của ApiResponse.",
+                                                      "description":  "Nhập email và password của ADMIN trực tiếp trong Body rồi Send. Token tự lưu vào collection, không cần environment. Không tự điền mật khẩu từ request đăng ký.",
                                                       "body":  {
                                                                    "mode":  "raw",
-                                                                   "raw":  "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}",
+                                                                   "raw":  "{\n  \"email\": \"\",\n  \"password\": \"\"\n}",
                                                                    "options":  {
                                                                                    "raw":  {
                                                                                                "language":  "json"
@@ -256,9 +261,16 @@
                                                         "script":  {
                                                                        "type":  "text/javascript",
                                                                        "exec":  [
-                                                                                    "// Kiểm tra biến sau bước khởi tạo riêng của request.",
-                                                                                    "const thieu = [\"baseUrl\",\"adminEmail\",\"adminPassword\"].filter(key =\u003e { const value = pm.variables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy folder tiền đề hoặc cấu hình environment trước.\u0027); }"
+                                                                                    "let payload;",
+                                                                                    "try { payload = JSON.parse(pm.request.body.raw); }",
+                                                                                    "catch (_) { pm.execution.setNextRequest(null); throw new Error(\u0027Body phải là JSON hợp lệ.\u0027); }",
+                                                                                    "if (!String(payload.email || \u0027\u0027).trim() || !String(payload.password || \u0027\u0027).trim()) {",
+                                                                                    "    pm.execution.setNextRequest(null);",
+                                                                                    "    throw new Error(\u0027Nhập email và password trực tiếp trong Body của request đăng nhập.\u0027);",
+                                                                                    "}",
+                                                                                    "if (!pm.collectionVariables.get(\u0027runId\u0027)) {",
+                                                                                    "    pm.collectionVariables.set(\u0027runId\u0027, pm.variables.replaceIn(\u0027{{$randomUUID}}\u0027));",
+                                                                                    "}"
                                                                                 ]
                                                                    }
                                                     },
@@ -278,13 +290,14 @@
                                                                                     "const json = pm.response.json();",
                                                                                     "kiemTra(\u0027Cờ success đúng kết quả\u0027, () =\u003e pm.expect(json.success).to.eql(true));",
                                                                                     "const d = json.data;",
-                                                                                    "pm.environment.set(\u0027adminToken\u0027, d.accessToken);",
-                                                                                    "pm.environment.set(\u0027adminRefreshToken\u0027, d.refreshToken);",
-                                                                                    "pm.environment.set(\u0027adminId\u0027, d.user.id);",
+                                                                                    "pm.collectionVariables.set(\u0027adminToken\u0027, d.accessToken);",
+                                                                                    "pm.collectionVariables.set(\u0027adminRefreshToken\u0027, d.refreshToken);",
+                                                                                    "pm.collectionVariables.set(\u0027adminId\u0027, d.user.id);",
                                                                                     "kiemTra(\u0027Vai trò tài khoản đúng\u0027, () =\u003e pm.expect(d.user.role).to.eql(\u0027ADMIN\u0027));",
                                                                                     "kiemTra(\u0027Có cặp access/refresh token\u0027,()=\u003e{pm.expect(d.accessToken).to.be.a(\u0027string\u0027).and.not.empty;pm.expect(d.refreshToken).to.be.a(\u0027string\u0027).and.not.empty;});",
                                                                                     "kiemTra(\u0027Không cache thông tin phiên\u0027, () =\u003e pm.expect(pm.response.headers.get(\u0027Cache-Control\u0027)).to.eql(\u0027no-store\u0027));",
-                                                                                    "}"
+                                                                                    "}",
+                                                                                    "if (pm.response.code === 200 \u0026\u0026 pm.response.json().success) pm.collectionVariables.set(\u0027adminEmail\u0027, pm.response.json().data.user.email);"
                                                                                 ]
                                                                    }
                                                     }
@@ -329,8 +342,8 @@
                                                                        "type":  "text/javascript",
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
-                                                                                    "const thieu = [\"baseUrl\",\"runId\",\"adminToken\"].filter(key =\u003e { const value = pm.variables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy folder tiền đề hoặc cấu hình environment trước.\u0027); }"
+                                                                                    "const thieu = [\"baseUrl\",\"runId\",\"adminToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
+                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
                                                                                 ]
                                                                    }
                                                     },
@@ -350,7 +363,7 @@
                                                                                     "const json = pm.response.json();",
                                                                                     "kiemTra(\u0027Cờ success đúng kết quả\u0027, () =\u003e pm.expect(json.success).to.eql(true));",
                                                                                     "const d = json.data;",
-                                                                                    "pm.environment.set(\u0027productId\u0027, d.id);",
+                                                                                    "pm.collectionVariables.set(\u0027productId\u0027, d.id);",
                                                                                     "kiemTra(\u0027Giá bán 125.000 đồng\u0027, () =\u003e pm.expect(d.unitPrice).to.eql(125000));",
                                                                                     "}"
                                                                                 ]
@@ -378,8 +391,8 @@
                                                                        "type":  "text/javascript",
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
-                                                                                    "const thieu = [\"baseUrl\"].filter(key =\u003e { const value = pm.variables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy folder tiền đề hoặc cấu hình environment trước.\u0027); }"
+                                                                                    "const thieu = [\"baseUrl\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
+                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
                                                                                 ]
                                                                    }
                                                     },
@@ -426,8 +439,8 @@
                                                                        "type":  "text/javascript",
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
-                                                                                    "const thieu = [\"baseUrl\",\"productId\"].filter(key =\u003e { const value = pm.variables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy folder tiền đề hoặc cấu hình environment trước.\u0027); }"
+                                                                                    "const thieu = [\"baseUrl\",\"productId\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
+                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
                                                                                 ]
                                                                    }
                                                     },
@@ -447,7 +460,7 @@
                                                                                     "const json = pm.response.json();",
                                                                                     "kiemTra(\u0027Cờ success đúng kết quả\u0027, () =\u003e pm.expect(json.success).to.eql(true));",
                                                                                     "const d = json.data;",
-                                                                                    "kiemTra(\u0027SKU chuẩn hóa khớp lượt chạy\u0027, () =\u003e pm.expect(d.sku).to.eql((\u0027VI-\u0027+pm.environment.get(\u0027runId\u0027)).toUpperCase()));",
+                                                                                    "kiemTra(\u0027SKU chuẩn hóa khớp lượt chạy\u0027, () =\u003e pm.expect(d.sku).to.eql((\u0027VI-\u0027+pm.collectionVariables.get(\u0027runId\u0027)).toUpperCase()));",
                                                                                     "}"
                                                                                 ]
                                                                    }
@@ -493,9 +506,9 @@
                                                                        "type":  "text/javascript",
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
-                                                                                    "pm.environment.set(\u0027receiptKey\u0027, \u0027vi-\u0027+pm.variables.replaceIn(\u0027{{$randomUUID}}\u0027));",
-                                                                                    "const thieu = [\"baseUrl\",\"productId\",\"receiptKey\",\"adminToken\"].filter(key =\u003e { const value = pm.variables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy folder tiền đề hoặc cấu hình environment trước.\u0027); }"
+                                                                                    "pm.collectionVariables.set(\u0027receiptKey\u0027, \u0027vi-\u0027+pm.variables.replaceIn(\u0027{{$randomUUID}}\u0027));",
+                                                                                    "const thieu = [\"baseUrl\",\"productId\",\"receiptKey\",\"adminToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
+                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
                                                                                 ]
                                                                    }
                                                     },
@@ -550,8 +563,8 @@
                                                                        "type":  "text/javascript",
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
-                                                                                    "const thieu = [\"baseUrl\",\"productId\",\"userToken\"].filter(key =\u003e { const value = pm.variables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy folder tiền đề hoặc cấu hình environment trước.\u0027); }"
+                                                                                    "const thieu = [\"baseUrl\",\"productId\",\"userToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
+                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
                                                                                 ]
                                                                    }
                                                     },
@@ -574,7 +587,7 @@
                                                                                     "kiemTra(\u0027Số lượng có thể bán đúng kỳ vọng\u0027, () =\u003e pm.expect(d.available).to.eql(20));",
                                                                                     "kiemTra(\u0027Số lượng giữ chỗ đúng kỳ vọng\u0027, () =\u003e pm.expect(d.reserved).to.eql(0));",
                                                                                     "}",
-                                                                                    "if (pm.response.code === 200) pm.environment.set(\u0027codBaseline\u0027, pm.response.json().data.available);"
+                                                                                    "if (pm.response.code === 200) pm.collectionVariables.set(\u0027codBaseline\u0027, pm.response.json().data.available);"
                                                                                 ]
                                                                    }
                                                     }
@@ -623,12 +636,12 @@
                                                         "script":  {
                                                                        "type":  "text/javascript",
                                                                        "exec":  [
-                                                                                    "pm.environment.set(\u0027collectKey\u0027, \u0027main-\u0027+pm.variables.replaceIn(\u0027{{$randomUUID}}\u0027));",
+                                                                                    "pm.collectionVariables.set(\u0027collectKey\u0027, \u0027main-\u0027+pm.variables.replaceIn(\u0027{{$randomUUID}}\u0027));",
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
-                                                                                    "pm.environment.set(\u0027codKey\u0027, \u0027vi-\u0027+pm.variables.replaceIn(\u0027{{$randomUUID}}\u0027));",
-                                                                                    "pm.environment.unset(\u0027codPaymentId\u0027);",
-                                                                                    "const thieu = [\"baseUrl\",\"codKey\",\"productId\",\"userToken\"].filter(key =\u003e { const value = pm.variables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy folder tiền đề hoặc cấu hình environment trước.\u0027); }"
+                                                                                    "pm.collectionVariables.set(\u0027codKey\u0027, \u0027vi-\u0027+pm.variables.replaceIn(\u0027{{$randomUUID}}\u0027));",
+                                                                                    "pm.collectionVariables.unset(\u0027codPaymentId\u0027);",
+                                                                                    "const thieu = [\"baseUrl\",\"codKey\",\"productId\",\"userToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
+                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
                                                                                 ]
                                                                    }
                                                     },
@@ -648,9 +661,9 @@
                                                                                     "const json = pm.response.json();",
                                                                                     "kiemTra(\u0027Cờ success đúng kết quả\u0027, () =\u003e pm.expect(json.success).to.eql(true));",
                                                                                     "const d = json.data;",
-                                                                                    "pm.environment.set(\u0027codOrderId\u0027, d.id);",
-                                                                                    "pm.environment.set(\u0027codCreatedAt\u0027, d.createdAt);",
-                                                                                    "pm.environment.set(\u0027codAmount\u0027, d.totalAmount);",
+                                                                                    "pm.collectionVariables.set(\u0027codOrderId\u0027, d.id);",
+                                                                                    "pm.collectionVariables.set(\u0027codCreatedAt\u0027, d.createdAt);",
+                                                                                    "pm.collectionVariables.set(\u0027codAmount\u0027, d.totalAmount);",
                                                                                     "kiemTra(\u0027Trạng thái là CONFIRMED\u0027, () =\u003e pm.expect(d.status).to.eql(\u0027CONFIRMED\u0027));",
                                                                                     "kiemTra(\u0027Tổng tiền lấy từ giá sản phẩm trên server\u0027, () =\u003e pm.expect(d.totalAmount).to.eql(125000));",
                                                                                     "}"
@@ -686,8 +699,8 @@
                                                                        "type":  "text/javascript",
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
-                                                                                    "const thieu = [\"baseUrl\",\"codOrderId\",\"userToken\"].filter(key =\u003e { const value = pm.variables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy folder tiền đề hoặc cấu hình environment trước.\u0027); }"
+                                                                                    "const thieu = [\"baseUrl\",\"codOrderId\",\"userToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
+                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
                                                                                 ]
                                                                    }
                                                     },
@@ -703,21 +716,21 @@
                                                                                     "}",
                                                                                     "",
                                                                                     "const maCho = \u0027_cho_\u0027 + pm.info.requestId;",
-                                                                                    "const lan = Number(pm.environment.get(maCho) || 0) + 1;",
+                                                                                    "const lan = Number(pm.collectionVariables.get(maCho) || 0) + 1;",
                                                                                     "const hopLe = [200,404].includes(pm.response.code);",
                                                                                     "let d = null;",
                                                                                     "if (pm.response.code === 200) { d = pm.response.json().data; }",
                                                                                     "const xong = pm.response.code === 200 \u0026\u0026 (d !== null);",
                                                                                     "if (hopLe \u0026\u0026 !xong \u0026\u0026 lan \u003c 30) {",
-                                                                                    "    pm.environment.set(maCho, lan);",
+                                                                                    "    pm.collectionVariables.set(maCho, lan);",
                                                                                     "    pm.execution.setNextRequest(pm.info.requestId);",
                                                                                     "} else {",
-                                                                                    "    pm.environment.unset(maCho);",
+                                                                                    "    pm.collectionVariables.unset(maCho);",
                                                                                     "    kiemTra(\u0027Xử lý bất đồng bộ hoàn tất trong giới hạn 30 lượt\u0027, () =\u003e pm.expect(xong).to.eql(true));",
                                                                                     "    kiemTra(\u0027Phản hồi đi qua API Gateway\u0027, () =\u003e pm.expect(pm.response.headers.get(\u0027X-Gateway\u0027)).to.eql(\u0027api-gateway\u0027));",
-                                                                                    "    if (xong) { kiemTra(\u0027Phản hồi thành công\u0027, () =\u003e pm.expect(pm.response.json().success).to.eql(true)); pm.environment.set(\u0027codPaymentId\u0027, d.id);",
-                                                                                    "kiemTra(\u0027Thanh toán thuộc đúng đơn\u0027, () =\u003e pm.expect(d.orderId).to.eql(Number(pm.environment.get(\u0027codOrderId\u0027))));",
-                                                                                    "kiemTra(\u0027Số tiền khớp đơn\u0027, () =\u003e pm.expect(d.amount).to.eql(Number(pm.environment.get(\u0027codAmount\u0027))));",
+                                                                                    "    if (xong) { kiemTra(\u0027Phản hồi thành công\u0027, () =\u003e pm.expect(pm.response.json().success).to.eql(true)); pm.collectionVariables.set(\u0027codPaymentId\u0027, d.id);",
+                                                                                    "kiemTra(\u0027Thanh toán thuộc đúng đơn\u0027, () =\u003e pm.expect(d.orderId).to.eql(Number(pm.collectionVariables.get(\u0027codOrderId\u0027))));",
+                                                                                    "kiemTra(\u0027Số tiền khớp đơn\u0027, () =\u003e pm.expect(d.amount).to.eql(Number(pm.collectionVariables.get(\u0027codAmount\u0027))));",
                                                                                     "kiemTra(\u0027Đúng phương thức thanh toán\u0027, () =\u003e pm.expect(d.paymentMethod).to.eql(\u0027COD\u0027)); }",
                                                                                     "}",
                                                                                     ""
@@ -765,8 +778,8 @@
                                                                        "type":  "text/javascript",
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
-                                                                                    "const thieu = [\"baseUrl\",\"codOrderId\",\"adminToken\"].filter(key =\u003e { const value = pm.variables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy folder tiền đề hoặc cấu hình environment trước.\u0027); }"
+                                                                                    "const thieu = [\"baseUrl\",\"codOrderId\",\"adminToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
+                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
                                                                                 ]
                                                                    }
                                                     },
@@ -832,8 +845,8 @@
                                                                        "type":  "text/javascript",
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
-                                                                                    "const thieu = [\"baseUrl\",\"codPaymentId\",\"collectKey\",\"codOrderId\",\"adminToken\"].filter(key =\u003e { const value = pm.variables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy folder tiền đề hoặc cấu hình environment trước.\u0027); }"
+                                                                                    "const thieu = [\"baseUrl\",\"codPaymentId\",\"collectKey\",\"codOrderId\",\"adminToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
+                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
                                                                                 ]
                                                                    }
                                                     },
@@ -849,19 +862,19 @@
                                                                                     "}",
                                                                                     "",
                                                                                     "const maCho = \u0027_cho_\u0027 + pm.info.requestId;",
-                                                                                    "const lan = Number(pm.environment.get(maCho) || 0) + 1;",
+                                                                                    "const lan = Number(pm.collectionVariables.get(maCho) || 0) + 1;",
                                                                                     "const hopLe = [200,409].includes(pm.response.code);",
                                                                                     "let d = null;",
                                                                                     "if (pm.response.code === 200) { d = pm.response.json().data; }",
                                                                                     "const xong = pm.response.code === 200 \u0026\u0026 (d.status === \u0027SUCCESS\u0027);",
                                                                                     "if (hopLe \u0026\u0026 !xong \u0026\u0026 lan \u003c 30) {",
-                                                                                    "    pm.environment.set(maCho, lan);",
+                                                                                    "    pm.collectionVariables.set(maCho, lan);",
                                                                                     "    pm.execution.setNextRequest(pm.info.requestId);",
                                                                                     "} else {",
-                                                                                    "    pm.environment.unset(maCho);",
+                                                                                    "    pm.collectionVariables.unset(maCho);",
                                                                                     "    kiemTra(\u0027Xử lý bất đồng bộ hoàn tất trong giới hạn 30 lượt\u0027, () =\u003e pm.expect(xong).to.eql(true));",
                                                                                     "    kiemTra(\u0027Phản hồi đi qua API Gateway\u0027, () =\u003e pm.expect(pm.response.headers.get(\u0027X-Gateway\u0027)).to.eql(\u0027api-gateway\u0027));",
-                                                                                    "    if (xong) { kiemTra(\u0027Phản hồi thành công\u0027, () =\u003e pm.expect(pm.response.json().success).to.eql(true)); kiemTra(\u0027Biên nhận thu đúng\u0027, () =\u003e pm.expect(d.codReceipt.receiptNumber).to.eql(\u0027THU-\u0027+pm.environment.get(\u0027codOrderId\u0027))); }",
+                                                                                    "    if (xong) { kiemTra(\u0027Phản hồi thành công\u0027, () =\u003e pm.expect(pm.response.json().success).to.eql(true)); kiemTra(\u0027Biên nhận thu đúng\u0027, () =\u003e pm.expect(d.codReceipt.receiptNumber).to.eql(\u0027THU-\u0027+pm.collectionVariables.get(\u0027codOrderId\u0027))); }",
                                                                                     "}",
                                                                                     ""
                                                                                 ]
@@ -896,8 +909,8 @@
                                                                        "type":  "text/javascript",
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
-                                                                                    "const thieu = [\"baseUrl\",\"codOrderId\",\"userToken\"].filter(key =\u003e { const value = pm.variables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy folder tiền đề hoặc cấu hình environment trước.\u0027); }"
+                                                                                    "const thieu = [\"baseUrl\",\"codOrderId\",\"userToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
+                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
                                                                                 ]
                                                                    }
                                                     },
@@ -913,19 +926,19 @@
                                                                                     "}",
                                                                                     "",
                                                                                     "const maCho = \u0027_cho_\u0027 + pm.info.requestId;",
-                                                                                    "const lan = Number(pm.environment.get(maCho) || 0) + 1;",
+                                                                                    "const lan = Number(pm.collectionVariables.get(maCho) || 0) + 1;",
                                                                                     "const hopLe = [200].includes(pm.response.code);",
                                                                                     "let d = null;",
                                                                                     "if (pm.response.code === 200) { d = pm.response.json().data; }",
                                                                                     "const xong = pm.response.code === 200 \u0026\u0026 (d.codPaidAt != null);",
                                                                                     "if (hopLe \u0026\u0026 !xong \u0026\u0026 lan \u003c 30) {",
-                                                                                    "    pm.environment.set(maCho, lan);",
+                                                                                    "    pm.collectionVariables.set(maCho, lan);",
                                                                                     "    pm.execution.setNextRequest(pm.info.requestId);",
                                                                                     "} else {",
-                                                                                    "    pm.environment.unset(maCho);",
+                                                                                    "    pm.collectionVariables.unset(maCho);",
                                                                                     "    kiemTra(\u0027Xử lý bất đồng bộ hoàn tất trong giới hạn 30 lượt\u0027, () =\u003e pm.expect(xong).to.eql(true));",
                                                                                     "    kiemTra(\u0027Phản hồi đi qua API Gateway\u0027, () =\u003e pm.expect(pm.response.headers.get(\u0027X-Gateway\u0027)).to.eql(\u0027api-gateway\u0027));",
-                                                                                    "    if (xong) { kiemTra(\u0027Phản hồi thành công\u0027, () =\u003e pm.expect(pm.response.json().success).to.eql(true)); kiemTra(\u0027Đúng payment đã thu tiền\u0027, () =\u003e pm.expect(d.codPaymentId).to.eql(Number(pm.environment.get(\u0027codPaymentId\u0027)))); }",
+                                                                                    "    if (xong) { kiemTra(\u0027Phản hồi thành công\u0027, () =\u003e pm.expect(pm.response.json().success).to.eql(true)); kiemTra(\u0027Đúng payment đã thu tiền\u0027, () =\u003e pm.expect(d.codPaymentId).to.eql(Number(pm.collectionVariables.get(\u0027codPaymentId\u0027)))); }",
                                                                                     "}",
                                                                                     ""
                                                                                 ]
@@ -960,8 +973,8 @@
                                                                        "type":  "text/javascript",
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
-                                                                                    "const thieu = [\"baseUrl\",\"codOrderId\",\"adminToken\"].filter(key =\u003e { const value = pm.variables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy folder tiền đề hoặc cấu hình environment trước.\u0027); }"
+                                                                                    "const thieu = [\"baseUrl\",\"codOrderId\",\"adminToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
+                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
                                                                                 ]
                                                                    }
                                                     },
@@ -1031,11 +1044,11 @@
                                                         "script":  {
                                                                        "type":  "text/javascript",
                                                                        "exec":  [
-                                                                                    "pm.environment.set(\u0027refundKey\u0027, \u0027main-\u0027+pm.variables.replaceIn(\u0027{{$randomUUID}}\u0027));",
+                                                                                    "pm.collectionVariables.set(\u0027refundKey\u0027, \u0027main-\u0027+pm.variables.replaceIn(\u0027{{$randomUUID}}\u0027));",
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
-                                                                                    "pm.environment.set(\u0027returnKey\u0027, \u0027vi-\u0027+pm.variables.replaceIn(\u0027{{$randomUUID}}\u0027));",
-                                                                                    "const thieu = [\"baseUrl\",\"codOrderId\",\"returnKey\",\"userToken\"].filter(key =\u003e { const value = pm.variables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy folder tiền đề hoặc cấu hình environment trước.\u0027); }"
+                                                                                    "pm.collectionVariables.set(\u0027returnKey\u0027, \u0027vi-\u0027+pm.variables.replaceIn(\u0027{{$randomUUID}}\u0027));",
+                                                                                    "const thieu = [\"baseUrl\",\"codOrderId\",\"returnKey\",\"userToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
+                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
                                                                                 ]
                                                                    }
                                                     },
@@ -1102,8 +1115,8 @@
                                                                        "type":  "text/javascript",
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
-                                                                                    "const thieu = [\"baseUrl\",\"codOrderId\",\"adminToken\"].filter(key =\u003e { const value = pm.variables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy folder tiền đề hoặc cấu hình environment trước.\u0027); }"
+                                                                                    "const thieu = [\"baseUrl\",\"codOrderId\",\"adminToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
+                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
                                                                                 ]
                                                                    }
                                                     },
@@ -1169,8 +1182,8 @@
                                                                        "type":  "text/javascript",
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
-                                                                                    "const thieu = [\"baseUrl\",\"codOrderId\",\"adminToken\"].filter(key =\u003e { const value = pm.variables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy folder tiền đề hoặc cấu hình environment trước.\u0027); }"
+                                                                                    "const thieu = [\"baseUrl\",\"codOrderId\",\"adminToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
+                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
                                                                                 ]
                                                                    }
                                                     },
@@ -1224,8 +1237,8 @@
                                                                        "type":  "text/javascript",
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
-                                                                                    "const thieu = [\"baseUrl\",\"codPaymentId\",\"userToken\"].filter(key =\u003e { const value = pm.variables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy folder tiền đề hoặc cấu hình environment trước.\u0027); }"
+                                                                                    "const thieu = [\"baseUrl\",\"codPaymentId\",\"userToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
+                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
                                                                                 ]
                                                                    }
                                                     },
@@ -1241,16 +1254,16 @@
                                                                                     "}",
                                                                                     "",
                                                                                     "const maCho = \u0027_cho_\u0027 + pm.info.requestId;",
-                                                                                    "const lan = Number(pm.environment.get(maCho) || 0) + 1;",
+                                                                                    "const lan = Number(pm.collectionVariables.get(maCho) || 0) + 1;",
                                                                                     "const hopLe = [200].includes(pm.response.code);",
                                                                                     "let d = null;",
                                                                                     "if (pm.response.code === 200) { d = pm.response.json().data; }",
                                                                                     "const xong = pm.response.code === 200 \u0026\u0026 (d.refundStatus === \u0027REQUIRED\u0027);",
                                                                                     "if (hopLe \u0026\u0026 !xong \u0026\u0026 lan \u003c 30) {",
-                                                                                    "    pm.environment.set(maCho, lan);",
+                                                                                    "    pm.collectionVariables.set(maCho, lan);",
                                                                                     "    pm.execution.setNextRequest(pm.info.requestId);",
                                                                                     "} else {",
-                                                                                    "    pm.environment.unset(maCho);",
+                                                                                    "    pm.collectionVariables.unset(maCho);",
                                                                                     "    kiemTra(\u0027Xử lý bất đồng bộ hoàn tất trong giới hạn 30 lượt\u0027, () =\u003e pm.expect(xong).to.eql(true));",
                                                                                     "    kiemTra(\u0027Phản hồi đi qua API Gateway\u0027, () =\u003e pm.expect(pm.response.headers.get(\u0027X-Gateway\u0027)).to.eql(\u0027api-gateway\u0027));",
                                                                                     "    if (xong) { kiemTra(\u0027Phản hồi thành công\u0027, () =\u003e pm.expect(pm.response.json().success).to.eql(true)); kiemTra(\u0027Trạng thái là SUCCESS\u0027, () =\u003e pm.expect(d.status).to.eql(\u0027SUCCESS\u0027)); }",
@@ -1300,8 +1313,8 @@
                                                                        "type":  "text/javascript",
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
-                                                                                    "const thieu = [\"baseUrl\",\"codPaymentId\",\"refundKey\",\"codOrderId\",\"adminToken\"].filter(key =\u003e { const value = pm.variables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy folder tiền đề hoặc cấu hình environment trước.\u0027); }"
+                                                                                    "const thieu = [\"baseUrl\",\"codPaymentId\",\"refundKey\",\"codOrderId\",\"adminToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
+                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
                                                                                 ]
                                                                    }
                                                     },
@@ -1322,7 +1335,7 @@
                                                                                     "kiemTra(\u0027Cờ success đúng kết quả\u0027, () =\u003e pm.expect(json.success).to.eql(true));",
                                                                                     "const d = json.data;",
                                                                                     "kiemTra(\u0027Số tiền hoàn đúng\u0027, () =\u003e pm.expect(d.amount).to.eql(125000));",
-                                                                                    "pm.environment.set(\u0027refundedAt\u0027, d.refundedAt);",
+                                                                                    "pm.collectionVariables.set(\u0027refundedAt\u0027, d.refundedAt);",
                                                                                     "}"
                                                                                 ]
                                                                    }
@@ -1356,8 +1369,8 @@
                                                                        "type":  "text/javascript",
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
-                                                                                    "const thieu = [\"baseUrl\",\"codOrderId\",\"userToken\"].filter(key =\u003e { const value = pm.variables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy folder tiền đề hoặc cấu hình environment trước.\u0027); }"
+                                                                                    "const thieu = [\"baseUrl\",\"codOrderId\",\"userToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
+                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
                                                                                 ]
                                                                    }
                                                     },
@@ -1373,19 +1386,19 @@
                                                                                     "}",
                                                                                     "",
                                                                                     "const maCho = \u0027_cho_\u0027 + pm.info.requestId;",
-                                                                                    "const lan = Number(pm.environment.get(maCho) || 0) + 1;",
+                                                                                    "const lan = Number(pm.collectionVariables.get(maCho) || 0) + 1;",
                                                                                     "const hopLe = [200].includes(pm.response.code);",
                                                                                     "let d = null;",
                                                                                     "if (pm.response.code === 200) { d = pm.response.json().data; }",
                                                                                     "const xong = pm.response.code === 200 \u0026\u0026 (d.status === \u0027REFUNDED\u0027);",
                                                                                     "if (hopLe \u0026\u0026 !xong \u0026\u0026 lan \u003c 30) {",
-                                                                                    "    pm.environment.set(maCho, lan);",
+                                                                                    "    pm.collectionVariables.set(maCho, lan);",
                                                                                     "    pm.execution.setNextRequest(pm.info.requestId);",
                                                                                     "} else {",
-                                                                                    "    pm.environment.unset(maCho);",
+                                                                                    "    pm.collectionVariables.unset(maCho);",
                                                                                     "    kiemTra(\u0027Xử lý bất đồng bộ hoàn tất trong giới hạn 30 lượt\u0027, () =\u003e pm.expect(xong).to.eql(true));",
                                                                                     "    kiemTra(\u0027Phản hồi đi qua API Gateway\u0027, () =\u003e pm.expect(pm.response.headers.get(\u0027X-Gateway\u0027)).to.eql(\u0027api-gateway\u0027));",
-                                                                                    "    if (xong) { kiemTra(\u0027Phản hồi thành công\u0027, () =\u003e pm.expect(pm.response.json().success).to.eql(true)); kiemTra(\u0027Hồ sơ gắn đúng payment hoàn tiền\u0027, () =\u003e pm.expect(d.paymentId).to.eql(Number(pm.environment.get(\u0027codPaymentId\u0027)))); }",
+                                                                                    "    if (xong) { kiemTra(\u0027Phản hồi thành công\u0027, () =\u003e pm.expect(pm.response.json().success).to.eql(true)); kiemTra(\u0027Hồ sơ gắn đúng payment hoàn tiền\u0027, () =\u003e pm.expect(d.paymentId).to.eql(Number(pm.collectionVariables.get(\u0027codPaymentId\u0027)))); }",
                                                                                     "}",
                                                                                     ""
                                                                                 ]
@@ -1420,8 +1433,8 @@
                                                                        "type":  "text/javascript",
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
-                                                                                    "const thieu = [\"baseUrl\",\"productId\",\"userToken\"].filter(key =\u003e { const value = pm.variables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy folder tiền đề hoặc cấu hình environment trước.\u0027); }"
+                                                                                    "const thieu = [\"baseUrl\",\"productId\",\"userToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
+                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
                                                                                 ]
                                                                    }
                                                     },
@@ -1441,7 +1454,7 @@
                                                                                     "const json = pm.response.json();",
                                                                                     "kiemTra(\u0027Cờ success đúng kết quả\u0027, () =\u003e pm.expect(json.success).to.eql(true));",
                                                                                     "const d = json.data;",
-                                                                                    "kiemTra(\u0027Số lượng có thể bán đúng kỳ vọng\u0027, () =\u003e pm.expect(d.available).to.eql(Number(pm.environment.get(\u0027codBaseline\u0027))+0));",
+                                                                                    "kiemTra(\u0027Số lượng có thể bán đúng kỳ vọng\u0027, () =\u003e pm.expect(d.available).to.eql(Number(pm.collectionVariables.get(\u0027codBaseline\u0027))+0));",
                                                                                     "kiemTra(\u0027Số lượng giữ chỗ đúng kỳ vọng\u0027, () =\u003e pm.expect(d.reserved).to.eql(0));",
                                                                                     "}"
                                                                                 ]
@@ -1481,8 +1494,8 @@
                                                                        "type":  "text/javascript",
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
-                                                                                    "const thieu = [\"baseUrl\",\"productId\",\"userToken\"].filter(key =\u003e { const value = pm.variables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy folder tiền đề hoặc cấu hình environment trước.\u0027); }"
+                                                                                    "const thieu = [\"baseUrl\",\"productId\",\"userToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
+                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
                                                                                 ]
                                                                    }
                                                     },
@@ -1504,7 +1517,7 @@
                                                                                     "const d = json.data;",
                                                                                     "kiemTra(\u0027Không có giữ chỗ từ luồng khác\u0027, () =\u003e pm.expect(d.reserved).to.eql(0));",
                                                                                     "kiemTra(\u0027Đủ hàng để demo\u0027,()=\u003epm.expect(d.available).to.be.at.least(2));",
-                                                                                    "pm.environment.set(\u0027expiryBaseline\u0027, d.available);",
+                                                                                    "pm.collectionVariables.set(\u0027expiryBaseline\u0027, d.available);",
                                                                                     "}"
                                                                                 ]
                                                                    }
@@ -1550,10 +1563,10 @@
                                                                        "type":  "text/javascript",
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
-                                                                                    "pm.environment.set(\u0027expiryKey\u0027, \u0027vi-\u0027+pm.variables.replaceIn(\u0027{{$randomUUID}}\u0027));",
-                                                                                    "pm.environment.unset(\u0027expiryPaymentId\u0027);",
-                                                                                    "const thieu = [\"baseUrl\",\"expiryKey\",\"productId\",\"userToken\"].filter(key =\u003e { const value = pm.variables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy folder tiền đề hoặc cấu hình environment trước.\u0027); }"
+                                                                                    "pm.collectionVariables.set(\u0027expiryKey\u0027, \u0027vi-\u0027+pm.variables.replaceIn(\u0027{{$randomUUID}}\u0027));",
+                                                                                    "pm.collectionVariables.unset(\u0027expiryPaymentId\u0027);",
+                                                                                    "const thieu = [\"baseUrl\",\"expiryKey\",\"productId\",\"userToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
+                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
                                                                                 ]
                                                                    }
                                                     },
@@ -1573,9 +1586,9 @@
                                                                                     "const json = pm.response.json();",
                                                                                     "kiemTra(\u0027Cờ success đúng kết quả\u0027, () =\u003e pm.expect(json.success).to.eql(true));",
                                                                                     "const d = json.data;",
-                                                                                    "pm.environment.set(\u0027expiryOrderId\u0027, d.id);",
-                                                                                    "pm.environment.set(\u0027expiryCreatedAt\u0027, d.createdAt);",
-                                                                                    "pm.environment.set(\u0027expiryAmount\u0027, d.totalAmount);",
+                                                                                    "pm.collectionVariables.set(\u0027expiryOrderId\u0027, d.id);",
+                                                                                    "pm.collectionVariables.set(\u0027expiryCreatedAt\u0027, d.createdAt);",
+                                                                                    "pm.collectionVariables.set(\u0027expiryAmount\u0027, d.totalAmount);",
                                                                                     "kiemTra(\u0027Trạng thái là PENDING_PAYMENT\u0027, () =\u003e pm.expect(d.status).to.eql(\u0027PENDING_PAYMENT\u0027));",
                                                                                     "kiemTra(\u0027Tổng tiền lấy từ giá sản phẩm trên server\u0027, () =\u003e pm.expect(d.totalAmount).to.eql(125000));",
                                                                                     "}"
@@ -1611,8 +1624,8 @@
                                                                        "type":  "text/javascript",
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
-                                                                                    "const thieu = [\"baseUrl\",\"expiryOrderId\",\"userToken\"].filter(key =\u003e { const value = pm.variables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy folder tiền đề hoặc cấu hình environment trước.\u0027); }"
+                                                                                    "const thieu = [\"baseUrl\",\"expiryOrderId\",\"userToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
+                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
                                                                                 ]
                                                                    }
                                                     },
@@ -1628,21 +1641,21 @@
                                                                                     "}",
                                                                                     "",
                                                                                     "const maCho = \u0027_cho_\u0027 + pm.info.requestId;",
-                                                                                    "const lan = Number(pm.environment.get(maCho) || 0) + 1;",
+                                                                                    "const lan = Number(pm.collectionVariables.get(maCho) || 0) + 1;",
                                                                                     "const hopLe = [200,404].includes(pm.response.code);",
                                                                                     "let d = null;",
                                                                                     "if (pm.response.code === 200) { d = pm.response.json().data; }",
                                                                                     "const xong = pm.response.code === 200 \u0026\u0026 (d !== null);",
                                                                                     "if (hopLe \u0026\u0026 !xong \u0026\u0026 lan \u003c 30) {",
-                                                                                    "    pm.environment.set(maCho, lan);",
+                                                                                    "    pm.collectionVariables.set(maCho, lan);",
                                                                                     "    pm.execution.setNextRequest(pm.info.requestId);",
                                                                                     "} else {",
-                                                                                    "    pm.environment.unset(maCho);",
+                                                                                    "    pm.collectionVariables.unset(maCho);",
                                                                                     "    kiemTra(\u0027Xử lý bất đồng bộ hoàn tất trong giới hạn 30 lượt\u0027, () =\u003e pm.expect(xong).to.eql(true));",
                                                                                     "    kiemTra(\u0027Phản hồi đi qua API Gateway\u0027, () =\u003e pm.expect(pm.response.headers.get(\u0027X-Gateway\u0027)).to.eql(\u0027api-gateway\u0027));",
-                                                                                    "    if (xong) { kiemTra(\u0027Phản hồi thành công\u0027, () =\u003e pm.expect(pm.response.json().success).to.eql(true)); pm.environment.set(\u0027expiryPaymentId\u0027, d.id);",
-                                                                                    "kiemTra(\u0027Thanh toán thuộc đúng đơn\u0027, () =\u003e pm.expect(d.orderId).to.eql(Number(pm.environment.get(\u0027expiryOrderId\u0027))));",
-                                                                                    "kiemTra(\u0027Số tiền khớp đơn\u0027, () =\u003e pm.expect(d.amount).to.eql(Number(pm.environment.get(\u0027expiryAmount\u0027))));",
+                                                                                    "    if (xong) { kiemTra(\u0027Phản hồi thành công\u0027, () =\u003e pm.expect(pm.response.json().success).to.eql(true)); pm.collectionVariables.set(\u0027expiryPaymentId\u0027, d.id);",
+                                                                                    "kiemTra(\u0027Thanh toán thuộc đúng đơn\u0027, () =\u003e pm.expect(d.orderId).to.eql(Number(pm.collectionVariables.get(\u0027expiryOrderId\u0027))));",
+                                                                                    "kiemTra(\u0027Số tiền khớp đơn\u0027, () =\u003e pm.expect(d.amount).to.eql(Number(pm.collectionVariables.get(\u0027expiryAmount\u0027))));",
                                                                                     "kiemTra(\u0027Đúng phương thức thanh toán\u0027, () =\u003e pm.expect(d.paymentMethod).to.eql(\u0027ONLINE\u0027)); }",
                                                                                     "}",
                                                                                     ""
@@ -1678,8 +1691,8 @@
                                                                        "type":  "text/javascript",
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
-                                                                                    "const thieu = [\"baseUrl\",\"expiryOrderId\",\"userToken\"].filter(key =\u003e { const value = pm.variables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy folder tiền đề hoặc cấu hình environment trước.\u0027); }"
+                                                                                    "const thieu = [\"baseUrl\",\"expiryOrderId\",\"userToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
+                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
                                                                                 ]
                                                                    }
                                                     },
@@ -1695,16 +1708,16 @@
                                                                                     "}",
                                                                                     "",
                                                                                     "const maCho = \u0027_cho_\u0027 + pm.info.requestId;",
-                                                                                    "const lan = Number(pm.environment.get(maCho) || 0) + 1;",
+                                                                                    "const lan = Number(pm.collectionVariables.get(maCho) || 0) + 1;",
                                                                                     "const hopLe = [200].includes(pm.response.code);",
                                                                                     "let d = null;",
                                                                                     "if (pm.response.code === 200) { d = pm.response.json().data; }",
                                                                                     "const xong = pm.response.code === 200 \u0026\u0026 (d.status === \u0027EXPIRED\u0027);",
                                                                                     "if (hopLe \u0026\u0026 !xong \u0026\u0026 lan \u003c 190) {",
-                                                                                    "    pm.environment.set(maCho, lan);",
+                                                                                    "    pm.collectionVariables.set(maCho, lan);",
                                                                                     "    pm.execution.setNextRequest(pm.info.requestId);",
                                                                                     "} else {",
-                                                                                    "    pm.environment.unset(maCho);",
+                                                                                    "    pm.collectionVariables.unset(maCho);",
                                                                                     "    kiemTra(\u0027Xử lý bất đồng bộ hoàn tất trong giới hạn 190 lượt\u0027, () =\u003e pm.expect(xong).to.eql(true));",
                                                                                     "    kiemTra(\u0027Phản hồi đi qua API Gateway\u0027, () =\u003e pm.expect(pm.response.headers.get(\u0027X-Gateway\u0027)).to.eql(\u0027api-gateway\u0027));",
                                                                                     "    if (xong) { kiemTra(\u0027Phản hồi thành công\u0027, () =\u003e pm.expect(pm.response.json().success).to.eql(true)); kiemTra(\u0027Không hết hạn trước 150 giây\u0027,()=\u003epm.expect(Date.now()-Date.parse(d.createdAt)).to.be.at.least(150000)); }",
@@ -1742,8 +1755,8 @@
                                                                        "type":  "text/javascript",
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
-                                                                                    "const thieu = [\"baseUrl\",\"expiryPaymentId\",\"userToken\"].filter(key =\u003e { const value = pm.variables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy folder tiền đề hoặc cấu hình environment trước.\u0027); }"
+                                                                                    "const thieu = [\"baseUrl\",\"expiryPaymentId\",\"userToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
+                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
                                                                                 ]
                                                                    }
                                                     },
@@ -1759,16 +1772,16 @@
                                                                                     "}",
                                                                                     "",
                                                                                     "const maCho = \u0027_cho_\u0027 + pm.info.requestId;",
-                                                                                    "const lan = Number(pm.environment.get(maCho) || 0) + 1;",
+                                                                                    "const lan = Number(pm.collectionVariables.get(maCho) || 0) + 1;",
                                                                                     "const hopLe = [200].includes(pm.response.code);",
                                                                                     "let d = null;",
                                                                                     "if (pm.response.code === 200) { d = pm.response.json().data; }",
                                                                                     "const xong = pm.response.code === 200 \u0026\u0026 (d.reservationExpired === true \u0026\u0026 d.status === \u0027FAILED\u0027);",
                                                                                     "if (hopLe \u0026\u0026 !xong \u0026\u0026 lan \u003c 30) {",
-                                                                                    "    pm.environment.set(maCho, lan);",
+                                                                                    "    pm.collectionVariables.set(maCho, lan);",
                                                                                     "    pm.execution.setNextRequest(pm.info.requestId);",
                                                                                     "} else {",
-                                                                                    "    pm.environment.unset(maCho);",
+                                                                                    "    pm.collectionVariables.unset(maCho);",
                                                                                     "    kiemTra(\u0027Xử lý bất đồng bộ hoàn tất trong giới hạn 30 lượt\u0027, () =\u003e pm.expect(xong).to.eql(true));",
                                                                                     "    kiemTra(\u0027Phản hồi đi qua API Gateway\u0027, () =\u003e pm.expect(pm.response.headers.get(\u0027X-Gateway\u0027)).to.eql(\u0027api-gateway\u0027));",
                                                                                     "    if (xong) { kiemTra(\u0027Phản hồi thành công\u0027, () =\u003e pm.expect(pm.response.json().success).to.eql(true)); kiemTra(\u0027Đã ghi nhận hết hạn giữ kho\u0027, () =\u003e pm.expect(d.reservationExpired).to.eql(true)); }",
@@ -1806,8 +1819,8 @@
                                                                        "type":  "text/javascript",
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
-                                                                                    "const thieu = [\"baseUrl\",\"productId\",\"userToken\"].filter(key =\u003e { const value = pm.variables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy folder tiền đề hoặc cấu hình environment trước.\u0027); }"
+                                                                                    "const thieu = [\"baseUrl\",\"productId\",\"userToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
+                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
                                                                                 ]
                                                                    }
                                                     },
@@ -1827,7 +1840,7 @@
                                                                                     "const json = pm.response.json();",
                                                                                     "kiemTra(\u0027Cờ success đúng kết quả\u0027, () =\u003e pm.expect(json.success).to.eql(true));",
                                                                                     "const d = json.data;",
-                                                                                    "kiemTra(\u0027Số lượng có thể bán đúng kỳ vọng\u0027, () =\u003e pm.expect(d.available).to.eql(Number(pm.environment.get(\u0027expiryBaseline\u0027))+0));",
+                                                                                    "kiemTra(\u0027Số lượng có thể bán đúng kỳ vọng\u0027, () =\u003e pm.expect(d.available).to.eql(Number(pm.collectionVariables.get(\u0027expiryBaseline\u0027))+0));",
                                                                                     "kiemTra(\u0027Số lượng giữ chỗ đúng kỳ vọng\u0027, () =\u003e pm.expect(d.reserved).to.eql(0));",
                                                                                     "}"
                                                                                 ]
@@ -1879,10 +1892,10 @@
                                                                        "type":  "text/javascript",
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
-                                                                                    "pm.environment.set(\u0027vnpayKey\u0027, \u0027vi-\u0027+pm.variables.replaceIn(\u0027{{$randomUUID}}\u0027));",
-                                                                                    "pm.environment.unset(\u0027vnpayPaymentId\u0027);",
-                                                                                    "const thieu = [\"baseUrl\",\"vnpayKey\",\"productId\",\"userToken\"].filter(key =\u003e { const value = pm.variables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy folder tiền đề hoặc cấu hình environment trước.\u0027); }"
+                                                                                    "pm.collectionVariables.set(\u0027vnpayKey\u0027, \u0027vi-\u0027+pm.variables.replaceIn(\u0027{{$randomUUID}}\u0027));",
+                                                                                    "pm.collectionVariables.unset(\u0027vnpayPaymentId\u0027);",
+                                                                                    "const thieu = [\"baseUrl\",\"vnpayKey\",\"productId\",\"userToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
+                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
                                                                                 ]
                                                                    }
                                                     },
@@ -1902,9 +1915,9 @@
                                                                                     "const json = pm.response.json();",
                                                                                     "kiemTra(\u0027Cờ success đúng kết quả\u0027, () =\u003e pm.expect(json.success).to.eql(true));",
                                                                                     "const d = json.data;",
-                                                                                    "pm.environment.set(\u0027vnpayOrderId\u0027, d.id);",
-                                                                                    "pm.environment.set(\u0027vnpayCreatedAt\u0027, d.createdAt);",
-                                                                                    "pm.environment.set(\u0027vnpayAmount\u0027, d.totalAmount);",
+                                                                                    "pm.collectionVariables.set(\u0027vnpayOrderId\u0027, d.id);",
+                                                                                    "pm.collectionVariables.set(\u0027vnpayCreatedAt\u0027, d.createdAt);",
+                                                                                    "pm.collectionVariables.set(\u0027vnpayAmount\u0027, d.totalAmount);",
                                                                                     "kiemTra(\u0027Trạng thái là PENDING_PAYMENT\u0027, () =\u003e pm.expect(d.status).to.eql(\u0027PENDING_PAYMENT\u0027));",
                                                                                     "kiemTra(\u0027Tổng tiền lấy từ giá sản phẩm trên server\u0027, () =\u003e pm.expect(d.totalAmount).to.eql(125000));",
                                                                                     "}"
@@ -1940,8 +1953,8 @@
                                                                        "type":  "text/javascript",
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
-                                                                                    "const thieu = [\"baseUrl\",\"vnpayOrderId\",\"userToken\"].filter(key =\u003e { const value = pm.variables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy folder tiền đề hoặc cấu hình environment trước.\u0027); }"
+                                                                                    "const thieu = [\"baseUrl\",\"vnpayOrderId\",\"userToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
+                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
                                                                                 ]
                                                                    }
                                                     },
@@ -1957,21 +1970,21 @@
                                                                                     "}",
                                                                                     "",
                                                                                     "const maCho = \u0027_cho_\u0027 + pm.info.requestId;",
-                                                                                    "const lan = Number(pm.environment.get(maCho) || 0) + 1;",
+                                                                                    "const lan = Number(pm.collectionVariables.get(maCho) || 0) + 1;",
                                                                                     "const hopLe = [200,404].includes(pm.response.code);",
                                                                                     "let d = null;",
                                                                                     "if (pm.response.code === 200) { d = pm.response.json().data; }",
                                                                                     "const xong = pm.response.code === 200 \u0026\u0026 (d !== null);",
                                                                                     "if (hopLe \u0026\u0026 !xong \u0026\u0026 lan \u003c 30) {",
-                                                                                    "    pm.environment.set(maCho, lan);",
+                                                                                    "    pm.collectionVariables.set(maCho, lan);",
                                                                                     "    pm.execution.setNextRequest(pm.info.requestId);",
                                                                                     "} else {",
-                                                                                    "    pm.environment.unset(maCho);",
+                                                                                    "    pm.collectionVariables.unset(maCho);",
                                                                                     "    kiemTra(\u0027Xử lý bất đồng bộ hoàn tất trong giới hạn 30 lượt\u0027, () =\u003e pm.expect(xong).to.eql(true));",
                                                                                     "    kiemTra(\u0027Phản hồi đi qua API Gateway\u0027, () =\u003e pm.expect(pm.response.headers.get(\u0027X-Gateway\u0027)).to.eql(\u0027api-gateway\u0027));",
-                                                                                    "    if (xong) { kiemTra(\u0027Phản hồi thành công\u0027, () =\u003e pm.expect(pm.response.json().success).to.eql(true)); pm.environment.set(\u0027vnpayPaymentId\u0027, d.id);",
-                                                                                    "kiemTra(\u0027Thanh toán thuộc đúng đơn\u0027, () =\u003e pm.expect(d.orderId).to.eql(Number(pm.environment.get(\u0027vnpayOrderId\u0027))));",
-                                                                                    "kiemTra(\u0027Số tiền khớp đơn\u0027, () =\u003e pm.expect(d.amount).to.eql(Number(pm.environment.get(\u0027vnpayAmount\u0027))));",
+                                                                                    "    if (xong) { kiemTra(\u0027Phản hồi thành công\u0027, () =\u003e pm.expect(pm.response.json().success).to.eql(true)); pm.collectionVariables.set(\u0027vnpayPaymentId\u0027, d.id);",
+                                                                                    "kiemTra(\u0027Thanh toán thuộc đúng đơn\u0027, () =\u003e pm.expect(d.orderId).to.eql(Number(pm.collectionVariables.get(\u0027vnpayOrderId\u0027))));",
+                                                                                    "kiemTra(\u0027Số tiền khớp đơn\u0027, () =\u003e pm.expect(d.amount).to.eql(Number(pm.collectionVariables.get(\u0027vnpayAmount\u0027))));",
                                                                                     "kiemTra(\u0027Đúng phương thức thanh toán\u0027, () =\u003e pm.expect(d.paymentMethod).to.eql(\u0027ONLINE\u0027)); }",
                                                                                     "}",
                                                                                     ""
@@ -2007,8 +2020,8 @@
                                                                        "type":  "text/javascript",
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
-                                                                                    "const thieu = [\"baseUrl\",\"vnpayPaymentId\",\"userToken\"].filter(key =\u003e { const value = pm.variables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy folder tiền đề hoặc cấu hình environment trước.\u0027); }"
+                                                                                    "const thieu = [\"baseUrl\",\"vnpayPaymentId\",\"userToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
+                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
                                                                                 ]
                                                                    }
                                                     },
@@ -2028,12 +2041,12 @@
                                                                                     "const json = pm.response.json();",
                                                                                     "kiemTra(\u0027Cờ success đúng kết quả\u0027, () =\u003e pm.expect(json.success).to.eql(true));",
                                                                                     "const d = json.data;",
-                                                                                    "pm.environment.set(\u0027vnpayCheckoutUrl\u0027, d.checkoutUrl);",
+                                                                                    "pm.collectionVariables.set(\u0027vnpayCheckoutUrl\u0027, d.checkoutUrl);",
                                                                                     "kiemTra(\u0027Link chỉ dẫn tới VNPay SANDBOX\u0027,()=\u003epm.expect(d.checkoutUrl.startsWith(\u0027https://sandbox.vnpayment.vn/paymentv2/vpcpay.html?\u0027)).to.eql(true));",
-                                                                                    "kiemTra(\u0027Payment trả về đúng đơn đang test\u0027,()=\u003epm.expect(d.paymentId).to.eql(Number(pm.environment.get(\u0027vnpayPaymentId\u0027))));",
-                                                                                    "kiemTra(\u0027Link có return URL về dự án\u0027,()=\u003epm.expect(d.checkoutUrl).to.include(\u0027vnp_ReturnUrl=\u0027+encodeURIComponent(pm.environment.get(\u0027baseUrl\u0027).replace(/\\/$/,\u0027\u0027)+\u0027/api/payments/vnpay/return\u0027)));",
+                                                                                    "kiemTra(\u0027Payment trả về đúng đơn đang test\u0027,()=\u003epm.expect(d.paymentId).to.eql(Number(pm.collectionVariables.get(\u0027vnpayPaymentId\u0027))));",
+                                                                                    "kiemTra(\u0027Link có return URL về dự án\u0027,()=\u003epm.expect(d.checkoutUrl).to.include(\u0027vnp_ReturnUrl=\u0027+encodeURIComponent(pm.collectionVariables.get(\u0027baseUrl\u0027).replace(/\\/$/,\u0027\u0027)+\u0027/api/payments/vnpay/return\u0027)));",
                                                                                     "}",
-                                                                                    "if (pm.response.code === 200) { pm.environment.set(\u0027mainAwaitingVnpay\u0027, \u0027true\u0027); pm.execution.setNextRequest(null); }"
+                                                                                    "if (pm.response.code === 200) { pm.collectionVariables.set(\u0027mainAwaitingVnpay\u0027, \u0027true\u0027); pm.execution.setNextRequest(null); }"
                                                                                 ]
                                                                    }
                                                     }
@@ -2071,8 +2084,8 @@
                                                                        "type":  "text/javascript",
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
-                                                                                    "const thieu = [\"baseUrl\",\"vnpayPaymentId\",\"userToken\"].filter(key =\u003e { const value = pm.variables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy folder tiền đề hoặc cấu hình environment trước.\u0027); }"
+                                                                                    "const thieu = [\"baseUrl\",\"vnpayPaymentId\",\"userToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
+                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
                                                                                 ]
                                                                    }
                                                     },
@@ -2088,16 +2101,16 @@
                                                                                     "}",
                                                                                     "",
                                                                                     "const maCho = \u0027_cho_\u0027 + pm.info.requestId;",
-                                                                                    "const lan = Number(pm.environment.get(maCho) || 0) + 1;",
+                                                                                    "const lan = Number(pm.collectionVariables.get(maCho) || 0) + 1;",
                                                                                     "const hopLe = [200].includes(pm.response.code);",
                                                                                     "let d = null;",
                                                                                     "if (pm.response.code === 200) { d = pm.response.json().data; }",
                                                                                     "const xong = pm.response.code === 200 \u0026\u0026 (d.status === \u0027SUCCESS\u0027);",
                                                                                     "if (hopLe \u0026\u0026 !xong \u0026\u0026 lan \u003c 30) {",
-                                                                                    "    pm.environment.set(maCho, lan);",
+                                                                                    "    pm.collectionVariables.set(maCho, lan);",
                                                                                     "    pm.execution.setNextRequest(pm.info.requestId);",
                                                                                     "} else {",
-                                                                                    "    pm.environment.unset(maCho);",
+                                                                                    "    pm.collectionVariables.unset(maCho);",
                                                                                     "    kiemTra(\u0027Xử lý bất đồng bộ hoàn tất trong giới hạn 30 lượt\u0027, () =\u003e pm.expect(xong).to.eql(true));",
                                                                                     "    kiemTra(\u0027Phản hồi đi qua API Gateway\u0027, () =\u003e pm.expect(pm.response.headers.get(\u0027X-Gateway\u0027)).to.eql(\u0027api-gateway\u0027));",
                                                                                     "    if (xong) { kiemTra(\u0027Phản hồi thành công\u0027, () =\u003e pm.expect(pm.response.json().success).to.eql(true)); kiemTra(\u0027Trạng thái là SUCCESS\u0027, () =\u003e pm.expect(d.status).to.eql(\u0027SUCCESS\u0027)); }",
@@ -2135,8 +2148,8 @@
                                                                        "type":  "text/javascript",
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
-                                                                                    "const thieu = [\"baseUrl\",\"vnpayOrderId\",\"userToken\"].filter(key =\u003e { const value = pm.variables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy folder tiền đề hoặc cấu hình environment trước.\u0027); }"
+                                                                                    "const thieu = [\"baseUrl\",\"vnpayOrderId\",\"userToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
+                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
                                                                                 ]
                                                                    }
                                                     },
@@ -2152,16 +2165,16 @@
                                                                                     "}",
                                                                                     "",
                                                                                     "const maCho = \u0027_cho_\u0027 + pm.info.requestId;",
-                                                                                    "const lan = Number(pm.environment.get(maCho) || 0) + 1;",
+                                                                                    "const lan = Number(pm.collectionVariables.get(maCho) || 0) + 1;",
                                                                                     "const hopLe = [200].includes(pm.response.code);",
                                                                                     "let d = null;",
                                                                                     "if (pm.response.code === 200) { d = pm.response.json().data; }",
                                                                                     "const xong = pm.response.code === 200 \u0026\u0026 (d.status === \u0027CONFIRMED\u0027);",
                                                                                     "if (hopLe \u0026\u0026 !xong \u0026\u0026 lan \u003c 30) {",
-                                                                                    "    pm.environment.set(maCho, lan);",
+                                                                                    "    pm.collectionVariables.set(maCho, lan);",
                                                                                     "    pm.execution.setNextRequest(pm.info.requestId);",
                                                                                     "} else {",
-                                                                                    "    pm.environment.unset(maCho);",
+                                                                                    "    pm.collectionVariables.unset(maCho);",
                                                                                     "    kiemTra(\u0027Xử lý bất đồng bộ hoàn tất trong giới hạn 30 lượt\u0027, () =\u003e pm.expect(xong).to.eql(true));",
                                                                                     "    kiemTra(\u0027Phản hồi đi qua API Gateway\u0027, () =\u003e pm.expect(pm.response.headers.get(\u0027X-Gateway\u0027)).to.eql(\u0027api-gateway\u0027));",
                                                                                     "    if (xong) { kiemTra(\u0027Phản hồi thành công\u0027, () =\u003e pm.expect(pm.response.json().success).to.eql(true)); kiemTra(\u0027Trạng thái là CONFIRMED\u0027, () =\u003e pm.expect(d.status).to.eql(\u0027CONFIRMED\u0027)); }",
@@ -2211,8 +2224,8 @@
                                                                        "type":  "text/javascript",
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
-                                                                                    "const thieu = [\"baseUrl\",\"vnpayOrderId\",\"adminToken\"].filter(key =\u003e { const value = pm.variables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy folder tiền đề hoặc cấu hình environment trước.\u0027); }"
+                                                                                    "const thieu = [\"baseUrl\",\"vnpayOrderId\",\"adminToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
+                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
                                                                                 ]
                                                                    }
                                                     },
@@ -2266,8 +2279,8 @@
                                                                        "type":  "text/javascript",
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
-                                                                                    "const thieu = [\"baseUrl\",\"vnpayOrderId\",\"adminToken\"].filter(key =\u003e { const value = pm.variables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy folder tiền đề hoặc cấu hình environment trước.\u0027); }"
+                                                                                    "const thieu = [\"baseUrl\",\"vnpayOrderId\",\"adminToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
+                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
                                                                                 ]
                                                                    }
                                                     },
@@ -2338,9 +2351,9 @@
                                                                        "type":  "text/javascript",
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
-                                                                                    "pm.environment.set(\u0027vnpayReturnKey\u0027, \u0027vi-\u0027+pm.variables.replaceIn(\u0027{{$randomUUID}}\u0027));",
-                                                                                    "const thieu = [\"baseUrl\",\"vnpayOrderId\",\"vnpayReturnKey\",\"userToken\"].filter(key =\u003e { const value = pm.variables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy folder tiền đề hoặc cấu hình environment trước.\u0027); }"
+                                                                                    "pm.collectionVariables.set(\u0027vnpayReturnKey\u0027, \u0027vi-\u0027+pm.variables.replaceIn(\u0027{{$randomUUID}}\u0027));",
+                                                                                    "const thieu = [\"baseUrl\",\"vnpayOrderId\",\"vnpayReturnKey\",\"userToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
+                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
                                                                                 ]
                                                                    }
                                                     },
@@ -2406,8 +2419,8 @@
                                                                        "type":  "text/javascript",
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
-                                                                                    "const thieu = [\"baseUrl\",\"vnpayOrderId\",\"adminToken\"].filter(key =\u003e { const value = pm.variables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy folder tiền đề hoặc cấu hình environment trước.\u0027); }"
+                                                                                    "const thieu = [\"baseUrl\",\"vnpayOrderId\",\"adminToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
+                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
                                                                                 ]
                                                                    }
                                                     },
@@ -2473,8 +2486,8 @@
                                                                        "type":  "text/javascript",
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
-                                                                                    "const thieu = [\"baseUrl\",\"vnpayOrderId\",\"adminToken\"].filter(key =\u003e { const value = pm.variables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy folder tiền đề hoặc cấu hình environment trước.\u0027); }"
+                                                                                    "const thieu = [\"baseUrl\",\"vnpayOrderId\",\"adminToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
+                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
                                                                                 ]
                                                                    }
                                                     },
@@ -2528,8 +2541,8 @@
                                                                        "type":  "text/javascript",
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
-                                                                                    "const thieu = [\"baseUrl\",\"vnpayPaymentId\",\"userToken\"].filter(key =\u003e { const value = pm.variables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy folder tiền đề hoặc cấu hình environment trước.\u0027); }"
+                                                                                    "const thieu = [\"baseUrl\",\"vnpayPaymentId\",\"userToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
+                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
                                                                                 ]
                                                                    }
                                                     },
@@ -2545,16 +2558,16 @@
                                                                                     "}",
                                                                                     "",
                                                                                     "const maCho = \u0027_cho_\u0027 + pm.info.requestId;",
-                                                                                    "const lan = Number(pm.environment.get(maCho) || 0) + 1;",
+                                                                                    "const lan = Number(pm.collectionVariables.get(maCho) || 0) + 1;",
                                                                                     "const hopLe = [200].includes(pm.response.code);",
                                                                                     "let d = null;",
                                                                                     "if (pm.response.code === 200) { d = pm.response.json().data; }",
                                                                                     "const xong = pm.response.code === 200 \u0026\u0026 (d.refundStatus === \u0027REQUIRED\u0027);",
                                                                                     "if (hopLe \u0026\u0026 !xong \u0026\u0026 lan \u003c 30) {",
-                                                                                    "    pm.environment.set(maCho, lan);",
+                                                                                    "    pm.collectionVariables.set(maCho, lan);",
                                                                                     "    pm.execution.setNextRequest(pm.info.requestId);",
                                                                                     "} else {",
-                                                                                    "    pm.environment.unset(maCho);",
+                                                                                    "    pm.collectionVariables.unset(maCho);",
                                                                                     "    kiemTra(\u0027Xử lý bất đồng bộ hoàn tất trong giới hạn 30 lượt\u0027, () =\u003e pm.expect(xong).to.eql(true));",
                                                                                     "    kiemTra(\u0027Phản hồi đi qua API Gateway\u0027, () =\u003e pm.expect(pm.response.headers.get(\u0027X-Gateway\u0027)).to.eql(\u0027api-gateway\u0027));",
                                                                                     "    if (xong) { kiemTra(\u0027Phản hồi thành công\u0027, () =\u003e pm.expect(pm.response.json().success).to.eql(true));  }",
@@ -2592,8 +2605,8 @@
                                                                        "type":  "text/javascript",
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
-                                                                                    "const thieu = [\"baseUrl\",\"vnpayPaymentId\",\"adminToken\"].filter(key =\u003e { const value = pm.variables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy folder tiền đề hoặc cấu hình environment trước.\u0027); }"
+                                                                                    "const thieu = [\"baseUrl\",\"vnpayPaymentId\",\"adminToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
+                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
                                                                                 ]
                                                                    }
                                                     },
@@ -2647,8 +2660,8 @@
                                                                        "type":  "text/javascript",
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
-                                                                                    "const thieu = [\"baseUrl\",\"vnpayPaymentId\",\"userToken\"].filter(key =\u003e { const value = pm.variables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy folder tiền đề hoặc cấu hình environment trước.\u0027); }"
+                                                                                    "const thieu = [\"baseUrl\",\"vnpayPaymentId\",\"userToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
+                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
                                                                                 ]
                                                                    }
                                                     },
@@ -2664,16 +2677,16 @@
                                                                                     "}",
                                                                                     "",
                                                                                     "const maCho = \u0027_cho_\u0027 + pm.info.requestId;",
-                                                                                    "const lan = Number(pm.environment.get(maCho) || 0) + 1;",
+                                                                                    "const lan = Number(pm.collectionVariables.get(maCho) || 0) + 1;",
                                                                                     "const hopLe = [200].includes(pm.response.code);",
                                                                                     "let d = null;",
                                                                                     "if (pm.response.code === 200) { d = pm.response.json().data; }",
                                                                                     "const xong = pm.response.code === 200 \u0026\u0026 (d.refundStatus === \u0027REFUNDED\u0027);",
                                                                                     "if (hopLe \u0026\u0026 !xong \u0026\u0026 lan \u003c 30) {",
-                                                                                    "    pm.environment.set(maCho, lan);",
+                                                                                    "    pm.collectionVariables.set(maCho, lan);",
                                                                                     "    pm.execution.setNextRequest(pm.info.requestId);",
                                                                                     "} else {",
-                                                                                    "    pm.environment.unset(maCho);",
+                                                                                    "    pm.collectionVariables.unset(maCho);",
                                                                                     "    kiemTra(\u0027Xử lý bất đồng bộ hoàn tất trong giới hạn 30 lượt\u0027, () =\u003e pm.expect(xong).to.eql(true));",
                                                                                     "    kiemTra(\u0027Phản hồi đi qua API Gateway\u0027, () =\u003e pm.expect(pm.response.headers.get(\u0027X-Gateway\u0027)).to.eql(\u0027api-gateway\u0027));",
                                                                                     "    if (xong) { kiemTra(\u0027Phản hồi thành công\u0027, () =\u003e pm.expect(pm.response.json().success).to.eql(true)); kiemTra(\u0027Trạng thái là SUCCESS\u0027, () =\u003e pm.expect(d.status).to.eql(\u0027SUCCESS\u0027)); }",
@@ -2711,8 +2724,8 @@
                                                                        "type":  "text/javascript",
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
-                                                                                    "const thieu = [\"baseUrl\",\"vnpayOrderId\",\"userToken\"].filter(key =\u003e { const value = pm.variables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy folder tiền đề hoặc cấu hình environment trước.\u0027); }"
+                                                                                    "const thieu = [\"baseUrl\",\"vnpayOrderId\",\"userToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
+                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
                                                                                 ]
                                                                    }
                                                     },
@@ -2728,16 +2741,16 @@
                                                                                     "}",
                                                                                     "",
                                                                                     "const maCho = \u0027_cho_\u0027 + pm.info.requestId;",
-                                                                                    "const lan = Number(pm.environment.get(maCho) || 0) + 1;",
+                                                                                    "const lan = Number(pm.collectionVariables.get(maCho) || 0) + 1;",
                                                                                     "const hopLe = [200].includes(pm.response.code);",
                                                                                     "let d = null;",
                                                                                     "if (pm.response.code === 200) { d = pm.response.json().data; }",
                                                                                     "const xong = pm.response.code === 200 \u0026\u0026 (d.status === \u0027REFUNDED\u0027);",
                                                                                     "if (hopLe \u0026\u0026 !xong \u0026\u0026 lan \u003c 30) {",
-                                                                                    "    pm.environment.set(maCho, lan);",
+                                                                                    "    pm.collectionVariables.set(maCho, lan);",
                                                                                     "    pm.execution.setNextRequest(pm.info.requestId);",
                                                                                     "} else {",
-                                                                                    "    pm.environment.unset(maCho);",
+                                                                                    "    pm.collectionVariables.unset(maCho);",
                                                                                     "    kiemTra(\u0027Xử lý bất đồng bộ hoàn tất trong giới hạn 30 lượt\u0027, () =\u003e pm.expect(xong).to.eql(true));",
                                                                                     "    kiemTra(\u0027Phản hồi đi qua API Gateway\u0027, () =\u003e pm.expect(pm.response.headers.get(\u0027X-Gateway\u0027)).to.eql(\u0027api-gateway\u0027));",
                                                                                     "    if (xong) { kiemTra(\u0027Phản hồi thành công\u0027, () =\u003e pm.expect(pm.response.json().success).to.eql(true)); kiemTra(\u0027Trạng thái là REFUNDED\u0027, () =\u003e pm.expect(d.status).to.eql(\u0027REFUNDED\u0027)); }",

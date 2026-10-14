@@ -1,0 +1,98 @@
+{
+    "updatedAt":  "2026-10-15T01:16:26.6153396+07:00",
+    "collection":  "tests/postman/md05-luong-chinh.postman_collection.json",
+    "static":  {
+                   "file":  "tests/postman/md05-luong-chinh.postman_collection.json",
+                   "requests":  42,
+                   "folders":  8,
+                   "scripts":  85,
+                   "bodies":  18,
+                   "environmentRequired":  false,
+                   "credentialsEnteredInBody":  true,
+                   "passwordsStoredInVariables":  false,
+                   "blankAndMalformedBodyRejected":  true,
+                   "manualPayloadPreserved":  true,
+                   "existingUserLoginInitializesRunId":  true,
+                   "reloginPreservesOrderIds":  true,
+                   "sha256":  "5460fc8e8e6bd2b428e90f10e46318aeb6ccfc1cae60613d3d32da875548b303"
+               },
+    "target":  "https://md05-rikkei-project.duckdns.org",
+    "changes":  [
+                    "Manual credentials in registration/login JSON bodies, blank in Git",
+                    "All runtime state in collectionVariables; production baseUrl included",
+                    "No environment file or -e flag",
+                    "Passwords not copied into collection variables; bodies still contain user-entered credentials"
+                ],
+    "productionRun":  {
+                          "folders":  "01-06",
+                          "savedRequests":  31,
+                          "httpExecutions":  140,
+                          "assertions":  145,
+                          "failures":  0,
+                          "exitCode":  0,
+                          "durationSeconds":  190.9,
+                          "delayRequestMs":  1100,
+                          "environmentFile":  null,
+                          "inputMethod":  "Private copy of same collection with registration and login Body fields filled; no credential file committed",
+                          "pausedAfterSandboxCheckout":  true,
+                          "providerBankPaymentPerformed":  false,
+                          "cloudReportPublished":  false
+                      },
+    "existingUserLoginRun":  {
+                                 "requests":  3,
+                                 "assertions":  16,
+                                 "failures":  0,
+                                 "exitCode":  0,
+                                 "durationSeconds":  5.7,
+                                 "environmentFile":  null,
+                                 "steps":  [
+                                               "Login existing USER without registration",
+                                               "GET account using automatically stored userToken",
+                                               "Login ADMIN"
+                                           ]
+                             },
+    "audit":  {
+                  "observedAt":  "2026-10-15T01:15:55+07:00",
+                  "userId":  229,
+                  "productId":  158,
+                  "codOrderId":  164,
+                  "codPaymentId":  99,
+                  "codOrderStatus":  "COMPLETED",
+                  "codPaymentStatus":  "SUCCESS",
+                  "codReturnStatus":  "REFUNDED",
+                  "codRefundStatus":  "REFUNDED",
+                  "refundAmount":  125000,
+                  "expiryOrderId":  165,
+                  "expiryPaymentId":  100,
+                  "expiryOrderStatus":  "EXPIRED",
+                  "expiryPaymentStatus":  "FAILED",
+                  "expiryReservationExpired":  true,
+                  "expiryNotBefore150SecondsAssertion":  "PASS",
+                  "inventoryRestoredBeforeNewOrderAssertion":  "PASS",
+                  "vnpayOrderId":  166,
+                  "vnpayPaymentId":  101,
+                  "vnpayOrderStatus":  "PENDING_PAYMENT",
+                  "vnpayPaymentStatus":  "PENDING",
+                  "checkoutHttpStatus":  200,
+                  "checkoutSandboxHostAssertion":  "PASS",
+                  "inventoryAvailable":  19,
+                  "inventoryReserved":  1,
+                  "inventoryNote":  "New unpaid VNPay order holds one item until payment or expiry",
+                  "emailSentCount":  4,
+                  "emailAttempts":  1,
+                  "emailErrorCount":  0,
+                  "inboxConfirmed":  false
+              },
+    "validation":  {
+                       "powerShellSyntax":  "PASS",
+                       "generatorDeterministic":  "PASS",
+                       "guideLinks":  "PASS",
+                       "stagedCredentialScan":  "PASS"
+                   },
+    "serviceCodeChanged":  false,
+    "deploymentPerformed":  false,
+    "unverified":  [
+                       "VNPay sandbox bank payment, real IPN, refund transaction, and IPN URL registration",
+                       "Actual email inbox receipt"
+                   ]
+}

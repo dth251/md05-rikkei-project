@@ -15,11 +15,58 @@ function Get-Hook($Request, [string]$Listen) {
 }
 
 $register = Copy-Request 0 0 'Đăng ký khách hàng và bắt đầu lượt demo'
-$register.request.description = 'Tạo một khách hàng mới cho lượt demo; không tạo User B. ID và JWT được lưu tự động.'
+$register.request.description = 'Chọn No environment. Nhập fullName, email nhận thư và password trực tiếp trong Body. Dùng email chưa đăng ký. Nếu đã có tài khoản, bỏ qua request này và bắt đầu ở Đăng nhập khách hàng.'
+$register.request.body.raw = @'
+{
+  "fullName": "Khách hàng demo",
+  "email": "",
+  "password": ""
+}
+'@
 $init = Get-Hook $register 'prerequest'
-$init.script.exec = @($init.script.exec | Where-Object { $_ -notmatch "environment.set\('emailB'|environment.get\('passwordB'" } | ForEach-Object {
-    $_.Replace("'+md05-a-'", "'+md05-main-'").Replace('postman-vi-a-', 'postman-main-')
-})
+$init.script.exec = @'
+let payload;
+try { payload = JSON.parse(pm.request.body.raw); }
+catch (_) { pm.execution.setNextRequest(null); throw new Error('Body phải là JSON hợp lệ.'); }
+if (!String(payload.fullName || '').trim() || !String(payload.email || '').trim() || !String(payload.password || '').trim()) {
+    pm.execution.setNextRequest(null);
+    throw new Error('Nhập fullName, email và password trực tiếp trong Body của request đăng ký.');
+}
+for (const key of Object.keys(pm.collectionVariables.toObject())) {
+    if (key !== 'baseUrl') pm.collectionVariables.unset(key);
+}
+pm.collectionVariables.set('runId', pm.variables.replaceIn('{{$randomUUID}}'));
+pm.collectionVariables.set('email', payload.email.trim());
+'@ -split '\r?\n'
+
+function Set-ManualLogin($Request, [string]$Role) {
+    $Request.request.description = "Nhập email và password của $Role trực tiếp trong Body rồi Send. Token tự lưu vào collection, không cần environment. Không tự điền mật khẩu từ request đăng ký."
+    $Request.request.body.raw = @'
+{
+  "email": "",
+  "password": ""
+}
+'@
+    (Get-Hook $Request 'prerequest').script.exec = @'
+let payload;
+try { payload = JSON.parse(pm.request.body.raw); }
+catch (_) { pm.execution.setNextRequest(null); throw new Error('Body phải là JSON hợp lệ.'); }
+if (!String(payload.email || '').trim() || !String(payload.password || '').trim()) {
+    pm.execution.setNextRequest(null);
+    throw new Error('Nhập email và password trực tiếp trong Body của request đăng nhập.');
+}
+if (!pm.collectionVariables.get('runId')) {
+    pm.collectionVariables.set('runId', pm.variables.replaceIn('{{$randomUUID}}'));
+}
+'@ -split '\r?\n'
+    (Get-Hook $Request 'test').script.exec += "if (pm.response.code === 200 && pm.response.json().success) pm.collectionVariables.set('$($Role.ToLower())Email', pm.response.json().data.user.email);"
+}
+$userLogin = Copy-Request 0 5 'Đăng nhập khách hàng'
+Set-ManualLogin $userLogin 'USER'
+# Giữ tên biến email để đối chiếu thông báo cho khách hàng đang đăng nhập.
+(Get-Hook $userLogin 'test').script.exec += "if (pm.response.code === 200 && pm.response.json().success) pm.collectionVariables.set('email', pm.response.json().data.user.email);"
+$adminLogin = Copy-Request 3 0 'Đăng nhập ADMIN'
+Set-ManualLogin $adminLogin 'ADMIN'
 
 $stock = Copy-Request 4 5 'Xem tồn kho của sản phẩm'
 (Get-Hook $stock 'test').script.exec += "if (pm.response.code === 200) pm.environment.set('codBaseline', pm.response.json().data.available);"
@@ -38,11 +85,11 @@ $checkout.request.description = 'Mở biến vnpayCheckoutUrl trên trình duy�
 $folders = @(
     @{ name = '01 - Tài khoản khách hàng'; item = @(
         $register
-        (Copy-Request 0 5 'Đăng nhập khách hàng')
+        $userLogin
         (Copy-Request 0 10 'Xem thông tin tài khoản')
     ) }
     @{ name = '02 - ADMIN chuẩn bị sản phẩm và kho'; item = @(
-        (Copy-Request 3 0 'Đăng nhập ADMIN')
+        $adminLogin
         (Copy-Request 3 3 'Tạo sản phẩm demo')
         (Copy-Request 3 2 'Xem danh sách sản phẩm')
         (Copy-Request 3 7 'Xem chi tiết sản phẩm')
@@ -96,8 +143,19 @@ $folders = @(
     ) }
 )
 $source.info.name = 'MD05 - Các luồng nghiệp vụ chính - Tiếng Việt'
-$source.info.description = '42 requests, 8 luồng chính: một khách hàng và ADMIN; sản phẩm/kho; COD; trả/hoàn COD; chờ thanh toán 150 giây; VNPay sandbox; giao/hoàn tất; trả/hoàn VNPay. Dùng environment production private. Chạy 01–06 rồi mở vnpayCheckoutUrl; sau thanh toán chạy riêng 07–08. Không tạo User B, không có bài JWT sai/phân quyền/replay. Xem docs/test-luong-chinh.md.'
+$source.info.description = '42 requests, 8 luồng chính; chọn No environment. URL production có sẵn. Nhập email/password trực tiếp trong Body của Đăng ký/Đăng nhập khách hàng và Đăng nhập ADMIN. Nếu đã có USER, bỏ qua đăng ký. Token và ID tự lưu vào Variables của collection; không lưu mật khẩu vào biến. Sản phẩm/kho; COD; trả/hoàn COD; chờ 150 giây; VNPay sandbox; giao/hoàn tất; trả/hoàn VNPay. Chạy 01–06 rồi mở vnpayCheckoutUrl trong collection Variables; sau thanh toán chạy riêng 07–08. Xem docs/test-luong-chinh.md.'
+$source.variable = @(@{ key = 'baseUrl'; value = 'https://md05-rikkei-project.duckdns.org'; type = 'string' })
+$source.event[0].script.exec = @("if (!pm.collectionVariables.get('baseUrl')) { pm.execution.setNextRequest(null); throw new Error('Điền baseUrl trong Variables của collection. URL production đã có sẵn khi import.'); }")
 $source.item = $folders
+foreach ($folder in $source.item) {
+    foreach ($request in $folder.item) {
+        foreach ($hook in $request.event) {
+            $hook.script.exec = @($hook.script.exec | ForEach-Object {
+                $_.Replace('pm.environment.', 'pm.collectionVariables.').Replace('pm.variables.get(', 'pm.collectionVariables.get(').Replace('Chạy folder tiền đề hoặc cấu hình environment trước.', 'Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.')
+            })
+        }
+    }
+}
 $target = Join-Path $root 'tests/postman/md05-luong-chinh.postman_collection.json'
 [IO.File]::WriteAllText($target, ($source | ConvertTo-Json -Depth 100) + "`n", [Text.UTF8Encoding]::new($false))
 Write-Output 'Built main business flows: 42 requests / 8 folders / customer and ADMIN.'

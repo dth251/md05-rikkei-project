@@ -4,17 +4,39 @@ Import **[md05-luong-chinh.postman_collection.json](../tests/postman/md05-luong-
 42 requests trong 8 nhóm, chỉ một **khách hàng (USER)** và một **ADMIN**.
 Không cần User A/User B. Các request tự lưu và dùng đúng token của hai vai.
 
-Chọn environment production private đã chuẩn bị:
+## Nhập trực tiếp, không cần environment
 
-```text
-C:\Users\Admin\.md05-demo\postman-production-20261014-2324\md05-production.private.postman_environment.json
+1. Import lại file collection đã cập nhật và chọn **No environment**.
+2. Nếu chưa có USER: mở **01 → Đăng ký khách hàng**, tab **Body → raw → JSON**,
+   điền `fullName`, `email`, `password`, rồi **Send**. Dùng email chưa đăng ký;
+   email này nhận thông báo đơn hàng. Nếu đã có USER, bỏ qua đăng ký.
+3. Mở **Đăng nhập khách hàng**, nhập trực tiếp `email` và `password` trong
+   Body rồi **Send**. Khi đăng ký mới, nhập lại đúng tài khoản vừa đăng ký.
+4. Mở **02 → Đăng nhập ADMIN**, nhập trực tiếp email/mật khẩu ADMIN trong
+   Body rồi **Send**. Các ô được để trống trong file để bạn tự điền.
+5. Tiếp tục các request theo thứ tự. Token, ID sản phẩm, ID đơn và link
+   thanh toán được tự lưu tại **collection → Variables**; không cần chép
+   token hoặc nhập environment. Khi token hết hạn, gửi lại request đăng nhập.
+
+API đích đã có sẵn: `https://md05-rikkei-project.duckdns.org`.
+Body đăng nhập chỉ cần hai trường:
+
+```json
+{
+  "email": "",
+  "password": ""
+}
 ```
 
-API đích: `https://md05-rikkei-project.duckdns.org`. Environment cần
-`adminEmail`, `adminPassword`, `notificationMailbox`. Collection tự đăng
-ký khách hàng có Gmail alias riêng mỗi lượt và tạo sản phẩm/kho/đơn mới.
-Thư về Gmail đã đặt trong `notificationMailbox`; không tạo hộp thư Gmail
-mới. HashSecret VNPay được giữ ở backend, không nhập vào Postman.
+Bạn điền trực tiếp bên trong dấu nháy; không cần dùng `{{email}}` hoặc
+`{{password}}`. Request đăng ký/đăng nhập không tự sinh hay ghi đè tài khoản
+bạn nhập. Các Body nghiệp vụ còn lại cũng có thể chỉnh trực tiếp; giữ các
+biến ID nếu muốn tự nối dữ liệu từ request trước. Tổng tiền và một số
+assertion hiện dựa trên sản phẩm demo giá 125.000 đồng, số lượng 1.
+
+Mật khẩu không được sao chép vào Variables; bạn nhập trong Body của từng
+request đăng ký/đăng nhập. Bản collection trong Git để trống credentials.
+HashSecret VNPay được giữ ở backend, không nhập vào Postman.
 
 | Nhóm | Người thực hiện và luồng | Kết quả cần thấy |
 |---|---|---|
@@ -29,10 +51,15 @@ mới. HashSecret VNPay được giữ ở backend, không nhập vào Postman.
 
 Trong Postman, mở **Run collection**, chọn nhóm **01–06** theo thứ tự:
 Iterations **1**, Delay **1100 ms**, dừng khi assertion/script lỗi.
-Giữ cùng environment. Phần này có chờ thật 150 giây nên mất vài phút;
+Điền Body của đăng ký/đăng nhập trước khi chạy. Nếu dùng USER đã có, bỏ
+chọn request đăng ký và bắt đầu bằng đăng nhập. Khi tiếp tục Runner,
+bật [**Keep variable values**](https://learning.postman.com/docs/tests-and-scripts/running-collections/intro-to-collection-runs)
+để giữ token/ID trong collection Variables.
+Phần này có chờ thật 150 giây nên mất vài phút;
 để Runner tiếp tục gửi GET chờ, không bấm thanh toán đơn của nhóm 05.
 
-Runner dừng ở cuối nhóm 06. Mở biến **`vnpayCheckoutUrl`** trên trình duyệt,
+Runner dừng ở cuối nhóm 06. Mở collection → **Variables**, lấy giá trị
+**`vnpayCheckoutUrl`** rồi mở trên trình duyệt,
 thanh toán bằng [thẻ test VNPay](vnpay-sandbox-browser.md#tạo-link-cho-đúng-đơn).
 Đơn VNPay này là đơn mới, tách khỏi đơn cố tình hết hạn ở nhóm 05.
 Cũng cần thanh toán trong **150 giây từ lúc tạo đơn VNPay**; không chờ
@@ -53,10 +80,11 @@ xác minh. Nếu provider trả trạng thái chưa rõ, dừng và dùng đối
 ## Kiểm tra email trong các luồng chính
 
 Backend tự gửi qua Gmail SMTP trên VPS đến email khách hàng đã đăng ký,
-chính là biến `email` của lượt chạy. Không cần gọi API gửi email riêng.
-Sau khi chạy, mở Gmail ở `notificationMailbox` và đối chiếu mã đơn:
+chính là email bạn nhập khi đăng ký/đăng nhập, được lưu thành biến `email`
+trong collection. Không cần gọi API gửi email riêng.
+Sau khi chạy, mở hộp thư của tài khoản khách hàng đó và đối chiếu mã đơn:
 
-| Thời điểm | Mã đơn trong environment | Email cần kiểm tra |
+| Thời điểm | Mã đơn trong collection Variables | Email cần kiểm tra |
 |---|---|---|
 | Nhóm 03, sau thu COD | `codOrderId` | Đơn hàng #ID đã xác nhận |
 | Nhóm 03, khi giao/hoàn tất COD | `codOrderId` | Đơn hàng #ID đang giao hàng / đã hoàn tất |
@@ -85,7 +113,19 @@ Collection được tạo từ nguồn hiện có bằng
 
 ## Kết quả kiểm tra ngày 15/10/2026
 
-Đã chạy nhóm 01–06 trên production: **31 request lưu sẵn**, thực thi
+**Bản nhập Body trực tiếp, không environment:** nhóm 01–06 đạt
+**140 HTTP requests / 145 assertions**, không lỗi, exit 0, **3 phút 10,9 giây**.
+CLI chạy bản private chỉ điền các Body đăng ký/đăng nhập, không dùng `-e`.
+Chạy thêm riêng đăng nhập USER đã có → xem tài khoản → đăng nhập ADMIN
+đạt **3 requests / 16 assertions**, exit 0, không environment.
+85 hooks biên dịch được, 18 Body JSON hợp lệ; Body trống/JSON sai được
+báo rõ trước khi chạy, không sao chép mật khẩu vào Variables.
+Đơn COD #164 hoàn trả REFUNDED, đơn #165 EXPIRED, đơn #166/Payment #101
+tạo link sandbox. Đối chiếu 01:15:55 +07 có 4 email SENT/attempts=1 cho
+#164/#165; chưa xác nhận inbox. [Bằng chứng bản không environment](evidence/postman-luong-chinh-khong-environment-2026-10-15.json).
+
+Lượt kiểm tra trước khi chuyển sang nhập Body trực tiếp đã chạy nhóm 01–06
+trên production: **31 request lưu sẵn**, thực thi
 **136 HTTP requests / 145 assertions**, không lỗi, exit 0, **3 phút 19,5 giây**.
 Số HTTP lớn hơn số request vì các bước chờ xử lý bất đồng bộ gửi GET lặp lại.
 Đơn COD #161 hoàn tất, hồ sơ trả và Payment #96 REFUNDED đủ 125.000 đồng.

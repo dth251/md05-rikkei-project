@@ -4,6 +4,8 @@
 xem [hướng dẫn gọn](../../docs/test-luong-chinh.md). Có COD, VNPay sandbox,
 trả/hoàn tiền, chờ thanh toán 150 giây và hướng dẫn đối chiếu email;
 chỉ khách hàng và ADMIN.
+Chọn **No environment**, nhập tài khoản trực tiếp ở Body đăng ký/đăng nhập;
+URL production có sẵn, token và ID tự lưu trong Variables của collection.
 
 **Bản gộp một file:** [181 requests cho tất cả API](md05-tat-ca-api.postman_collection.json),
 xem [cách chạy theo giai đoạn và mở sandbox](../../docs/postman-mot-file.md).
