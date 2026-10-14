@@ -4,7 +4,7 @@ import java.util.Map;
 
 public record VnpayLedgerRequest(
         Long paymentId,
-        String refundRequestId,
+        String requestId,
         boolean send,
         Map<String, String> parameters
 ) {

@@ -1,0 +1,41 @@
+{
+    "updatedAt":  "2026-10-15T01:40:15.7513345+07:00",
+    "collection":  "tests/postman/md05-luong-chinh.postman_collection.json",
+    "collectionSha256":  "d17869c172fa99c2581645eca82d27c20289d6f5f61055ca57ddb018df43ca40",
+    "change":  "Folder 02 product detail/inventory GETs accept literal positive product ID from URL or resolve productId from collection. Literal read does not overwrite workflow productId or COD baseline.",
+    "target":  "https://md05-rikkei-project.duckdns.org",
+    "productionRun":  {
+                          "requests":  6,
+                          "assertions":  31,
+                          "failures":  0,
+                          "exitCode":  0,
+                          "durationSeconds":  9.7,
+                          "environmentFile":  null,
+                          "roles":  [
+                                        "ADMIN"
+                                    ],
+                          "userTokenPresent":  false,
+                          "cases":  [
+                                        "Login ADMIN",
+                                        "GET inventory/159 without productId variable",
+                                        "GET products/159 without productId variable",
+                                        "GET inventory/{{productId}} with productId 158",
+                                        "GET inventory/159 while productId remains 158; COD baseline remains 20",
+                                        "GET products/{{productId}} with productId 158"
+                                    ],
+                          "businessDataMutated":  false
+                      },
+    "static":  {
+                   "requests":  42,
+                   "folders":  8,
+                   "scriptsCompiled":  85,
+                   "jsonBodies":  18,
+                   "literalAndVariableUrls":  "PASS",
+                   "literalReadPreservesWorkflowId":  "PASS",
+                   "unresolvedOrZeroProductIdRejected":  "PASS",
+                   "tokenRequirementsPreserved":  "PASS",
+                   "powerShellSyntax":  "PASS",
+                   "generatorDeterministic":  "PASS"
+               },
+    "scope":  "Only Folder 02 read requests accept IDs directly from URL. Stock receipt and order/return/expiry flow assertions retained. No service code, deployment or bank transaction."
+}

@@ -1,11 +1,19 @@
 # Kiểm thử Postman bằng tiếng Việt — production
 
+**Theo nhu cầu chỉ test luồng chính:** dùng [bản 42 requests / 8 nhóm](md05-luong-chinh.postman_collection.json),
+xem [hướng dẫn gọn](../../docs/test-luong-chinh.md). Có COD, VNPay sandbox,
+trả/hoàn tiền, chờ thanh toán 200 giây và hướng dẫn đối chiếu email;
+chỉ khách hàng và ADMIN.
+Chọn **No environment**, nhập tài khoản trực tiếp ở Body đăng ký/đăng nhập;
+URL production có sẵn, token và ID tự lưu trong Variables của collection.
+
 **Bản gộp một file:** [181 requests cho tất cả API](md05-tat-ca-api.postman_collection.json),
 xem [cách chạy theo giai đoạn và mở sandbox](../../docs/postman-mot-file.md).
 
-Hướng dẫn chính theo yêu cầu hiện tại: **[test toàn bộ trên production](../../docs/test-production.md)**.
-Domain API: **https://md05-rikkei-project.duckdns.org**. Thanh toán dùng mô
-phỏng SUCCESS/FAILED/hết hạn trên VPS; không cần merchant hoặc tiền thật.
+Bộ kiểm thử nghiệp vụ đầy đủ bên dưới dùng **[hướng dẫn production](../../docs/test-production.md)**.
+Domain API: **https://md05-rikkei-project.duckdns.org**. Bản 162 requests
+có bài mô phỏng SUCCESS/FAILED; bản luồng chính ở đầu trang dùng VNPay
+sandbox đã cấu hình trên VPS. Cả hai không dùng thanh toán thật.
 
 Import hai file vào Postman:
 
@@ -30,7 +38,7 @@ Folder 01 tạo USER A/B và `runId` mới, dùng nhãn `+md05-a/b-...` trên Gm
 | 08 | 15 | COD → giao → thu tiền → hoàn tất; sau 01–05 |
 | 09 | 7 | Hủy COD riêng trước giao; sau 01–05 |
 | 10 | 19 | Trả toàn bộ COD và hoàn tiền mặt; cần 08 hoàn tất |
-| 11 | 10 | Chờ thật 150 giây, EXPIRED, từ chối tiền muộn; sau 01–05 |
+| 11 | 10 | Chờ thật 200 giây, EXPIRED, từ chối tiền muộn; sau 01–05 |
 | 12 | 10 | POS mua variant, kho cha độc lập, từ chối vượt kho; sau 01–05 |
 | 13 | 9 | Trả ONLINE và simulate-refund; cần 06 hoàn tất |
 | 14 | 5 | Xóa mềm cha/variant, snapshot lịch sử; chạy cuối sau 06 |
@@ -50,11 +58,13 @@ Không cần login Postman cloud để chạy file local. CLI có thể nhắc l
 
 Collection tạo tài khoản, nhập kho, ghi nhận thu/chi demo và xóa mềm sản phẩm mới của lượt thử. Xem [kết quả production](../../docs/postman-production-results.md) cho trạng thái thực tế. Environment local cũ vẫn có trong repository để dùng riêng khi cần, không phải environment của hướng dẫn này.
 
-## VNPay mô phỏng trên production
+## ONLINE mô phỏng trên production
 
 Dùng folders **06, 07, 11** của bộ chính cho SUCCESS, FAILED và EXPIRED.
-API simulate trả JSON, chưa sinh link thanh toán giả lập. SUCCESS tự xác
+API simulate trả JSON. SUCCESS tự xác
 nhận đơn qua sự kiện và gửi email; không cần POST xác nhận đơn lần nữa.
+Để tạo link sang VNPay sandbox và thao tác trên trang thanh toán, dùng
+bản gộp hoặc collection sandbox ở phần tiếp theo.
 Đây là API simulate kết quả thanh toán, không phát sinh tiền thật và chưa
 kiểm chứng callback/chữ ký nhà cung cấp. Khi VNPay trên VPS đang tắt, có
 [bộ kiểm tra phản hồi feature tắt](md05-production-vnpay-disabled.postman_collection.json)
@@ -69,8 +79,8 @@ hình private và triển khai trang kết quả trước khi ghi nhận bài n�
 Import [collection VNPay tiếng Việt](md05-tieng-viet-vnpay.postman_collection.json), dùng cùng environment. Chạy 01–05 của collection nghiệp vụ trước, chưa chạy 14. Cần merchant sandbox đã cấu hình, không đưa hash secret vào Postman.
 
 1. **V00:** VNPay bật; IPN không ký trả HTTP 200/`RspCode=97`, return không ký trả 400. Khi provider bị tắt, IPN có mã khác; đó là thiếu tiền đề.
-2. **V01:** tạo đơn ONLINE mới và URL checkout. Mở biến `vnpayCheckoutUrl` trong trình duyệt, thanh toán sandbox trước hạn 150 giây.
-3. **V02:** chỉ chạy sau thao tác trên trình duyệt; chờ Payment SUCCESS và Order CONFIRMED. Return URL không tự chứng minh đã nhận tiền; cần IPN hợp lệ.
+2. **V01:** tạo đơn ONLINE mới và URL checkout. Mở biến `vnpayCheckoutUrl` trong trình duyệt, thanh toán sandbox trước hạn 200 giây.
+3. **V02:** chỉ chạy sau thao tác trên trình duyệt; chờ Payment SUCCESS và Order CONFIRMED. Return URL không tự chứng minh đã nhận tiền; cần IPN hoặc querydr có chữ ký hợp lệ từ VNPay.
 4. **V03:** giao/hoàn tất, trả/nhận lại toàn bộ hàng, chờ REQUIRED rồi gửi **một lần** yêu cầu hoàn VNPay.
 5. **V04:** đối soát; chỉ PASS hoàn tiền khi Payment và hồ sơ return cùng REFUNDED. UNKNOWN/PROCESSING/REJECTED không phải hoàn thành. Khi chưa rõ kết quả, dùng reconcile theo runbook, không chạy lại V03.
 

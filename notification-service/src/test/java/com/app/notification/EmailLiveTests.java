@@ -67,7 +67,7 @@ class EmailLiveTests extends NotificationLiveFixture {
     }
 
     @Test
-    void unpaid150SecondDeadlineReleasesStockAndSendsExpiryEmail() throws Exception {
+    void unpaid200SecondDeadlineReleasesStockAndSendsExpiryEmail() throws Exception {
         var fixture = pending("WEB");
         long orderId = fixture.order().path("id").asLong();
         long productId = fixture.order().path("items").get(0).path("productId").asLong();
@@ -78,19 +78,19 @@ class EmailLiveTests extends NotificationLiveFixture {
                     System.getenv().getOrDefault("ORDER_LIVE_DB_URL", "jdbc:postgresql://localhost:15432/order_db"),
                     "order_user", System.getenv("ORDER_LIVE_DB_PASSWORD"));
                  var statement = connection.prepareStatement("UPDATE orders SET created_at=? WHERE id=? AND status='PENDING_PAYMENT'")) {
-                statement.setTimestamp(1, java.sql.Timestamp.from(Instant.now().minusSeconds(151)));
+                statement.setTimestamp(1, java.sql.Timestamp.from(Instant.now().minusSeconds(201)));
                 statement.setLong(2, orderId);
                 assertEquals(1, statement.executeUpdate());
             }
         } else {
-            while (Instant.now().isBefore(created.plusSeconds(149))) {
+            while (Instant.now().isBefore(created.plusSeconds(199))) {
                 var response = send("GET", "/api/orders/" + orderId, null, fixture.userToken());
                 assertEquals(200, response.statusCode());
                 assertEquals("PENDING_PAYMENT", json.readTree(response.body()).path("data").path("status").asText());
                 Thread.sleep(1000);
             }
         }
-        Instant deadline = actualWait ? created.plusSeconds(170) : Instant.now().plusSeconds(30);
+        Instant deadline = actualWait ? created.plusSeconds(220) : Instant.now().plusSeconds(30);
         String status;
         do {
             var response = send("GET", "/api/orders/" + orderId, null, fixture.userToken());
@@ -103,7 +103,7 @@ class EmailLiveTests extends NotificationLiveFixture {
         } while (Instant.now().isBefore(deadline));
         assertEquals("EXPIRED", status);
         if (actualWait) {
-            assertFalse(Instant.now().isBefore(created.plusSeconds(150)), "Order must not expire before 150 seconds");
+            assertFalse(Instant.now().isBefore(created.plusSeconds(200)), "Order must not expire before 200 seconds");
         }
         awaitNotification(orderId, "order.expired");
         awaitSent(fixture);
@@ -176,6 +176,16 @@ class EmailLiveTests extends NotificationLiveFixture {
             if (("Đơn hàng #" + fixture.order().path("id").asLong() + " " + status).equals(message.path("Subject").asText())) {
                 matching++;
                 assertEquals(fixture.email(), message.path("To").get(0).path("Address").asText());
+                var detail = client.send(HttpRequest.newBuilder(URI.create(base + "/api/v1/message/"
+                                + message.path("ID").asText()))
+                        .timeout(Duration.ofSeconds(10)).GET().build(), HttpResponse.BodyHandlers.ofString());
+                assertEquals(200, detail.statusCode());
+                var content = json.readTree(detail.body());
+                assertTrue(content.path("HTML").asText().contains("MD05"));
+                assertTrue(content.path("HTML").asText().contains("#" + fixture.order().path("id").asLong()));
+                assertTrue(content.path("HTML").asText().contains(status));
+                assertTrue(content.path("Text").asText().contains(status));
+                assertFalse(content.path("HTML").asText().contains("{{"));
             }
         }
         assertEquals(1, matching, "Exactly one email expected for fixture order");

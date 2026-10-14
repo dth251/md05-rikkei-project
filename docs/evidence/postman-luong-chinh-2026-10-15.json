@@ -1,0 +1,178 @@
+{
+    "updatedAt":  "2026-10-15T00:57:47.7043190+07:00",
+    "target":  "https://md05-rikkei-project.duckdns.org",
+    "collection":  "tests/postman/md05-luong-chinh.postman_collection.json",
+    "static":  {
+                   "file":  "tests/postman/md05-luong-chinh.postman_collection.json",
+                   "requests":  42,
+                   "folders":  [
+                                   {
+                                       "name":  "01 - Tài khoản khách hàng",
+                                       "requests":  3
+                                   },
+                                   {
+                                       "name":  "02 - ADMIN chuẩn bị sản phẩm và kho",
+                                       "requests":  6
+                                   },
+                                   {
+                                       "name":  "03 - COD đặt hàng giao hàng và thu tiền",
+                                       "requests":  6
+                                   },
+                                   {
+                                       "name":  "04 - Trả hàng và hoàn tiền COD",
+                                       "requests":  7
+                                   },
+                                   {
+                                       "name":  "05 - Chờ thanh toán 150 giây rồi hết hạn",
+                                       "requests":  6
+                                   },
+                                   {
+                                       "name":  "06 - Đặt đơn mới và tạo link VNPay sandbox",
+                                       "requests":  3
+                                   },
+                                   {
+                                       "name":  "07 - VNPay thành công giao hàng và hoàn tất",
+                                       "requests":  4
+                                   },
+                                   {
+                                       "name":  "08 - Trả hàng và hoàn tiền VNPay sandbox",
+                                       "requests":  7
+                                   }
+                               ],
+                   "scripts":  85,
+                   "bodies":  18,
+                   "onlyCustomerAndAdmin":  true,
+                   "collectAndRefundKeysInitialized":  true,
+                   "realExpiryWaitSeconds":  150,
+                   "pauseAfterSandboxCheckout":  true,
+                   "sha256":  "72be06b07cf78c5eb8cefb0af71c556a73dc59056e8d2d59245f476ddf9c9184"
+               },
+    "productionRun":  {
+                          "folders":  "01-06",
+                          "savedRequests":  31,
+                          "httpExecutions":  136,
+                          "assertions":  145,
+                          "failures":  0,
+                          "exitCode":  0,
+                          "durationSeconds":  199.5,
+                          "iterations":  1,
+                          "delayRequestMs":  1100,
+                          "pauseAfterSandboxCheckout":  true,
+                          "cloudReportPublished":  false
+                      },
+    "runtime":  {
+                    "observedAt":  "2026-10-15T00:55:20+07:00",
+                    "healthyApplications":  6,
+                    "orderAndPaymentRevision":  "6e2ab03183b0f1874161d72323ffb23459890104",
+                    "otherFourApplicationsRevision":  "d2779d1595fb5541675e65604eb07ac633ccf91b",
+                    "mainCiRun":  38606802592,
+                    "mainCiConclusion":  "success",
+                    "mainCiCompletedAt":  "2026-10-15T00:49:58+07:00",
+                    "applicationChangesInThisTask":  false,
+                    "deploymentInThisTask":  false
+                },
+    "fixtures":  {
+                     "userId":  228,
+                     "productId":  157,
+                     "cod":  {
+                                 "orderId":  161,
+                                 "paymentId":  96,
+                                 "amount":  125000,
+                                 "orderStatus":  "COMPLETED",
+                                 "paymentStatus":  "SUCCESS",
+                                 "returnStatus":  "REFUNDED",
+                                 "refundStatus":  "REFUNDED"
+                             },
+                     "expiry":  {
+                                    "orderId":  162,
+                                    "paymentId":  97,
+                                    "orderStatus":  "EXPIRED",
+                                    "paymentStatus":  "FAILED",
+                                    "reservationExpired":  true,
+                                    "notExpiredBefore150SecondsAssertion":  "PASS",
+                                    "stockRestoredBeforeNextOrderAssertion":  "PASS"
+                                },
+                     "vnpay":  {
+                                   "orderId":  163,
+                                   "paymentId":  98,
+                                   "orderStatusAtAudit":  "PENDING_PAYMENT",
+                                   "paymentStatusAtAudit":  "PENDING",
+                                   "checkoutHttpStatus":  200,
+                                   "checkoutHost":  "sandbox.vnpayment.vn",
+                                   "returnUrlAssertion":  "PASS",
+                                   "bankPaymentPerformed":  false
+                               },
+                     "inventoryAtAudit":  {
+                                              "available":  19,
+                                              "reserved":  1,
+                                              "reason":  "New unpaid VNPay order #163 holds one item; COD return and expiry stock assertions passed before this new order"
+                                          }
+                 },
+    "email":  {
+                  "observedAt":  "2026-10-15T00:55:20+07:00",
+                  "smtpConfigurationObservedAt":  "2026-10-15T00:56:05+07:00",
+                  "smtpHost":  "smtp.gmail.com",
+                  "smtpPort":  587,
+                  "smtpEnabled":  true,
+                  "smtpAuth":  true,
+                  "smtpStartTls":  true,
+                  "smtpSandboxEnabled":  false,
+                  "recipient":  "Registered customer Gmail alias for this run; same authorized mailbox",
+                  "deliveries":  [
+                                     {
+                                         "orderId":  161,
+                                         "attempts":  1,
+                                         "errorCode":  null,
+                                         "eventType":  "order.confirmed",
+                                         "state":  "SENT"
+                                     },
+                                     {
+                                         "orderId":  161,
+                                         "attempts":  1,
+                                         "errorCode":  null,
+                                         "eventType":  "order.shipped",
+                                         "state":  "SENT"
+                                     },
+                                     {
+                                         "orderId":  161,
+                                         "attempts":  1,
+                                         "errorCode":  null,
+                                         "eventType":  "order.completed",
+                                         "state":  "SENT"
+                                     },
+                                     {
+                                         "orderId":  162,
+                                         "attempts":  1,
+                                         "errorCode":  null,
+                                         "eventType":  "order.expired",
+                                         "state":  "SENT"
+                                     }
+                                 ],
+                  "sentCount":  4,
+                  "inboxConfirmed":  false,
+                  "returnRefundEmailImplemented":  false,
+                  "automaticEmailFormat":  "text",
+                  "htmlInvoiceSampleIntegrated":  false,
+                  "providerSupportEmailSent":  false
+              },
+    "unverified":  [
+                       "Folders 07-08 require a real user sandbox bank interaction and verified provider IPN/refund responses.",
+                       "VNPay IPN URL registration has not been verified.",
+                       "SMTP SENT is acceptance by the mail server; inbox receipt has not been checked.",
+                       "This run checkout URL expires; start a fresh run for an interactive bank test."
+                   ],
+    "finalFollowup":  {
+                          "observedAt":  "2026-10-15T00:57:32+07:00",
+                          "unpaidVnpayOrderId":  163,
+                          "orderStatus":  "EXPIRED",
+                          "paymentId":  98,
+                          "paymentStatus":  "FAILED",
+                          "reservationExpired":  true,
+                          "inventoryAvailable":  20,
+                          "inventoryReserved":  0,
+                          "emailSentCountForAllRunOrders":  5,
+                          "allEmailAttempts":  1,
+                          "emailErrors":  0,
+                          "inboxConfirmed":  false
+                      }
+}

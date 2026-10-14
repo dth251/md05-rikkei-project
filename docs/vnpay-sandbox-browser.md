@@ -56,12 +56,12 @@ VNPay cấu hình. Trang kết quả mới cần được triển khai qua PR/CI
 4. Chọn thẻ nội địa/ngân hàng NCB và dùng thông tin test bên dưới. Hoàn tất
    thao tác xác thực, VNPay chuyển trình duyệt về Return URL của dự án.
 5. Trang tiếng Việt hiển thị đơn, payment, tổng tiền và trạng thái đã lưu.
-   Nếu IPN chưa tới: “Đang chờ xác nhận thanh toán”, tự kiểm tra tối đa 24
-   lượt, cách 2,5 giây, có nút kiểm tra lại. Sau IPN thành công: “Thanh toán
+   Nếu IPN chưa ghi capture, backend tự querydr để đối chiếu với VNPay. Nếu chưa xác minh được: “Đang chờ xác nhận thanh toán”, tự kiểm tra tối đa 24
+   lượt, cách 2,5 giây, có nút kiểm tra lại. Sau IPN hoặc querydr hợp lệ: “Thanh toán
    thành công”. Payment phát sự kiện để Order xác nhận đơn và Notification
    gửi email đã đăng ký. Không POST tạo hoặc xác nhận đơn lần nữa.
 
-**Deadline đơn ONLINE hiện là 150 giây từ khi tạo đơn**, dù link VNPay có
+**Deadline đơn ONLINE hiện là 200 giây từ khi tạo đơn**, dù link VNPay có
 hạn tối đa 15 phút. Cần thao tác ngay sau tạo đơn. Nếu đơn đã hết hạn,
 capture đến muộn không làm sống lại đơn; trang thông báo đơn không còn
 hiệu lực và khoản tiền cần được xử lý hoàn. Không kéo dài TTL hoặc ép
@@ -95,18 +95,39 @@ Trang không khẳng định Order đã CONFIRMED chỉ từ Payment SUCCESS: Or
 xử lý bất đồng bộ, xác nhận bằng GET Order trong V02. Email SENT chỉ xác
 nhận SMTP chấp nhận, cần đối chiếu inbox để xác nhận thư đã tới.
 
-Return chỉ đọc, không cập nhật Payment. Mọi lần refresh đều kiểm tra chữ
-ký, merchant, reference, amount và capture đã lưu. IPN có chữ ký hợp lệ
-mới cập nhật thanh toán. Thiếu/sai chữ ký không được xác nhận đơn. Không
+Return xác minh chữ ký rồi tự truy vấn `querydr` nếu capture chưa được ghi nhận. Mọi lần refresh đều kiểm tra chữ
+ký, merchant, reference, amount và capture đã lưu. IPN hoặc kết quả querydr có chữ ký hợp lệ mới cập nhật thanh toán. Thiếu/sai chữ ký không được xác nhận đơn. Không
 đưa HashSecret vào Postman hoặc script trình duyệt.
 
 ## Trạng thái triển khai
 
-Trang kết quả đang được kiểm thử trong nhánh feature. VPS tại checkpoint
-180 vẫn provider tắt/image main 168. Merchant sandbox đã được người dùng
-cung cấp sau checkpoint này; khóa chỉ cấu hình private. Chưa hoàn thành
-giao dịch trên hệ thống VNPay trong lúc đang chuẩn bị triển khai. Kết
-quả unit/fixture không thay thế bằng chứng giao dịch sandbox thực tế.
+Đã merge [PR #37](https://github.com/dth251/md05-rikkei-project/pull/37),
+main mốc 183 `6e2ab03183b0f1874161d72323ffb23459890104`, sau CI
+[38604216557 đạt](https://github.com/dth251/md05-rikkei-project/actions/runs/38604216557).
+Payment đã được triển khai từ image CI đã kiểm thử của commit
+`e47ea2d260e7aff4591ae77c1351fdc9c5643a77` (nằm trong main đã merge).
+Đối chiếu **15/10/2026 00:29:49 +07**: sáu service healthy, monitoring
+6 app/5 dependency UP, provider bật, Gmail SMTP được giữ nguyên.
+
+- Java Payment 64/64 tests và bootJar đạt; UI desktop/mobile, polling và
+  refresh đạt với fixture.
+- [Bản gộp một file](postman-mot-file.md) chạy P1 trên HTTPS production:
+  270 HTTP executions, 669 assertions, zero failures, exit 0, 6m59.2s;
+  dừng đúng sau checkout, chưa chạy P2/P3 của phiên này.
+- Đơn thử #160/payment #95 tạo link hợp lệ; GET link mở trang VNPay
+  `/paymentv2/Transaction/PaymentMethod.html`, HTTP 200, chọn phương thức
+  thanh toán (Test), không phải trang lỗi checksum. Chưa thao tác trả tiền
+  trên trang này; đơn chưa thanh toán sẽ tự hết hạn theo chính sách.
+- Sau triển khai: 3 HTTP requests/12 assertions đạt cho IPN chưa ký,
+  return JSON và trang HTML lỗi an toàn trên domain production.
+
+**Chưa kiểm chứng giao dịch thanh toán/IPN thực tế trên hệ thống VNPay.**
+VNPay cần đăng ký IPN URL đã nêu ở trên. Chưa có xác nhận cấu hình IPN từ
+VNPay; không suy ra đã có IPN chỉ từ việc mở được trang chọn ngân hàng.
+Không gửi email tới VNPay trong phiên này. Pipeline push main
+38606802592 đang tiếp tục tại thời điểm đối chiếu; không coi đó là một
+lượt CI đã hoàn tất. [Bằng chứng](evidence/vnpay-browser-integration-2026-10-15.json)
+ghi runtime thực tế và giới hạn kiểm chứng.
 
 Nguồn protocol: [VNPay PAY/IPN/Return](https://sandbox.vnpayment.vn/apis/docs/thanh-toan-pay/pay.html).
 Discovery Orbit không tìm thấy endpoint VNPay phù hợp trong kết quả trả

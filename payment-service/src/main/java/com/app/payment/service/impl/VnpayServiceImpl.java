@@ -9,6 +9,7 @@ import com.app.payment.dto.response.VnpayReturnResponse;
 import com.app.payment.security.VnpaySignature;
 import com.app.payment.service.VnpayService;
 import com.app.payment.service.VnpayTransactionService;
+import com.app.payment.service.VnpayPaymentQueryService;
 import java.math.BigInteger;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -28,10 +29,16 @@ public class VnpayServiceImpl implements VnpayService {
             .withResolverStyle(ResolverStyle.STRICT);
     private final VnpaySettings settings;
     private final VnpayTransactionService transactions;
+    private final VnpayPaymentQueryService queries;
 
-    public VnpayServiceImpl(VnpaySettings settings, VnpayTransactionService transactions) {
+    public VnpayServiceImpl(
+            VnpaySettings settings,
+            VnpayTransactionService transactions,
+            VnpayPaymentQueryService queries
+    ) {
         this.settings = settings;
         this.transactions = transactions;
+        this.queries = queries;
     }
 
     @Override
@@ -64,6 +71,8 @@ public class VnpayServiceImpl implements VnpayService {
         requireEnabled();
         try {
             var callback = verified(parameters);
+            transactions.returnResult(callback);
+            queries.reconcile(callback);
             return transactions.returnResult(callback);
         } catch (IllegalArgumentException | java.time.DateTimeException exception) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "Invalid provider return");

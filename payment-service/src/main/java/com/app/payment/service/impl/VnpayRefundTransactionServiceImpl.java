@@ -104,7 +104,7 @@ public class VnpayRefundTransactionServiceImpl implements VnpayRefundTransaction
     public VnpayRefundResponse record(VnpayLedgerRequest request, VnpayLedgerResponse response) {
         var payment = payments.findLockedById(request.paymentId()).orElseThrow();
         var refund = refunds.findById(request.paymentId()).orElseThrow();
-        if (!refund.getRequestId().equals(request.refundRequestId())) {
+        if (!refund.getRequestId().equals(request.requestId())) {
             throw new IllegalStateException("Refund request changed");
         }
         if (!request.send() || response == null || refund.getState() == VnpayRefundState.COMPLETED) {

@@ -1,10 +1,13 @@
 # VNPay sandbox: checkpoint phát triển
 
 Luồng checkout, IPN, return và hoàn tiền đã có trong image main 168
-`d2779d1` trên VPS; provider vẫn tắt vì chưa có merchant sandbox private.
-Gmail SMTP trên VPS đã được cấu hình riêng. Theo yêu cầu mới, bổ sung
+`d2779d1` trước đó trên VPS. Ngày 15/10 đã bật merchant sandbox private
+và triển khai Payment `e47ea2d` từ CI sau khi merge PR #37. Gmail SMTP
+trên VPS đã được cấu hình riêng. Theo yêu cầu mới, bổ sung
 [luồng sandbox trên trình duyệt và trang quay về](vnpay-sandbox-browser.md)
-trong nhánh feature; chưa ghi nhận giao dịch với hệ thống VNPay.
+đã lên production; link mở được trang chọn ngân hàng Test. Chưa ghi nhận
+giao dịch thanh toán/IPN thực với hệ thống VNPay; xem trạng thái mới ở
+hướng dẫn trình duyệt.
 
 ## API và trạng thái
 
@@ -14,7 +17,7 @@ trong nhánh feature; chưa ghi nhận giao dịch với hệ thống VNPay.
   kiểm tra merchant, amount, capture number và thời gian. Trả JSON `RspCode`/
   `Message` theo protocol VNPay. Callback trùng trả `02`, capture lần đầu `00`.
 - `GET /api/payments/vnpay/return`: xác minh chữ ký, hiển thị kết quả provider;
-  không cập nhật payment. IPN mới quyết định trạng thái lưu trữ.
+  tự đối soát querydr khi IPN chưa ghi capture. Chỉ IPN hoặc querydr đã xác minh mới cập nhật trạng thái lưu trữ.
 - `POST /api/payments/{id}/vnpay/refund`: ADMIN, chỉ hoàn toàn phần đối với capture
   thật đã được xác minh và có `refundStatus=REQUIRED`.
 - `POST /api/payments/{id}/vnpay/reconcile`: ADMIN, truy vấn `querydr` cho yêu cầu

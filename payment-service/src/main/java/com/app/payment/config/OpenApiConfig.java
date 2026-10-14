@@ -67,9 +67,11 @@ public class OpenApiConfig {
                     var model = ModelConverters.getInstance(true).resolveAsResolvedSchema(
                             new AnnotatedType(type.getType()).resolveAsRef(true));
                     model.referencedSchemas.forEach(api.getComponents()::addSchemas);
-                    operation.setDescription("Signed sandbox return, read-only. Accept text/html for the browser result page; "
-                            + "application/json or default for ApiResponse. Persisted payment status comes from IPN, "
-                            + "not the return outcome. Browser polls for up to 24 attempts; order confirmation is asynchronous.");
+                    operation.setDescription("Signed sandbox return. Accept text/html for the browser result page; "
+                            + "application/json or default for ApiResponse. A successful return triggers a server-side querydr "
+                            + "fallback when IPN has not recorded the capture. Only a matching signed provider query can update "
+                            + "payment, using the idempotent IPN capture transaction. Queries are limited to one per reference "
+                            + "per minute per instance. Browser polls for up to 24 attempts; order confirmation is asynchronous.");
                     operation.getResponses().addApiResponse("200", new ApiResponse().description("Verified payment result")
                             .content(new Content().addMediaType("application/json", new MediaType().schema(model.schema))
                                     .addMediaType("text/html", new MediaType().schema(new StringSchema()))));

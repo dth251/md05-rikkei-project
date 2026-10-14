@@ -2,7 +2,7 @@
   "info": {
     "name": "MD05 - Kiểm thử API và demo bằng tiếng Việt",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "description": "Production: import md05-tieng-viet.production.postman_environment.json, điền ADMIN private và notificationMailbox bằng Gmail nhận thử. Xem docs/test-production.md. Chạy folder 01–14 theo thứ tự, Iterations=1, Delay=1100 ms, dừng khi lỗi. Mỗi lượt sinh tài khoản/SKU/key riêng; lưu token/ID bằng environment. Gmail nhận thư qua địa chỉ +md05-a/b riêng cho lượt thử. Thanh toán dùng simulate, chưa có link giả lập; VNPay provider hiện tắt và có collection kiểm tra riêng. Local có environment riêng. Đây là kiểm thử chức năng tuần tự, không thay thế Java tests hoặc k6."
+    "description": "Production: import md05-tieng-viet.production.postman_environment.json, điền ADMIN private và notificationMailbox bằng Gmail nhận thử. Xem docs/test-production.md. Chạy folder 01–14 theo thứ tự, Iterations=1, Delay=1100 ms, dừng khi lỗi. Mỗi lượt sinh tài khoản/SKU/key riêng; lưu token/ID bằng environment. Gmail nhận thư qua địa chỉ +md05-a/b riêng cho lượt thử. Bộ này kiểm tra simulate nghiệp vụ; VNPay SANDBOX đã bật và có bản gộp md05-tat-ca-api.postman_collection.json để tạo link, thanh toán trên trình duyệt và đối chiếu. Local có environment riêng. Đây là kiểm thử chức năng tuần tự, không thay thế Java tests hoặc k6."
   },
   "variable": [
     {
@@ -7818,8 +7818,8 @@
       ]
     },
     {
-      "name": "11 - ONLINE hết hạn thật 150 giây",
-      "description": "Chạy sau 01–05 bằng Runner delay 1000 ms, tối đa 190 lượt chờ. Không sửa thời gian/TTL. Nếu runtime dùng TTL khác, kiểm tra cấu hình trước khi chạy.",
+      "name": "11 - ONLINE hết hạn thật 200 giây",
+      "description": "Chạy sau 01–05 bằng Runner delay 1000 ms, tối đa 240 lượt chờ. Không sửa thời gian/TTL. Nếu runtime dùng TTL khác, kiểm tra cấu hình trước khi chạy.",
       "item": [
         {
           "name": "Đọc kho đầu luồng expiry",
@@ -8069,7 +8069,7 @@
           ]
         },
         {
-          "name": "Chờ EXPIRED sau hạn 150 giây",
+          "name": "Chờ EXPIRED sau hạn 200 giây",
           "request": {
             "method": "GET",
             "header": [],
@@ -8084,7 +8084,7 @@
                 }
               ]
             },
-            "description": "Chạy bằng Runner, delay 1000 ms. Chờ tối đa 190 lượt; hết lượt hoặc lỗi ngoài dự kiến là FAIL và dừng. Send thủ công cần tự gửi lại."
+            "description": "Chạy bằng Runner, delay 1000 ms. Chờ tối đa 240 lượt; hết lượt hoặc lỗi ngoài dự kiến là FAIL và dừng. Send thủ công cần tự gửi lại."
           },
           "event": [
             {
@@ -8115,14 +8115,14 @@
                   "let d = null;",
                   "if (pm.response.code === 200) { d = pm.response.json().data; }",
                   "const xong = pm.response.code === 200 && (d.status === 'EXPIRED');",
-                  "if (hopLe && !xong && lan < 190) {",
+                  "if (hopLe && !xong && lan < 240) {",
                   "    pm.environment.set(maCho, lan);",
                   "    pm.execution.setNextRequest(pm.info.requestId);",
                   "} else {",
                   "    pm.environment.unset(maCho);",
-                  "    kiemTra('Xử lý bất đồng bộ hoàn tất trong giới hạn 190 lượt', () => pm.expect(xong).to.eql(true));",
+                  "    kiemTra('Xử lý bất đồng bộ hoàn tất trong giới hạn 240 lượt', () => pm.expect(xong).to.eql(true));",
                   "    kiemTra('Phản hồi đi qua API Gateway', () => pm.expect(pm.response.headers.get('X-Gateway')).to.eql('api-gateway'));",
-                  "    if (xong) { kiemTra('Phản hồi thành công', () => pm.expect(pm.response.json().success).to.eql(true)); kiemTra('Không hết hạn trước 150 giây',()=>pm.expect(Date.now()-Date.parse(d.createdAt)).to.be.at.least(150000)); }",
+                  "    if (xong) { kiemTra('Phản hồi thành công', () => pm.expect(pm.response.json().success).to.eql(true)); kiemTra('Không hết hạn trước 200 giây',()=>pm.expect(Date.now()-Date.parse(d.createdAt)).to.be.at.least(200000)); }",
                   "}",
                   ""
                 ]

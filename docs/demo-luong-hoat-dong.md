@@ -2,12 +2,17 @@
 
 Kịch bản ngày 14/10/2026, dùng [bộ Postman tiếng Việt](../tests/postman/README.md) trên **production** theo [hướng dẫn chính](test-production.md). Dành khoảng 25–30 phút cho bài đầy đủ; thanh toán dùng simulate. Mỗi bước dưới đây là kết quả mong đợi của phiên trình bày; [kết quả live đã kiểm chứng](postman-production-results.md) được ghi riêng.
 
+Cập nhật 15/10: đã bật VNPay sandbox và triển khai trang quay về. Bài có
+VNPay dùng **[collection gộp](postman-mot-file.md)**: P1 → mở link sandbox →
+P2 → P3. Hoãn folder 14 xóa mềm tới cuối; các D04/D05 bên dưới vẫn là
+những bài simulate nghiệp vụ riêng. [Trạng thái sandbox](vnpay-sandbox-browser.md#trạng-thái-triển-khai).
+
 ## Chuẩn bị
 
 1. Import collection nghiệp vụ và environment production, target `https://md05-rikkei-project.duckdns.org`. Có thể dùng bản private đã chuẩn bị theo hướng dẫn chính; ADMIN thử riêng, `notificationMailbox` là Gmail nhận thử.
 2. Runner: Iterations 1, Delay 1100 ms, dừng khi lỗi. Dùng một environment cho cả phiên; để collection tự tạo các ID mới, không lấy ID khách hàng sẵn có.
 3. Mở Gmail và Grafana của VPS. Dùng tunnel theo [hướng dẫn production](test-production.md#4-email-và-monitoring-đều-ở-vps); không mở cổng monitoring công khai. Chọn cửa sổ dashboard đúng thời gian demo, ghi baseline trước khi thao tác.
-4. Kiểm tra thời hạn ONLINE đang là 150 giây; login lại khi token sắp hết hạn. Demo đầy đủ dài hơn TTL token mặc định, nên chạy lại **riêng request login A/B/ADMIN** trước folder 11 nếu cần, giữ các ID/key hiện có. Không chạy lại request đăng ký đầu tiên giữa phiên vì nó khởi tạo dữ liệu mới.
+4. Kiểm tra thời hạn ONLINE đang là 200 giây; login lại khi token sắp hết hạn. Demo đầy đủ dài hơn TTL token mặc định, nên chạy lại **riêng request login A/B/ADMIN** trước folder 11 nếu cần, giữ các ID/key hiện có. Không chạy lại request đăng ký đầu tiên giữa phiên vì nó khởi tạo dữ liệu mới.
 5. Để nguyên body/key ở các request replay. Một lần bấm create mới là một đơn mới. Chỉ ghi nhận biên nhận COD trên dữ liệu demo; API không tự chuyển tiền mặt.
 
 VPS chuyển sang Gmail SMTP từ 23:02 ngày 14/10/2026. Bộ Postman dùng
@@ -42,7 +47,7 @@ flowchart LR
 | D05 | 2 phút | 07 | Thanh toán thất bại, Saga hoàn kho |
 | D06 | 3 phút | 08, 09 | COD thu đủ tiền và hủy trước giao |
 | D07 | 3 phút | 10 | Trả toàn bộ COD, nhập lại và hoàn tiền |
-| D08 | 4 phút | 11 | Hết hạn thật 150 giây và từ chối tiền muộn |
+| D08 | 4 phút | 11 | Hết hạn thật 200 giây và từ chối tiền muộn |
 | D09 | 2 phút | 12, 13, 14 | POS/variant, hoàn ONLINE, snapshot khi xóa mềm |
 | D10 | Trong phiên | Gmail/Grafana VPS | Đối chiếu email và vận hành |
 
@@ -102,11 +107,11 @@ Chờ Payment `refundStatus=REQUIRED`, ADMIN ghi chi hoàn **125.000**. Sai số
 
 Lời dẫn: “Trả hàng có tiến trình riêng với lịch sử giao hàng. Nhập lại kho và hoàn tiền là hai bước; REQUIRED nghĩa là cần hoàn, chưa phải đã hoàn.”
 
-## D08 — Hết hạn 150 giây
+## D08 — Hết hạn 200 giây
 
-Chạy 11, giữ Runner mở. Đơn mới có `expiryCreatedAt`; không simulate. Kho giữ **17/1**. Trong khoảng chờ, trình bày kiến trúc, Gmail và Grafana. Collection poll có giới hạn 190 lượt; không coi 404 hoặc PENDING mãi là PASS.
+Chạy 11, giữ Runner mở. Đơn mới có `expiryCreatedAt`; không simulate. Kho giữ **17/1**. Trong khoảng chờ, trình bày kiến trúc, Gmail và Grafana. Collection poll có giới hạn 240 lượt; không coi 404 hoặc PENDING mãi là PASS.
 
-Từ deadline 150 giây, Order chuyển **EXPIRED**, kho về **18/0**; chờ Payment `reservationExpired=true`, FAILED. Simulate SUCCESS muộn nhận **409**; đọc lại không làm tăng kho. Gmail có thông báo quá hạn đúng order/email.
+Từ deadline 200 giây, Order chuyển **EXPIRED**, kho về **18/0**; chờ Payment `reservationExpired=true`, FAILED. Simulate SUCCESS muộn nhận **409**; đọc lại không làm tăng kho. Gmail có thông báo quá hạn đúng order/email.
 
 Nếu vượt giới hạn, ghi FAIL và kiểm tra scheduler/queue/Outbox. Không sửa createdAt hoặc rút TTL trong bài chứng minh chờ thật. Bài tuần tự này không chứng minh race giữa payment và scheduler; race có Java tests riêng.
 
@@ -145,10 +150,10 @@ Demo sự cố dependency dùng [script riêng](infrastructure/scripts/dependenc
 
 ## VNPay tùy chọn và ghi nhận kết quả
 
-Theo yêu cầu hiện tại, dùng simulate ở 06/07/11, không cần merchant VNPay.
-Provider trên VPS đang tắt; checkout trả 503, chưa có link giả lập. Bộ
-kiểm tra VNPay đang tắt nằm trong hướng dẫn production. Nội dung merchant
-bên dưới là bài riêng, ngoài phạm vi demo mô phỏng hiện tại.
+Các bài simulate ở 06/07/11 không cần merchant. Provider sandbox trên VPS
+hiện đã bật; bài VNPay trên trình duyệt dùng merchant thử nghiệm và trang
+kết quả đã triển khai theo hướng dẫn mới. Không chạy collection kiểm tra
+provider tắt ở môi trường hiện tại.
 
 Dùng [collection sandbox riêng](../tests/postman/md05-tieng-viet-vnpay.postman_collection.json) với thứ tự V00 → V01 → **thanh toán trên trình duyệt** → V02 → V03 → V04, trước khi xóa sản phẩm. Merchant/config phải sẵn sàng. IPN có chữ ký của nhà cung cấp mới cập nhật persisted payment; return URL không tự xác nhận nhận tiền. V03 gửi refund một lần; chưa rõ kết quả thì reconcile V04 theo [runbook VNPay](vnpay-sandbox.md). Nếu quá deadline, giữ kết quả thất bại, tạo lượt mới; không bypass bằng simulate.
 

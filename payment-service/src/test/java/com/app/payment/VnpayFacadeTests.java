@@ -16,7 +16,7 @@ class VnpayFacadeTests {
     @Test
     void disabledProviderDoesNotTouchTransactions() {
         var transactions = mock(VnpayTransactionService.class);
-        var service = new VnpayServiceImpl(new VnpaySettings(false, "", "", ""), transactions);
+        var service = new VnpayServiceImpl(new VnpaySettings(false, "", "", ""), transactions, mock(com.app.payment.service.VnpayPaymentQueryService.class));
         assertEquals("99", service.ipn(new LinkedMultiValueMap<>()).responseCode());
         assertEquals(HttpStatus.SERVICE_UNAVAILABLE,
                 assertThrows(ApiException.class, () -> service.checkout(1L, 10L, "127.0.0.1")).getStatus());
@@ -29,7 +29,7 @@ class VnpayFacadeTests {
         var transactions = mock(VnpayTransactionService.class);
         var settings = new VnpaySettings(true, "FIXTURE1", "public-fixture-signing-key-only",
                 "https://example.com/api/payments/vnpay/return");
-        var service = new VnpayServiceImpl(settings, transactions);
+        var service = new VnpayServiceImpl(settings, transactions, mock(com.app.payment.service.VnpayPaymentQueryService.class));
         var input = new LinkedMultiValueMap<String, String>();
         input.set("vnp_SecureHash", "a".repeat(128));
         input.set("vnp_Amount", "1250");

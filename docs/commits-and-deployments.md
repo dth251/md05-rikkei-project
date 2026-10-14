@@ -1041,3 +1041,178 @@ Các contract OpenAPI xuất từ tests, chỉ giữ thay đổi của Payment/r
 contract Auth/Order/Product không đổi ngữ nghĩa. Không stage settings IDE
 có sẵn của người dùng. Quét khóa sandbox trong các file staged và
 `git diff --check` đạt.
+
+## Triển khai trang kết quả VNPay sandbox ngày 15/10/2026
+
+| Mốc | SHA | Thời gian +07 | Kiểm tra / deploy thực tế |
+|---|---|---|---|
+| 182-docs | `31fceedfc28f89699e26a9aef8955ec0e5b827e0` | 2026-10-15T00:08:46+07:00 | Checkpoint chuẩn bị sandbox, push feature và mở PR #37. |
+| 183-payment-service | `6e2ab03183b0f1874161d72323ffb23459890104` | 2026-10-15T00:27:22+07:00 | Merge PR #37 sau CI 38604216557 success. CI nhánh 38604057126 verify/publish Payment success; image nguồn e47ea2d đã nằm trong main. Triển khai riêng Payment bằng deploy.sh/image e47ea2d, đối chiếu 00:29:49: sáu app healthy, monitoring 6 app/5 dependency UP, Gmail giữ nguyên. Không coi push-main CI 38606802592 đang chạy là đã hoàn tất. |
+
+Image thực tế Payment:
+`ghcr.io/dth251/md05-rikkei-project/payment-service:e47ea2d260e7aff4591ae77c1351fdc9c5643a77`,
+digest `sha256:2bffee5de929d462e556a5381c502fc81b535d181eae5923445b7859e11597b1`.
+Đã kiểm tra revision label/ancestry trước rollout. Các app khác tại thời
+điểm đối chiếu vẫn `d2779d1`. Release mới dùng `.env` private VPS qua symlink;
+provider true, SMTP host smtp.gmail.com. Schema Payment 001–004 chỉ verify,
+không có migration mới, không xóa volume/dữ liệu cũ. Pipeline main sẽ tiếp
+tục quy trình publish/deploy theo service; journal ghi trạng thái đã quan
+sát, không gán SHA merge cho image chưa chạy.
+
+Collection gộp **181 requests/19 folders** chạy P1 trên HTTPS production:
+**270 HTTP executions/669 assertions, zero failures, exit 0, 6m59.2s**.
+Dừng đúng sau checkout; P2/P3 chưa chạy. Đơn #160/payment #95 tạo link
+hợp lệ tới VNPay; GET lúc 00:18:59 mở trang PaymentMethod.html (Test),
+HTTP 200, có chọn ngân hàng, không phải trang lỗi checksum. Chưa thực
+hiện thanh toán trên trang ngân hàng; đơn sau đó tự EXPIRED đúng chính
+sách giữ hàng 150 giây. Không giả chữ ký/IPN bằng key thật để ép PASS.
+
+Sau rollout, smoke qua HTTPS đạt **3 requests/12 assertions**, zero
+failures, exit 0, 4.5s: IPN unsigned 97, return JSON 400, HTML 400 có
+trang tiếng Việt/CSP/no-store/no-referrer. Java Payment trước rollout
+64/64 tests và bootJar đạt; UI desktop 820/mobile 390, polling và refresh
+đã kiểm chứng với fixture, không phải giao dịch VNPay thực tế.
+
+Đối chiếu read-only các fixture USER A #226 lúc 00:32:24: đơn #153–158
+và #160 đúng trạng thái, kho cha #154=20/0, biến thể #156=4/0. Có 11
+deliveries gửi về Gmail alias tài khoản thử, tất cả SENT/attempts=1 (3
+confirmed, 2 shipped, 2 completed, 2 cancelled, 2 expired); chưa xác nhận
+inbox. Thư đăng ký IPN tới VNPay chỉ có bản nháp, **chưa gửi**; người dùng
+đã nêu rõ quan ngại việc gửi bên thứ ba, không thực hiện gửi thư.
+
+Chưa xác nhận VNPay đã đăng ký IPN, chưa có bằng chứng giao dịch thanh
+toán/IPN thực hoặc hoàn tiền thực tại sandbox. Đây là bước bên ngoài dự
+án còn cần cấu hình/đối chiếu; không suy ra từ 669 assertions hoặc trang
+chọn ngân hàng. [File Postman gộp](postman-mot-file.md),
+[hướng dẫn sandbox](vnpay-sandbox-browser.md),
+[bằng chứng runtime](evidence/vnpay-browser-integration-2026-10-15.json).
+
+## Bộ Postman các luồng chính ngày 15/10/2026
+
+| Mốc | SHA | Thời gian +07 | Kiểm chứng / deploy thực tế |
+|---|---|---|---|
+| 185-docs | `3fa022f65261333255b5513d6545ca4aaf50b60a` | 2026-10-15T00:39:08+07:00 | Giải thích User A/B trong bản 181 requests; bản gọn mới bên dưới chỉ dùng một USER và ADMIN. |
+| 186-api-gateway | `088745d0d84b5bb31df2d1e718a09f53c3337abb` | 2026-10-15T00:56:56+07:00 | Thêm collection 42 requests/8 nhóm, generator và hướng dẫn email/trả hàng/hết hạn 150 giây. Chạy production nhóm 01–06: 136 HTTP/145 assertions, zero failures, exit 0, 3m19.5s. Chỉ thay tài liệu/Postman, không build hoặc deploy service mới. |
+
+Kiểm tra tĩnh: 85 hooks biên dịch được, 18 JSON bodies hợp lệ, generator
+PowerShell parse đạt và sinh lại đúng nội dung. Đã kiểm tra key thu/hoàn
+COD được khởi tạo tại bước còn giữ trong bản gọn, dừng sau checkout, không
+có simulate/User B trong request. Quét secret staged và diff check đạt;
+không đưa log private, environment hoặc settings IDE vào commit.
+
+Đối chiếu runtime lúc 00:55:20: cả sáu app healthy. Order và Payment
+đang chạy image `6e2ab03183b0f1874161d72323ffb23459890104`; bốn app khác
+giữ `d2779d1595fb5541675e65604eb07ac633ccf91b`.
+[CI main 38606802592](https://github.com/dth251/md05-rikkei-project/actions/runs/38606802592)
+đã success toàn bộ, gồm publish Order/Payment và deploy, kết thúc
+00:49:58 +07. Đây là kết quả hoàn tất pipeline mốc 183, không phải deploy
+do thay đổi collection mốc 186. Các commit tài liệu 184–186 ở nhánh
+`feature/vnpay-sandbox-evidence` được lưu cục bộ, chưa push/tích hợp PR.
+
+Fixture mới chỉ một USER #228, sản phẩm #157: COD #161/Payment #96 đã
+COMPLETED và hoàn 125.000 đồng, hồ sơ trả REFUNDED. Đơn #162/Payment #97
+EXPIRED/FAILED, reservationExpired true; assertion không hết hạn trước
+150 giây và giải phóng kho đạt. Đơn mới #163/Payment #98 tạo link sandbox,
+Runner dừng; chưa thanh toán qua ngân hàng.
+
+Notification cho #161 và #162 có 4 deliveries SENT/attempts=1, không lỗi;
+SMTP Gmail 587/auth/STARTTLS bật, sandbox SMTP tắt. Chưa xác nhận inbox.
+Email hiện là text, chưa có thông báo trả/hoàn tiền riêng; mẫu hóa đơn
+HTML chưa gắn vào luồng tự động. Không gửi email tới VNPay. Nhóm 07–08
+chưa chạy giao dịch/IPN/hoàn tiền thực tế ở sandbox; đăng ký IPN vẫn chưa
+được xác nhận. [Hướng dẫn luồng chính](test-luong-chinh.md),
+[bằng chứng kiểm tra](evidence/postman-luong-chinh-2026-10-15.json).
+
+Đối chiếu tiếp 00:57:32 +07: đơn #163 tự EXPIRED vì không thao tác thanh
+toán, Payment #98 FAILED/reservationExpired true. Kho #157 trở về 20/0,
+không còn giữ hàng cho lượt chạy này. Email hết hạn #163 SENT/attempts=1,
+nâng tổng fixture lên 5 email SENT, không error_code. Bằng chứng và hướng
+dẫn lưu cả hai thời điểm để phân biệt trạng thái ngay sau checkout với
+trạng thái sau khi link hết hạn.
+
+## Nhập Body Postman trực tiếp, không environment
+
+| Mốc | SHA | Thời gian +07 | Kiểm chứng / deploy thực tế |
+|---|---|---|---|
+| 187-docs | `8626630` | 2026-10-15T00:58:01+07:00 | Lưu kết quả luồng chính và email của lượt trước. |
+| 188-api-gateway | `76eec49e51ac57ec081818f84c2f1aaf0f809add` | 2026-10-15T01:16:27+07:00 | Bỏ phụ thuộc environment khỏi collection 42 requests; nhập email/password trong Body, giữ baseUrl production và lưu token/ID trong collection Variables. Production không `-e`: nhóm 01–06 đạt 140 HTTP/145 assertions, exit 0, 3m10.9s; đăng nhập USER có sẵn → GET me → ADMIN đạt thêm 3 HTTP/16 assertions, exit 0. Không đổi Java/build/deploy service. |
+
+85 hooks biên dịch được, 18 Body JSON hợp lệ, kiểm tra Body trống/JSON sai
+và đăng nhập lại giữ ID đạt. Generator PowerShell parse và sinh lại đúng
+nội dung; quét credentials staged, link hướng dẫn và diff check đạt.
+Ba Body đăng ký/đăng nhập trong Git để trống credentials; lượt live dùng
+bản private ngoài Git chỉ điền Body, không có file environment hay `-e`.
+Mật khẩu không được sao chép thành biến; token/ID tự lưu ở collection.
+
+Đối chiếu 01:15:55 +07: USER #229, sản phẩm #158, COD #164/Payment #99
+COMPLETED/SUCCESS và return/refund REFUNDED đủ 125.000 đồng. Đơn #165 /
+Payment #100 EXPIRED/FAILED, reservationExpired true. Đơn #166/Payment
+#101 PENDING_PAYMENT/PENDING đã tạo link VNPay sandbox; kho 19/1 đang giữ
+một sản phẩm cho đơn này, chưa thanh toán trên ngân hàng. Có 4 email SENT,
+attempts=1, không lỗi cho #164/#165; chưa kiểm tra inbox. Nhóm 07–08 và
+đăng ký IPN vẫn chưa được xác minh thực tế. Không gửi thư tới VNPay.
+
+Commit ở nhánh feature cục bộ, chưa push/PR; không có rollout mới trong
+lượt này. [Hướng dẫn nhập Body](test-luong-chinh.md),
+[bằng chứng không environment](evidence/postman-luong-chinh-khong-environment-2026-10-15.json).
+
+## Sửa token đọc kho trong nhóm ADMIN
+
+| Mốc | SHA | Thời gian +07 | Kiểm chứng / deploy thực tế |
+|---|---|---|---|
+| 190-api-gateway | `91249c3dfd757ef6494e9158e361a5399fbc27b4` | 2026-10-15T01:32:56+07:00 | Request Xem tồn kho của nhóm 02 chuyển từ userToken sang adminToken. Thông báo thiếu token chỉ rõ request đăng nhập tương ứng trong cùng collection. Production không environment: ADMIN login → GET kho #158 đạt 2 requests/12 assertions, exit 0, 2.9s; xác nhận không có userToken. Không đổi Java, không build/deploy service. |
+
+Kiểm tra tĩnh 42 requests/85 hooks/18 JSON bodies đạt; guard ADMIN không
+phụ thuộc USER, guard thiếu token chỉ đúng bước đăng nhập; generator
+PowerShell parse/sinh lại nội dung, staged credential scan và diff check
+đạt. Lượt live chỉ đăng nhập và đọc fixture có sẵn, không tạo/đổi sản
+phẩm, kho, đơn, thanh toán hoặc gửi email. Các bước trả hàng/hết hạn của
+khách vẫn dùng userToken. Chưa push/PR các thay đổi feature cục bộ.
+[Bằng chứng kiểm tra](evidence/postman-inventory-admin-token-2026-10-15.json),
+[hướng dẫn xử lý thiếu token](test-luong-chinh.md#khi-báo-thiếu-usertoken-hoặc-admintoken).
+
+## Nhập ID sản phẩm trực tiếp khi đọc bằng Postman
+
+| Mốc | SHA | Thời gian +07 | Kiểm chứng / deploy thực tế |
+|---|---|---|---|
+| 192-api-gateway | `4ca946da8ceecb33b7dfb2afc3241d419e266502` | 2026-10-15T01:40:16+07:00 | Hai GET chi tiết sản phẩm/tồn kho của nhóm 02 nhận ID thật trên URL hoặc productId tự lưu. Production ADMIN không environment: 6 requests/31 assertions, exit 0, 9.7s. Không thay Java, không build/deploy service. |
+
+Kiểm tra live ID #159 trực tiếp khi không có biến productId; ID #158
+qua biến; đọc #159 khi biến vẫn là #158. ID và COD baseline của luồng
+#158 được giữ nguyên. Bài đọc kho kiểm tra đúng productId và số nguyên
+không âm; nhập kho 20, trả hàng và hết hạn vẫn giữ kiểm tra nghiệp vụ
+riêng. Không ghi dữ liệu kinh doanh, đặt đơn hay gửi email trong lượt này.
+
+Kiểm tra tĩnh 42 requests/85 hooks/18 JSON bodies; token USER/ADMIN,
+URL có ID/biến, ID chưa resolve/0, không ghi đè ID của luồng đều đạt.
+PowerShell parse, generator sinh lại nội dung, staged credential scan và
+diff check đạt. Commit nằm ở feature cục bộ, chưa push/PR; không rollout.
+[Hướng dẫn thiếu productId](test-luong-chinh.md#khi-báo-thiếu-productid),
+[bằng chứng kiểm tra](evidence/postman-product-id-url-2026-10-15.json).
+
+## Sửa VNPay PENDING và giữ hàng 200 giây
+
+| Mốc | SHA | Thời gian +07 | Kiểm chứng / deploy thực tế |
+|---|---|---|---|
+| 194-payment-service | `4bfed7a` | 2026-10-15T02:42:21.6878611+07:00 | 70/70 Java tests, zero fail/error/skip; bootJar đạt. Return hợp lệ tự querydr khi thiếu capture; chỉ kết quả provider đã xác minh merchant/reference/amount/type/transaction/date mới dùng transaction capture chung với IPN. Refresh/callback đồng thời chỉ phát một payment.succeeded; reply sai hoặc timeout không xác nhận đơn. Chưa deploy tại checkpoint. |
+| 195-order-service | `e6d2691` | 2026-10-15T02:42:21.6878611+07:00 | 61/61 Java tests, zero fail/error/skip; bootJar đạt. Default TTL 200 giây, boundary tại 200 và trước 200 đạt. Tạo đơn chờ giảm available/tăng reserved; confirm không trừ available lần nữa; expiry trả kho một lần. Postman/generator cập nhật 200 giây/240 lượt; 42 requests/85 hooks/18 Body JSON kiểm tra đạt. Chưa deploy tại checkpoint. |
+
+Querydr HTTPS thực tế trên VPS trả kết quả có chữ ký hợp lệ: đơn #174
+và #175 thành công ở VNPay, nhưng database chưa có capture và đơn đã
+EXPIRED. #175 thanh toán khoảng 31 giây sau khi tạo đơn. Đây là bằng
+chứng giao dịch thành công bị thiếu xác nhận backend, không phải yêu
+cầu người dùng duyệt thanh toán. Capture phục hồi sau expiry cần hoàn
+tiền; không hồi sinh đơn đã giải phóng kho. Không sửa dữ liệu các đơn cũ
+trong bước chẩn đoán. IPN registration/delivery chưa được xác minh.
+
+OpenAPI và hướng dẫn cập nhật cơ chế querydr; không đổi DTO public hay
+bỏ kiểm tra chữ ký. Query mạng ngoài transaction, timeout/body/concurrency
+của ledger client giữ nguyên; throttle một lần/reference/phút/instance,
+bộ nhớ tối đa 256 references. Không tạo frontend/module chung, không
+commit credentials hoặc .verification. Thay đổi .vscode sẵn có giữ nguyên.
+[Bằng chứng](evidence/vnpay-pending-recovery-2026-10-15.json).
+
+
+Mốc 197-notification-service: `2f4109134b0caa64ee6b93c104bb6e86939c911d` tại 2026-10-15T03:01:37.7971181+07:00. Người dùng yêu cầu email Gmail có giao diện: Notification chuyển sang MIME multipart/alternative, text/plain dự phòng và text/html UTF-8 theo mẫu MD05 cho năm trạng thái đơn. Không đưa dữ liệu hóa đơn mẫu vào email thật. GreenMail kiểm tra SMTP thực, đúng recipient/subject/order/status, hai MIME parts và Message-ID ổn định; Notification 22/22 tests, bootJar đạt. Preview 820px/390px không tràn ngang; chưa xác nhận Gmail inbox hoặc deploy tại checkpoint.
+
+CI đầu 38625930469 và PR 38626143745 thất bại tại EmailLiveTests còn mốc 150 giây; đã sửa fixture già 201 giây và timeout/boundary theo TTL 200 giây. Chưa merge/deploy khi CI lỗi; CI mới cần xác nhận lại. Bổ sung kiểm tra Mailpit có cả HTML/Text cho replay, cancellation, expiry và restart.

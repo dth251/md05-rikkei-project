@@ -6,7 +6,7 @@ server:
 
 commerce:
   reservation:
-    ttl: ${RESERVATION_TTL:PT150S}
+    ttl: ${RESERVATION_TTL:PT200S}
     scan-delay-ms: ${RESERVATION_SCAN_DELAY_MS:1000}
 
 spring:

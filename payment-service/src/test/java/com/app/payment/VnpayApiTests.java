@@ -61,6 +61,8 @@ class VnpayApiTests {
     @Autowired private MockMvc mvc;
     @Autowired private SecretKey key;
     @Autowired private JdbcTemplate jdbc;
+    @org.springframework.test.context.bean.override.mockito.MockitoBean
+    private com.app.payment.service.VnpayPaymentQueryService queries;
 
     @Test
     void checkoutUsesStoredAmountStableReferenceAndRejectsOtherOwnerAndSimulation() throws Exception {
