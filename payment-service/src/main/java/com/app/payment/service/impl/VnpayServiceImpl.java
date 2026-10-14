@@ -64,8 +64,7 @@ public class VnpayServiceImpl implements VnpayService {
         requireEnabled();
         try {
             var callback = verified(parameters);
-            return new VnpayReturnResponse(callback.reference(), callback.successful() ? "SUCCESS" : "FAILED",
-                    "Provider return validated; IPN determines persisted payment state");
+            return transactions.returnResult(callback);
         } catch (IllegalArgumentException | java.time.DateTimeException exception) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "Invalid provider return");
         }

@@ -104,3 +104,22 @@ khôi phục các source roots `build/generated/sources/proto/main/java` và
 xác nhận đủ sáu Gradle projects, 0 errors. Không tắt kiểm tra hoặc sửa file
 Java để che lỗi. Source sinh bởi protobuf nằm ở `generated/sources`, không
 phải `generated/source`; kiểm tra source roots trước khi xóa cache.
+
+## 14 lỗi Notification sau cập nhật source ngày 14/10/2026
+
+Checkpoint 16:47 +07: Problems có đúng 14 errors trong
+`notification-service/src/test/java/com/app/notification/NotificationTests.java`.
+Import `NotificationLog` không được nhận diện, gây thêm lỗi type của repository
+và mapper; file entity vẫn tồn tại trong source. Sáu Gradle projects đã được
+import, không có project Java tạm.
+
+Reload `notification-service/build.gradle` bằng `Java: Reload Projects`, rồi
+full rebuild riêng `notification-service` bằng Java extension khôi phục model.
+Diagnostics toàn workspace về 0; không chỉnh Java source, không tắt kiểm tra
+Java và không thay đổi settings IDE đang được người dùng chỉnh sửa.
+Wrapper Notification `test --rerun-tasks --no-daemon --max-workers=1` đạt
+21/21 tests, zero failure/error/skip lúc 16:49:36 +07; compileJava và
+compileTestJava đều chạy lại đạt. Test worker giới hạn heap 128 MiB qua
+private init script để kiểm chứng trên máy phát triển ít RAM. Đọc lại
+diagnostics lúc 16:49 +07 vẫn 0 errors và đủ sáu projects; nhật ký ghi SHA
+checkpoint. Đây là sửa trạng thái IDE local; không có rollout VPS.

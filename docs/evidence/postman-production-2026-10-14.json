@@ -1,0 +1,516 @@
+{
+    "auditedAt":  "2026-10-14T23:35:22+07:00",
+    "target":  "https://md05-rikkei-project.duckdns.org",
+    "mode":  "live-production-gateway-simulated-online-payment",
+    "runtimeRevision":  "d2779d1595fb5541675e65604eb07ac633ccf91b",
+    "runtimeHealth":  {
+                          "applications":  6,
+                          "healthy":  6
+                      },
+    "monitoringPreflight":  {
+                                "at":  "2026-10-14T23:25:44+07:00",
+                                "exitCode":  0,
+                                "applicationTargetsUp":  6,
+                                "dependencyTargetsUp":  5,
+                                "dashboardQueriesAndDatasource":  "PASS",
+                                "resourceAndBusinessMetrics":  "PASS"
+                            },
+    "coreRun":  {
+                    "collection":  "tests/postman/md05-tieng-viet.postman_collection.json",
+                    "savedRequests":  162,
+                    "folders":  14,
+                    "httpExecutions":  280,
+                    "assertions":  659,
+                    "failures":  0,
+                    "exitCode":  0,
+                    "durationSeconds":  358.5,
+                    "responseTimeMs":  {
+                                           "average":  75,
+                                           "min":  32,
+                                           "max":  889
+                                       },
+                    "delayRequestMs":  1100,
+                    "timeoutRequestMs":  15000,
+                    "bail":  true,
+                    "reportEvents":  false,
+                    "executedArtifactSha256":  "177be0cdbb22143815622e6e1a651f3ccf761c09f1817c94aee547256fcca95c",
+                    "postRunChange":  "Corrected collection description only; request URLs, bodies and scripts unchanged"
+                },
+    "disabledProviderRun":  {
+                                "collection":  "tests/postman/md05-production-vnpay-disabled.postman_collection.json",
+                                "savedRequests":  6,
+                                "httpExecutions":  6,
+                                "assertions":  21,
+                                "failures":  0,
+                                "exitCode":  0,
+                                "durationSeconds":  8.1,
+                                "responseTimeMs":  {
+                                                       "average":  151,
+                                                       "min":  43,
+                                                       "max":  400
+                                                   },
+                                "probePaymentId":  83,
+                                "ipnHttpStatus":  200,
+                                "ipnResponseCode":  "99",
+                                "returnCheckoutRefundReconcileHttpStatus":  503,
+                                "executedArtifactSha256":  "0af4ec69481d2416d50fed5655971258c9bf1b2e6746cd0f08af88555ff77fc9",
+                                "postRunChange":  "Corrected request descriptions only; request URLs, bodies and scripts unchanged"
+                            },
+    "combined":  {
+                     "savedRequests":  168,
+                     "httpExecutions":  286,
+                     "assertions":  680,
+                     "failures":  0
+                 },
+    "fixtures":  {
+                     "userAId":  224,
+                     "products":  [
+                                      {
+                                          "id":  151,
+                                          "parentId":  null,
+                                          "active":  false,
+                                          "available":  20,
+                                          "reserved":  0
+                                      },
+                                      {
+                                          "id":  153,
+                                          "parentId":  151,
+                                          "active":  false,
+                                          "available":  4,
+                                          "reserved":  0
+                                      }
+                                  ],
+                     "orders":  [
+                                    {
+                                        "id":  146,
+                                        "paymentId":  83,
+                                        "method":  "ONLINE",
+                                        "status":  "COMPLETED",
+                                        "paymentStatus":  "SUCCESS",
+                                        "amount":  250000,
+                                        "refundStatus":  "REFUNDED"
+                                    },
+                                    {
+                                        "id":  147,
+                                        "paymentId":  84,
+                                        "method":  "ONLINE",
+                                        "status":  "CANCELLED",
+                                        "paymentStatus":  "FAILED",
+                                        "amount":  125000
+                                    },
+                                    {
+                                        "id":  148,
+                                        "paymentId":  85,
+                                        "method":  "COD",
+                                        "status":  "COMPLETED",
+                                        "paymentStatus":  "SUCCESS",
+                                        "amount":  125000,
+                                        "refundStatus":  "REFUNDED"
+                                    },
+                                    {
+                                        "id":  149,
+                                        "paymentId":  86,
+                                        "method":  "COD",
+                                        "status":  "CANCELLED",
+                                        "paymentStatus":  "FAILED",
+                                        "amount":  125000
+                                    },
+                                    {
+                                        "id":  150,
+                                        "paymentId":  87,
+                                        "method":  "ONLINE",
+                                        "status":  "EXPIRED",
+                                        "paymentStatus":  "FAILED",
+                                        "amount":  125000,
+                                        "reservationExpired":  true,
+                                        "lateSuccessHttpStatus":  409
+                                    },
+                                    {
+                                        "id":  151,
+                                        "paymentId":  88,
+                                        "method":  "ONLINE",
+                                        "status":  "CONFIRMED",
+                                        "paymentStatus":  "SUCCESS",
+                                        "amount":  130000
+                                    }
+                                ],
+                     "returns":  [
+                                     {
+                                         "orderId":  146,
+                                         "status":  "REFUNDED",
+                                         "amount":  250000
+                                     },
+                                     {
+                                         "orderId":  148,
+                                         "status":  "REFUNDED",
+                                         "amount":  125000
+                                     }
+                                 ]
+                 },
+    "email":  {
+                  "transport":  "Gmail SMTP on production VPS",
+                  "recipientSource":  "registered Gmail aliases from private notificationMailbox",
+                  "deliveries":  10,
+                  "sent":  10,
+                  "attemptsPerDelivery":  1,
+                  "errorCodes":  [
+
+                                 ],
+                  "events":  {
+                                 "order.confirmed":  3,
+                                 "order.shipped":  2,
+                                 "order.completed":  2,
+                                 "order.cancelled":  2,
+                                 "order.expired":  1
+                             },
+                  "order151ConfirmedSentAt":  "2026-10-14T23:30:53.169689+07:00",
+                  "inboxConfirmedByRecipient":  false,
+                  "automaticFormat":  "text",
+                  "htmlInvoiceSampleIntegratedIntoAutomaticMapper":  false
+              },
+    "simulation":  {
+                       "endpoint":  "POST /api/payments/{id}/simulate",
+                       "response":  "JSON",
+                       "checkoutLinkImplemented":  false,
+                       "successAutomaticallyConfirmsOrderThroughRabbitMQ":  true,
+                       "additionalOrderConfirmationPostRequired":  false,
+                       "reservationTtlSeconds":  150,
+                       "vnpayProviderEnabled":  false,
+                       "providerSignedCallbackTested":  false,
+                       "bankTransactionPerformed":  false
+                   },
+    "changes":  {
+                    "binaryDeploy":  false,
+                    "ciRun":  false,
+                    "providerConfigChanged":  false,
+                    "existingCustomerDataModified":  false,
+                    "volumesDeleted":  false
+                },
+    "limitations":  [
+                        "SENT establishes SMTP acceptance, not inbox delivery",
+                        "Disabled provider responses do not establish successful VNPay integration",
+                        "No performance or race test",
+                        "Postman tests do not replace Java unit/integration tests"
+                    ],
+    "static":  {
+                   "artifacts":  [
+                                     {
+                                         "path":  "tests/postman/md05-tieng-viet.postman_collection.json",
+                                         "requests":  162,
+                                         "folders":  14,
+                                         "sha256":  "aaba313ea2793b8a66c6e05a3774cd6327f782dc8fbbdf864560359ca7cc1f10"
+                                     },
+                                     {
+                                         "path":  "tests/postman/md05-tieng-viet-vnpay.postman_collection.json",
+                                         "requests":  19,
+                                         "folders":  5,
+                                         "sha256":  "6db5d8220d291b26b54e110837727d1bbcfc8caee036a0140ab25620c91aac1d"
+                                     },
+                                     {
+                                         "path":  "tests/postman/md05-production-vnpay-disabled.postman_collection.json",
+                                         "requests":  6,
+                                         "folders":  1,
+                                         "sha256":  "44efbf75accbfaa7b07bcc5033d52b0b9e20beef9fdc5d4f3ccbeb41b7131ff0"
+                                     }
+                                 ],
+                   "scripts":  376,
+                   "bodies":  81,
+                   "publicOperations":  41,
+                   "liveCovered":  41,
+                   "missing":  [
+
+                               ],
+                   "localLinks":  33,
+                   "operations":  [
+                                      {
+                                          "operation":  "POST /api/auth/register",
+                                          "statuses":  [
+                                                           201,
+                                                           400,
+                                                           409
+                                                       ]
+                                      },
+                                      {
+                                          "operation":  "POST /api/auth/login",
+                                          "statuses":  [
+                                                           200,
+                                                           401
+                                                       ]
+                                      },
+                                      {
+                                          "operation":  "GET /api/auth/me",
+                                          "statuses":  [
+                                                           200,
+                                                           401
+                                                       ]
+                                      },
+                                      {
+                                          "operation":  "GET /api/auth/admin/users/{}",
+                                          "statuses":  [
+                                                           200,
+                                                           403
+                                                       ]
+                                      },
+                                      {
+                                          "operation":  "POST /api/products",
+                                          "statuses":  [
+                                                           201,
+                                                           400,
+                                                           401,
+                                                           403,
+                                                           409
+                                                       ]
+                                      },
+                                      {
+                                          "operation":  "POST /api/auth/refresh",
+                                          "statuses":  [
+                                                           200,
+                                                           401
+                                                       ]
+                                      },
+                                      {
+                                          "operation":  "POST /api/auth/logout",
+                                          "statuses":  [
+                                                           204
+                                                       ]
+                                      },
+                                      {
+                                          "operation":  "POST /api/auth/addresses",
+                                          "statuses":  [
+                                                           201,
+                                                           400
+                                                       ]
+                                      },
+                                      {
+                                          "operation":  "GET /api/auth/addresses",
+                                          "statuses":  [
+                                                           200
+                                                       ]
+                                      },
+                                      {
+                                          "operation":  "GET /api/auth/addresses/{}",
+                                          "statuses":  [
+                                                           200,
+                                                           404
+                                                       ]
+                                      },
+                                      {
+                                          "operation":  "PUT /api/auth/addresses/{}",
+                                          "statuses":  [
+                                                           200,
+                                                           404
+                                                       ]
+                                      },
+                                      {
+                                          "operation":  "DELETE /api/auth/addresses/{}",
+                                          "statuses":  [
+                                                           204,
+                                                           404
+                                                       ]
+                                      },
+                                      {
+                                          "operation":  "GET /api/products",
+                                          "statuses":  [
+                                                           200,
+                                                           400
+                                                       ]
+                                      },
+                                      {
+                                          "operation":  "GET /api/products/{}",
+                                          "statuses":  [
+                                                           200,
+                                                           404
+                                                       ]
+                                      },
+                                      {
+                                          "operation":  "PUT /api/products/{}",
+                                          "statuses":  [
+                                                           200
+                                                       ]
+                                      },
+                                      {
+                                          "operation":  "POST /api/products/{}/variants",
+                                          "statuses":  [
+                                                           201,
+                                                           409
+                                                       ]
+                                      },
+                                      {
+                                          "operation":  "GET /api/products/{}/variants",
+                                          "statuses":  [
+                                                           200
+                                                       ]
+                                      },
+                                      {
+                                          "operation":  "POST /api/inventory/stocks",
+                                          "statuses":  [
+                                                           200,
+                                                           400,
+                                                           403,
+                                                           409
+                                                       ]
+                                      },
+                                      {
+                                          "operation":  "GET /api/inventory/{}",
+                                          "statuses":  [
+                                                           200
+                                                       ]
+                                      },
+                                      {
+                                          "operation":  "POST /api/orders",
+                                          "statuses":  [
+                                                           200,
+                                                           201,
+                                                           409
+                                                       ]
+                                      },
+                                      {
+                                          "operation":  "GET /api/payments/by-order/{}",
+                                          "statuses":  [
+                                                           200
+                                                       ]
+                                      },
+                                      {
+                                          "operation":  "GET /api/orders/{}",
+                                          "statuses":  [
+                                                           200,
+                                                           404
+                                                       ]
+                                      },
+                                      {
+                                          "operation":  "GET /api/payments/{}",
+                                          "statuses":  [
+                                                           200,
+                                                           404
+                                                       ]
+                                      },
+                                      {
+                                          "operation":  "POST /api/payments/{}/simulate",
+                                          "statuses":  [
+                                                           200,
+                                                           403,
+                                                           409
+                                                       ]
+                                      },
+                                      {
+                                          "operation":  "POST /api/orders/{}/ship",
+                                          "statuses":  [
+                                                           200,
+                                                           403
+                                                       ]
+                                      },
+                                      {
+                                          "operation":  "POST /api/orders/{}/complete",
+                                          "statuses":  [
+                                                           200,
+                                                           409
+                                                       ]
+                                      },
+                                      {
+                                          "operation":  "POST /api/payments/{}/cod/collect",
+                                          "statuses":  [
+                                                           200,
+                                                           403,
+                                                           409
+                                                       ]
+                                      },
+                                      {
+                                          "operation":  "POST /api/orders/{}/cod/cancel",
+                                          "statuses":  [
+                                                           200
+                                                       ]
+                                      },
+                                      {
+                                          "operation":  "POST /api/orders/{}/return",
+                                          "statuses":  [
+                                                           200
+                                                       ]
+                                      },
+                                      {
+                                          "operation":  "GET /api/orders/{}/return",
+                                          "statuses":  [
+                                                           200,
+                                                           404
+                                                       ]
+                                      },
+                                      {
+                                          "operation":  "POST /api/orders/{}/return/decision",
+                                          "statuses":  [
+                                                           200,
+                                                           403
+                                                       ]
+                                      },
+                                      {
+                                          "operation":  "POST /api/orders/{}/return/receive",
+                                          "statuses":  [
+                                                           200,
+                                                           409
+                                                       ]
+                                      },
+                                      {
+                                          "operation":  "POST /api/payments/{}/cod/refund",
+                                          "statuses":  [
+                                                           200,
+                                                           403,
+                                                           409
+                                                       ]
+                                      },
+                                      {
+                                          "operation":  "GET /api/payments/{}/cod/refund",
+                                          "statuses":  [
+                                                           200
+                                                       ]
+                                      },
+                                      {
+                                          "operation":  "POST /api/payments/{}/simulate-refund",
+                                          "statuses":  [
+                                                           200,
+                                                           403
+                                                       ]
+                                      },
+                                      {
+                                          "operation":  "DELETE /api/products/{}",
+                                          "statuses":  [
+                                                           200,
+                                                           403
+                                                       ]
+                                      },
+                                      {
+                                          "operation":  "GET /api/payments/vnpay/ipn",
+                                          "statuses":  [
+                                                           200
+                                                       ]
+                                      },
+                                      {
+                                          "operation":  "GET /api/payments/vnpay/return",
+                                          "statuses":  [
+                                                           503
+                                                       ]
+                                      },
+                                      {
+                                          "operation":  "POST /api/payments/{}/vnpay/checkout",
+                                          "statuses":  [
+                                                           503
+                                                       ]
+                                      },
+                                      {
+                                          "operation":  "POST /api/payments/{}/vnpay/refund",
+                                          "statuses":  [
+                                                           503
+                                                       ]
+                                      },
+                                      {
+                                          "operation":  "POST /api/payments/{}/vnpay/reconcile",
+                                          "statuses":  [
+                                                           503
+                                                       ]
+                                      }
+                                  ],
+                   "initializerChecks":  {
+                                             "gmailAliasesDistinct":  true,
+                                             "freshIdsAndTokens":  true,
+                                             "missingOrInvalidMailboxStops":  true,
+                                             "localFallbackPreserved":  true
+                                         }
+               }
+}

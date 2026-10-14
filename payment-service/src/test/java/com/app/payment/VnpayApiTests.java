@@ -5,6 +5,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.hamcrest.Matchers.containsString;
 
 import com.app.payment.config.VnpaySettings;
 import com.app.payment.dto.response.VnpayCheckoutResponse;
@@ -37,6 +40,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.http.MediaType;
 
 @SpringBootTest(properties = {
         "spring.datasource.url=jdbc:h2:mem:vnpay;MODE=PostgreSQL;DB_CLOSE_DELAY=-1",
@@ -185,6 +189,83 @@ class VnpayApiTests {
         assertEquals("97", service.ipn(callback).responseCode());
         assertFalse(new VnpaySettings(false, "", "", "").enabled());
         assertThrows(IllegalStateException.class, () -> new VnpaySettings(true, "FIXTURE1", "", ""));
+    }
+
+    @Test
+    void browserReturnWaitsForIpnThenDisplaysStoredSuccessWithoutWriting() throws Exception {
+        var payment = pending();
+        var checkout = service.checkout(payment.getId(), 10L, "203.0.113.10");
+        var callback = callback(checkout, "00", "00", nextTransaction());
+        mvc.perform(get("/api/payments/vnpay/return").params(callback).accept(MediaType.TEXT_HTML))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
+                .andExpect(content().string(containsString("Đang chờ xác nhận thanh toán")))
+                .andExpect(content().string(containsString("data-pending=\"true\"")))
+                .andExpect(header().string("Cache-Control", "no-store"))
+                .andExpect(header().string("Referrer-Policy", "no-referrer"))
+                .andExpect(header().string("Content-Security-Policy", containsString("frame-ancestors 'none'")));
+        assertEquals(PaymentStatus.PENDING, payments.findById(payment.getId()).orElseThrow().getStatus());
+        assertEquals(0, outcomeCount(payment, "payment.succeeded"));
+        assertEquals("00", service.ipn(callback).responseCode());
+        mvc.perform(get("/api/payments/vnpay/return").params(callback).accept(MediaType.TEXT_HTML))
+                .andExpect(content().string(containsString("Thanh toán thành công")))
+                .andExpect(content().string(containsString("#" + payment.getOrderId())))
+                .andExpect(content().string(containsString("data-pending=\"false\"")));
+        mvc.perform(get("/api/payments/vnpay/return").params(callback).accept(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("data.providerOutcome").value("SUCCESS"))
+                .andExpect(jsonPath("data.paymentStatus").value("SUCCESS"))
+                .andExpect(jsonPath("data.orderId").value(payment.getOrderId()));
+        mvc.perform(get("/api/payments/vnpay/return").params(callback))
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("data.paymentId").value(payment.getId()));
+        assertEquals(1, outcomeCount(payment, "payment.succeeded"));
+    }
+
+    @Test
+    void browserReturnRejectsTamperingUnknownReferenceAndWrongStoredAmount() throws Exception {
+        var payment = pending();
+        var checkout = service.checkout(payment.getId(), 10L, "203.0.113.10");
+        var callback = callback(checkout, "00", "00", nextTransaction());
+        callback.set("vnp_Amount", "1251");
+        mvc.perform(get("/api/payments/vnpay/return").params(callback).accept(MediaType.TEXT_HTML))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(containsString("Chưa thể xác minh kết quả")));
+        sign(callback);
+        mvc.perform(get("/api/payments/vnpay/return").params(callback))
+                .andExpect(status().isBadRequest());
+        callback.set("vnp_Amount", "1250");
+        callback.set("vnp_TxnRef", UUID.randomUUID().toString().replace("-", ""));
+        sign(callback);
+        mvc.perform(get("/api/payments/vnpay/return").params(callback).accept(MediaType.TEXT_HTML))
+                .andExpect(status().isNotFound());
+        assertEquals(PaymentStatus.PENDING, payments.findById(payment.getId()).orElseThrow().getStatus());
+        assertEquals(0, outcomeCount(payment, "payment.succeeded"));
+    }
+
+    @Test
+    void browserReturnShowsCancellationAndLateCaptureWithoutClaimingOrderSuccess() throws Exception {
+        var cancelled = pending();
+        var checkout = service.checkout(cancelled.getId(), 10L, "203.0.113.10");
+        var callback = callback(checkout, "24", "02", "0");
+        assertEquals("00", service.ipn(callback).responseCode());
+        mvc.perform(get("/api/payments/vnpay/return").params(callback).accept(MediaType.TEXT_HTML))
+                .andExpect(content().string(containsString("Thanh toán không thành công")))
+                .andExpect(content().string(containsString("data-pending=\"false\"")));
+
+        var expired = pending();
+        checkout = service.checkout(expired.getId(), 10L, "203.0.113.10");
+        expired.expireReservation();
+        payments.saveAndFlush(expired);
+        callback = callback(checkout, "00", "00", nextTransaction());
+        assertEquals("00", service.ipn(callback).responseCode());
+        mvc.perform(get("/api/payments/vnpay/return").params(callback).accept(MediaType.TEXT_HTML))
+                .andExpect(content().string(containsString("Đơn hàng không còn hiệu lực")))
+                .andExpect(content().string(containsString("Khoản tiền cần được xử lý hoàn")));
+        assertEquals(0, outcomeCount(expired, "payment.succeeded"));
+        callback.set("vnp_TransactionNo", nextTransaction());
+        sign(callback);
+        mvc.perform(get("/api/payments/vnpay/return").params(callback))
+                .andExpect(status().isBadRequest());
     }
 
     private Payment pending() {

@@ -1,9 +1,23 @@
 # Đơn hết hạn 150 giây, email và monitoring
 
+Cập nhật cuối ngày 14/10/2026: VPS đã chuyển Notification sang Gmail SMTP
+lúc 23:02:42 +07; binary vẫn mốc 168, local giữ Mailpit. Phần sandbox bên
+dưới mô tả checkpoint trước thay đổi. Xem [cấu hình SMTP thật](email-thuc.md)
+và [bằng chứng mới](evidence/gmail-smtp-2026-10-14.json).
+
 Ngày 14/10/2026, nhánh `feature/expiry-150s-email-monitoring` tiếp nối
 worktree đêm trước và đổi thời hạn 5 phút thành 150 giây. Hạ tầng runtime
 nằm trong `docs/infrastructure/`; Compose, CI, release và scripts đều dùng
 đường dẫn này. SHA/deploy theo từng checkpoint ở `commits-and-deployments.md`.
+
+Checkpoint **14/10/2026, 10:50 +07**: [PR #36](https://github.com/dth251/md05-rikkei-project/pull/36)
+đã merge main mốc 168 `d2779d1595fb5541675e65604eb07ac633ccf91b`;
+[CI/CD main](https://github.com/dth251/md05-rikkei-project/actions/runs/38505256214)
+success, rollout hoàn tất 10:41:31 +07. Sáu app đúng revision/healthy,
+restart=0; Order runtime PT150S, Notification migrations 001–005.
+Monitoring/history/query/unit và 3/3 SMTP VPS tests đạt. Snapshot
+[metrics sau rollout](evidence/monitoring-2026-10-14.json) không chứa
+credential/định danh khách hàng và không phải kết quả capacity.
 
 ## Thời hạn thanh toán
 

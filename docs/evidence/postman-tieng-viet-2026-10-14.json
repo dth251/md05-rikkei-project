@@ -1,0 +1,121 @@
+{
+  "verifiedAt": "2026-10-14T15:47:42.461Z",
+  "sourceHeadBeforeChanges": "2118079",
+  "target": "http://127.0.0.1:8080",
+  "mode": "live-local-gateway",
+  "static": {
+    "artifacts": [
+      {
+        "path": "tests/postman/md05-tieng-viet.postman_collection.json",
+        "requests": 162,
+        "folders": 14,
+        "sha256": "264ad99f95ae51c0e84fc9fbb62824098e07f8d32244e51b3aa46e7567fd87c8"
+      },
+      {
+        "path": "tests/postman/md05-tieng-viet-vnpay.postman_collection.json",
+        "requests": 19,
+        "folders": 5,
+        "sha256": "6db5d8220d291b26b54e110837727d1bbcfc8caee036a0140ab25620c91aac1d"
+      }
+    ],
+    "scripts": 364,
+    "bodies": 80,
+    "publicOperations": 41,
+    "covered": 41,
+    "missing": [],
+    "localLinks": 18,
+    "stopOnAssertionFailure": true
+  },
+  "runner": {
+    "savedRequests": 162,
+    "folders": 14,
+    "metrics": {
+      "requests": {
+        "executed": 281,
+        "failed": 0
+      },
+      "test-scripts": {
+        "executed": 281,
+        "failed": 0
+      },
+      "prerequest-scripts": {
+        "executed": 562,
+        "failed": 0
+      },
+      "assertions": {
+        "executed": 659,
+        "failed": 0
+      }
+    },
+    "duration": "5 m 52.8s",
+    "delayRequestMs": 1100,
+    "timeoutRequestMs": 10000,
+    "bail": true,
+    "reportEvents": false,
+    "exitCode": 0
+  },
+  "runtime": [
+    {
+      "service": "api-gateway",
+      "image": "omnichannel-gateway:local",
+      "revision": null,
+      "health": "healthy"
+    },
+    {
+      "service": "auth-service",
+      "image": "omnichannel-auth:local",
+      "revision": null,
+      "health": "healthy"
+    },
+    {
+      "service": "product-service",
+      "image": "omnichannel-product:local",
+      "revision": null,
+      "health": "healthy"
+    },
+    {
+      "service": "order-service",
+      "image": "omnichannel-order:local",
+      "revision": null,
+      "health": "healthy"
+    },
+    {
+      "service": "payment-service",
+      "image": "omnichannel-payment:local",
+      "revision": null,
+      "health": "healthy"
+    },
+    {
+      "service": "notification-service",
+      "image": "omnichannel-notification:local",
+      "revision": null,
+      "health": "healthy"
+    }
+  ],
+  "expiry": {
+    "ttl": "PT150S",
+    "waitedRealTime": true,
+    "lateSuccessHttp": 409
+  },
+  "smtp": {
+    "enabled": true,
+    "host": "mailpit",
+    "port": 1025,
+    "internetDeliveryVerified": false,
+    "mailboxAssertionsRun": false
+  },
+  "vnpay": {
+    "staticOnly": true,
+    "merchantSandboxRun": false
+  },
+  "deployment": {
+    "rolledOut": false,
+    "ciRun": false,
+    "productionRun": false
+  },
+  "notes": [
+    "Runtime local images have no revision label; source HEAD is not the runtime SHA.",
+    "Initial SKU expectation and oversell quantity were corrected before this successful run.",
+    "No credentials, tokens, recipient emails, signed checkout URLs or private environment files are included."
+  ]
+}

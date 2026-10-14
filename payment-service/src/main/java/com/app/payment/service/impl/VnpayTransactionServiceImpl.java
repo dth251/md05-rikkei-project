@@ -6,6 +6,7 @@ import com.app.payment.dto.event.CommerceEvent;
 import com.app.payment.dto.request.VnpayCallback;
 import com.app.payment.dto.response.VnpayCheckoutResponse;
 import com.app.payment.dto.response.VnpayIpnResponse;
+import com.app.payment.dto.response.VnpayReturnResponse;
 import com.app.payment.entity.PaymentStatus;
 import com.app.payment.entity.PaymentMethod;
 import com.app.payment.entity.VnpayPayment;
@@ -103,6 +104,21 @@ public class VnpayTransactionServiceImpl implements VnpayTransactionService {
         String url = settings.paymentUrl() + "?" + query + "&vnp_SecureHash=" + VnpaySignature.hmac(query, settings.secret());
         var attempt = new VnpayPayment(paymentId, reference, amount, settings.terminal(), now, expires, address, url);
         return mapper.toCheckout(attempts.saveAndFlush(attempt));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public VnpayReturnResponse returnResult(VnpayCallback callback) {
+        var attempt = attempts.findByReference(callback.reference())
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Checkout not found"));
+        if (!settings.terminal().equals(attempt.getTerminal())
+                || !attempt.getAmountMinor().equals(callback.amountMinor())
+                || (callback.successful() && attempt.getTransactionNumber() != null
+                && !attempt.getTransactionNumber().equals(callback.transactionNumber()))) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Return does not match checkout");
+        }
+        var payment = payments.findById(attempt.getPaymentId()).orElseThrow();
+        return mapper.toReturn(payment, callback);
     }
 
     @Override

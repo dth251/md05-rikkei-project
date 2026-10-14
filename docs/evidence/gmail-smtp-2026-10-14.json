@@ -1,0 +1,65 @@
+{
+    "recordedAt":  "2026-10-14T23:14:58.4485866+07:00",
+    "target":  "VPS 42.96.2.60",
+    "runtimeRevision":  "d2779d1595fb5541675e65604eb07ac633ccf91b",
+    "smtp":  {
+                 "host":  "smtp.gmail.com",
+                 "port":  587,
+                 "starttls":  true,
+                 "authentication":  true,
+                 "configuredAt":  "2026-10-14T23:02:42.5974441+07:00",
+                 "status":  "configured",
+                 "sandboxEnabled":  false,
+                 "passwordIncluded":  false
+             },
+    "deployment":  {
+                       "notificationRecreated":  true,
+                       "binaryChanged":  false,
+                       "otherApplicationsHealthy":  6,
+                       "volumesDeleted":  false,
+                       "ciRun":  false
+                   },
+    "applicationNotification":  {
+                                    "orderId":  145,
+                                    "paymentId":  82,
+                                    "userId":  223,
+                                    "event":  "order.confirmed",
+                                    "state":  "SENT",
+                                    "attempts":  1,
+                                    "sentAt":  "2026-10-14T23:03:27+07:00",
+                                    "paymentMethod":  "ONLINE",
+                                    "paymentSimulated":  true,
+                                    "amount":  125000
+                                },
+    "htmlPreview":  {
+                        "orderId":  145,
+                        "sentAt":  "2026-10-14T23:13:29.0752510+07:00",
+                        "smtpStatus":  "smtp-accepted",
+                        "smtpResponse":  250,
+                        "messageId":  "e4035283-b60e-4bcc-b9ff-8cb0f9455892",
+                        "recipient":  "requesting-user-exact-address",
+                        "inboxVerified":  false,
+                        "automaticallyAppliedToAllOrders":  false,
+                        "multipartAlternative":  true,
+                        "utf8":  true,
+                        "desktopViewport":  820,
+                        "mobileViewport":  390,
+                        "horizontalOverflow":  false,
+                        "visualInspection":  true,
+                        "rejectsMismatchedTotal":  true,
+                        "escapesCustomerAndProductText":  true
+                    },
+    "verification":  {
+                         "powershellSyntax":  "pass",
+                         "embeddedBashSyntax":  "pass",
+                         "sequentialSmtpChallengeCancel":  "250 334 501 221",
+                         "initialAuthenticationProbeFailure":  "451 due to pipelined AUTH, corrected before runtime change",
+                         "notificationImageUnchanged":  true,
+                         "gitDiffCheck":  "pass"
+                     },
+    "notes":  [
+                  "Only the private VPS environment contains SMTP credentials.",
+                  "The HTML invoice is a requested sample, separate from the existing automatic plain-text mapper.",
+                  "SMTP 250/SENT does not by itself prove inbox delivery."
+              ]
+}

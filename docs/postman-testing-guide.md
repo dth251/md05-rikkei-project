@@ -1,12 +1,24 @@
 # Hướng dẫn kiểm thử API bằng Postman và đối chiếu yêu cầu dự án
 
-Cập nhật **12/10/2026 (+07:00)**. Hướng dẫn này mô tả request và kết quả cần
+Theo yêu cầu hiện tại, dùng **[hướng dẫn test production](test-production.md)**
+và [kết quả live production](postman-production-results.md). Thanh toán dùng
+API simulate, chưa có link giả lập; không cần merchant VNPay. Hướng dẫn
+bên dưới giữ các chi tiết đối chiếu contract và môi trường lịch sử.
+
+Bộ mới có tên request/assertion bằng tiếng Việt, tự tạo fixture và chạy theo
+luồng: [hướng dẫn import và chạy](../tests/postman/README.md),
+[kịch bản demo có lời dẫn](demo-luong-hoat-dong.md),
+[kết quả kiểm chứng](postman-tieng-viet-results.md).
+
+Cập nhật **14/10/2026 (+07:00)**. Hướng dẫn này mô tả request và kết quả cần
 kiểm tra; không tự coi các bước chưa chạy là kết quả PASS.
 
-API trong phần 2–10 thuộc các chức năng đã deploy ở mốc 119. VNPay ở phần 13
-vẫn nằm trên feature, chưa deploy VPS. SMTP, Prometheus server/Grafana và
-tracing chưa hoàn tất; checklist kiểm thử của chúng có trạng thái riêng.
-Xem [các phần còn cần bổ sung](remaining-work.md).
+VPS đã rollout main mốc 168 ngày 14/10/2026: deadline ONLINE 150 giây,
+Prometheus/Grafana đã được kiểm chứng. Gmail SMTP thay Mailpit trên VPS từ
+23:02 cùng ngày. VNPay provider đang tắt, test hiện tại dùng simulate.
+Trạng thái CI/CD
+và từng nhóm nằm trong [nhật ký triển khai](commits-and-deployments.md).
+Để trình bày và tự test theo thứ tự, dùng [kịch bản demo](demo-test-guide.md).
 
 ## 1. Chuẩn bị môi trường
 
@@ -42,11 +54,13 @@ Thao tác cơ bản của công cụ tham khảo tài liệu chính thức:
 [post-response scripts](https://learning.postman.com/docs/tests-and-scripts/write-scripts/test-examples/)
 và [environment variables](https://learning.postman.com/docs/use/send-requests/variables/environment-variables).
 
-## 2. Chạy nhanh collection có sẵn: 19 requests
+## 2. Chạy nhanh ba folder đầu: 19 requests
 
 Import [md05.postman_collection.json](../tests/postman/md05.postman_collection.json).
-Collection này kiểm tra Auth/security, Product/Inventory và Saga **FAILED →
-CANCELLED → hoàn kho**. Nó chưa bao phủ toàn bộ phần mở rộng trong tài liệu.
+Collection có 38 requests trong 7 folders. Ba folder đầu kiểm tra
+Auth/security, Product/Inventory và Saga **FAILED → CANCELLED → hoàn kho**.
+Các folder VNPay, COD, cancellation và return cần tiền đề riêng; chọn đúng
+folder để chạy, không Run toàn bộ collection trong lượt kiểm tra nhanh.
 
 1. Chọn environment; đặt `baseUrl`, `adminEmail`, `adminPassword` private.
 2. Collection tự sinh `email`, `password`, `sku`, `orderKey`, rồi lưu
@@ -79,7 +93,8 @@ Runner và điều khiển thứ tự:
 Import [OpenAPI Gateway](openapi/api-gateway.json) thành một collection mới,
 hoặc tạo request thủ công theo phần dưới. Kiểm tra URL sau import và đặt
 `{{baseUrl}}` đúng môi trường; thay body mẫu bằng dữ liệu fixture trong hướng
-dẫn. OpenAPI hiện tại chưa chứa các endpoint VNPay trên feature.
+dẫn. OpenAPI hiện tại có các endpoint VNPay đã tích hợp; vẫn cần cấu hình
+merchant private để chạy sandbox.
 [Cách import specification](https://learning.postman.com/docs/design-apis/specifications/import-a-specification).
 
 Dùng environment riêng cho bộ mở rộng; scripts dưới đây dùng
@@ -529,8 +544,8 @@ quả. Không để đơn fixture giữ kho nếu đã kết thúc bài thử.
 
 ### 10.3. Hết hạn reservation
 
-Tạo đơn riêng, không simulate; chờ TTL mặc định **30 phút**, cộng thời gian
-scan/queue. JWT có thể hết hạn trước TTL: login lại khi đọc kết quả. Kỳ vọng
+Tạo đơn ONLINE riêng, không simulate; chờ TTL mặc định **150 giây** tính từ
+createdAt, cộng thời gian scan/queue. Login lại nếu JWT hết hạn. Kỳ vọng
 Order EXPIRED, stock được trả đúng một lần; khi event expiry tới Payment,
 `reservationExpired=true`, Payment pending đổi FAILED, simulate SUCCESS bị
 từ chối. Lặp GET/retry không hoàn kho thêm.
@@ -620,17 +635,20 @@ sau, khôi phục trong finally và không xóa queue/volume. Không chạy các
 - RPC private không dùng bearer JWT HTTP: cần metadata/fixture riêng, theo
   [gRPC runbook](product-order-grpc.md); không đưa key vào collection public.
 
-Prometheus server/Grafana chưa deploy ở checkpoint tài liệu này. Khi bổ sung,
-kiểm tra scrape targets, query lịch sử, datasource/dashboard, retention qua
-restart và alert firing/resolved. HTTP 200 của `/actuator/prometheus` hiện tại
-chỉ chứng minh exporter phục vụ, chưa chứng minh collector/dashboard tồn tại.
-Tương tự, trace/log tập trung và SMTP đang thiếu: ghi **NOT READY**, không PASS.
+Prometheus/Grafana đã deploy và kiểm chứng ở mốc 168: sáu service/năm
+dependency targets UP, dashboard 22 panels, query/unit khớp provisioning và
+history còn sau recreate. Truy cập bằng SSH tunnel, xem
+[runbook monitoring](expiry-email-monitoring.md) và [kịch bản demo](demo-test-guide.md).
+HTTP 200 của exporter riêng lẻ chưa chứng minh dashboard; alert firing/resolved
+và trace/log có checklist riêng trong tài liệu observability, không suy ra PASS
+từ health. No data không đồng nghĩa 0.
 
 ## 13. VNPay: chỉ chạy khi đúng feature và cấu hình đã sẵn sàng
 
-Các endpoint dưới đây **chưa có trên VPS image 119**. Cần deploy/test feature
-VNPay với cấu hình private hợp lệ trước. 404 trên VPS hiện tại không được
-đánh giá là lỗi regression của bản 119.
+Các endpoint đã tích hợp trên main mốc 168. Cần xác minh runtime revision,
+cấu hình VNPay private và merchant sandbox trước khi chạy; integration tắt
+trả 503 theo hợp đồng bên dưới. Không dùng payment đã checkout VNPay cho
+bài simulate SUCCESS/FAILED trong cùng lượt thử.
 
 | Endpoint | Auth/body | Kỳ vọng khi integration đã bật |
 |---|---|---|
@@ -674,8 +692,10 @@ này phục vụ kiểm thử/vận hành, không phải code service query ché
 
 Đối chiếu đúng orderId/event, một log cho mỗi stage dự kiến, queue/inbox/dedup
 và pending Outbox. Không gọi route `/api/notifications` tự tạo để đánh PASS.
-SMTP khi triển khai cần thêm bằng chứng thư nhận được, recipient/content,
-retry/restart; log DB hiện tại không chứng minh email đã gửi.
+SMTP Mailpit sandbox đã kiểm chứng confirmation/cancellation/expiry ở mốc
+168. Demo phải xem thư nhận được, đúng recipient/order/content và kiểm tra
+replay không tạo delivery mới; log DB riêng lẻ không chứng minh thư đã tới.
+Xem [runbook SMTP](expiry-email-monitoring.md) và [demo](demo-test-guide.md).
 
 ## 15. Xử lý lỗi và ghi kết quả
 

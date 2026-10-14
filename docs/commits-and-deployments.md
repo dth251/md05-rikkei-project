@@ -816,3 +816,228 @@ millisecond và toàn bộ 60 ca hồi quy chạy lại đạt.
 CI/PR và deploy của nhánh mới chưa hoàn tất tại checkpoint này. Mức tải
 500/1.000 requests/s trước đó vẫn không đạt; không chạy tải lớn lại để
 khẳng định capacity. Xem báo cáo tải/monitoring và runbook tương ứng.
+
+## CI/CD và kiểm chứng VPS mốc 168 ngày 14/10/2026
+
+| Mốc | SHA | Thời gian +07 | Kiểm tra / deploy thực tế |
+|---|---|---|---|
+| 167-docs | `38423e2a004d7a651f26acb0ac6b764e3b4ec293` | 2026-10-14T09:49:26+07:00 | Lần SMTP local giảm heap đạt 5/5, zero fail/error/skip; case chờ đủ 150 giây gồm setup/SMTP/replay mất 155.285s. PR CI 38503120433 success toàn bộ Java/live/VNPay/SMTP/tải nhỏ/monitoring/tracing/logging. |
+| 168-infrastructure | `d2779d1595fb5541675e65604eb07ac633ccf91b` | 2026-10-14T10:14:52+07:00 | Merge PR #36 sau CI đạt. Main CI/CD 38505256214: verify/observability-config, publish sáu image và deploy success. Deploy hoàn tất 10:41:31 +07; SSH sau rollout xác nhận sáu revision đúng SHA, healthy, restart=0. |
+
+Thời điểm container khởi động +07: Auth 10:33:06, Gateway 10:34:40,
+Product 10:35:55, Payment 10:37:31, Order 10:39:09, Notification
+10:40:45. Health/smoke từng service đạt trước khi rollout service tiếp;
+không dùng startedAt thay cho thời điểm deploy job hoàn tất.
+
+Private TTL đã chuẩn bị PT150S trước merge; backup `.env` private giữ
+trên VPS, không đưa vào Git/log. Order container mới xác nhận
+`RESERVATION_TTL=PT150S`; Notification database có versions 001–005.
+Không đổi checksum migration 004, không xóa volume hay dữ liệu.
+
+SSH 10:42 và sau Java live: Prometheus/Grafana healthy, sáu service và
+năm dependency targets UP; dashboard 22 panel/query/unit khớp file nguồn.
+Truy lại đúng cửa sổ **02:55:20–02:57:20 UTC trước rollout** sau recreate
+vẫn có sáu UP series, mỗi series ít nhất ba mẫu. Đây là kiểm chứng history
+đã lưu, không chỉ dữ liệu mới thu sau restart. HTTPS gateway-status UP.
+
+Java live VPS hoàn tất **10:47:16 +07**, 3/3, zero fail/error/skip:
+confirmation/recipient/replay, cancellation và expiry 150 giây. Case
+expiry mất 164.984s tính cả setup/SMTP/replay; clock fixture không sửa
+createdAt, kiểm tra PENDING trước hạn và EXPIRED sau hạn, reserved hoàn
+available, một email đúng chủ đơn, replay không thêm delivery và thanh
+toán mô phỏng tới muộn trả 409. SMTP là Mailpit sandbox thực, không gửi
+Internet hoặc giao dịch ngân hàng thật. Không stop/restart app VPS trong
+bài kiểm thử này; tunnel riêng đã đóng trong finally.
+
+Đối soát cuối: mọi queue ready/unacked/DLQ=0, queue expiry một consumer,
+Order/Payment pending Outbox=0; email SENT=6, không có FAILED/UNKNOWN.
+Snapshot 10:49:55 +07 có CPU khoảng 41,13% theo cửa sổ 1 phút và RAM
+available 2.191,64 MiB, dữ liệu throughput/p95 theo cửa sổ 2/5 phút.
+[JSON đã loại thông tin riêng tư](evidence/monitoring-2026-10-14.json)
+ghi revision, query snapshot và kết quả ba Java tests. Không dùng snapshot
+tải thấp để tuyên bố đạt 500–1.000 requests/s; báo cáo capacity trước đó
+vẫn không đạt. UI helper lỗi sandbox qua retry/reset nên chưa lưu ảnh;
+không đánh dấu ảnh/video hoặc visual QA hoàn tất từ API checks.
+
+[PR #36](https://github.com/dth251/md05-rikkei-project/pull/36),
+[PR CI đạt](https://github.com/dth251/md05-rikkei-project/actions/runs/38503120433),
+[main CI/CD và deploy đạt](https://github.com/dth251/md05-rikkei-project/actions/runs/38505256214).
+
+## Sửa 14 lỗi IDE và chuẩn bị demo ngày 14/10/2026
+
+| Mốc | SHA | Thời gian +07 | Kiểm tra / deploy thực tế |
+|---|---|---|---|
+| 169-docs | `4ec336976b192c22923d897dd2d25fa2b5ecf86b` | 2026-10-14T10:54:09+07:00 | Ghi checkpoint main 168/SMTP/monitoring và snapshot đã bỏ thông tin riêng tư; không rollout thêm. |
+| 170-notification-service | `7810bdefb18a5e020cc8f722cdc4e1311f733b6e` | 2026-10-14T16:53:30+07:00 | IDE có 14 errors trong NotificationTests do không nhận NotificationLog. Reload Gradle/full rebuild riêng Notification: toàn workspace 0 errors. Đọc lại 16:53:28 +07 vẫn 0 và đủ sáu projects. Wrapper compileJava/compileTestJava/test chạy lại đạt 21/21, zero fail/error/skip lúc 16:49:36. Sửa model IDE local, không thay Java source/settings người dùng và không deploy VPS. |
+
+[Kịch bản demo](demo-test-guide.md) gồm Auth/security, Product/Inventory,
+ONLINE SUCCESS/FAILED, deadline thật 150 giây, SMTP sandbox, COD/returns và
+monitoring/k6. Hướng dẫn Postman cập nhật runtime mốc 168 và đúng 38 requests
+trong 7 folders (19 requests ở ba folders đầu). Kịch bản mới chưa được chạy
+end-to-end trong lượt này; không dùng kết quả Java/CI trước đó để đánh PASS
+cho một phiên demo chưa chạy. Kiểm tra links, JSON mẫu và hợp đồng DTO/API
+trước commit tài liệu: 25 local links và 16 JSON examples hợp lệ; collection
+đúng 38 requests/19 core requests, `git diff --check` đạt. Không rollout hay
+chạy tải lớn lên VPS trong lượt này.
+
+## Dữ liệu demo production ngày 14/10/2026
+
+| Mốc | SHA | Thời gian +07 | Kiểm tra / deploy thực tế |
+|---|---|---|---|
+| 171-docs | `337604cd656e8f994314abf680caa7162cbc4a35` | 2026-10-14T16:55:02+07:00 | Kịch bản demo và Postman cập nhật; 25 links/16 JSON mẫu đạt. Không rollout ứng dụng. |
+| 172-order-service | `10da7c4132cd291d47796cf4930d59197b3f8d9b` | 2026-10-14T18:43:38+07:00 | Java CLI fixture + wrapper PowerShell chỉ chạy explicit. Production HTTPS tạo/verify 3 tài khoản nghiệp vụ, 3 địa chỉ, 11 Product/variant, 17 Order/Payment, 4 return stages; Order 61/61 tests và bootJar đạt 18:35:28. Capacity chuẩn bị/login 50 USER thật lúc 18:38:18, catalog HTTPS 200; không phát tải. Verify dataset lần cuối 18:41:37, IDE 0 errors 18:42:38. Runtime vẫn main 168, không rollout thêm. |
+
+Dataset `demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461`: ADMIN/A/B IDs
+170–172; capacity USER IDs 173–222. Product IDs 139–149; Order IDs
+128–144; Payment IDs 65–81; addresses 2–4. Đều là tài khoản/dữ liệu giả
+được tạo riêng. Chỉ UPDATE role đúng tài khoản admin mới theo id/email/
+fullName, rồi login; không thay quyền tài khoản khác.
+
+Deadline 150 giây được chờ thật cho Order 144: EXPIRED, Payment FAILED /
+reservationExpired=true, simulate SUCCESS muộn 409. Inventory Product 139
+10/0 dành test mới; Product 140 89/1, reserved=1 của COD 134 chưa giao.
+Return REFUND_PENDING/REFUNDED đã restock một lần; ownership sai 404, USER
+tạo Product 403, anonymous 401. Các thu/hoàn tiền là biên nhận demo,
+không có chuyển tiền ngân hàng/VNPay thật.
+
+SQL scoped theo đúng 17 order IDs và Mailpit API đối chiếu **32 SENT /
+32 messages**, đúng hai recipient demo: confirmed=12, cancelled=2,
+shipped=10, completed=7, expired=1; không có FAILED/UNKNOWN trong dataset.
+Verifier monitoring đạt sáu app/năm dependency UP, history, datasource,
+22 panel/query/unit. Không recreate container hoặc xóa volume/dữ liệu.
+
+[Hướng dẫn dữ liệu](production-demo-data.md), [manifest đã bỏ credentials](evidence/production-demo-data-2026-10-14.json)
+và [collection Postman](../tests/postman/md05-production-fixtures.postman_collection.json)
+có 99 requests/102 scripts: JSON bodies, cú pháp scripts, references tới
+environment và 50 capacity users duy nhất được kiểm tra. Chưa chạy cả
+collection trong Postman Runner; Java live fixture/API đối chiếu production
+là bằng chứng riêng, không thay kết quả Runner.
+
+Environment/fixture chứa passwords/tokens giữ ngoài Git tại thư mục
+private `.md05-demo/production-20261014-182534` của Windows user hiện tại,
+ACL owner-only. Kiểm tra source candidates không chứa các giá trị
+credentials thật. Không commit `.verification`, private files hoặc thay
+đổi `.vscode/settings.json` có sẵn của người dùng. Muốn test PENDING ONLINE,
+tạo đơn mới qua folder 05–07 vì đơn chờ sẽ tự hết hạn sau 150 giây.
+
+## Bộ Postman tiếng Việt và demo theo luồng ngày 14/10/2026
+
+| Mốc | SHA | Thời gian +07 | Kiểm tra / deploy thực tế |
+|---|---|---|---|
+| 174-api-gateway | `9834545700050f162498bf63d22ed5d6398d44e5` | 2026-10-14T22:47:50+07:00 | 162 requests/14 folders nghiệp vụ và 19 requests VNPay tùy chọn, environment mẫu không credentials; bao phủ method/path 41/41 operations OpenAPI. Local Runner cuối 281 HTTP executions (gồm polling), 659 assertions, zero failures, exit 0, 5m52.8s; deadline PT150S chờ thật, SUCCESS muộn 409. Sáu app local healthy. Không rollout, không CI mới, chưa chạy bộ mới trên VPS hoặc merchant VNPay. |
+
+Nhánh `feature/postman-tieng-viet-demo`. Kiểm tra tĩnh 364 hooks JavaScript,
+80 JSON bodies và 18 links nội bộ đạt; `git diff --check` và quét giá trị
+credential fixture trong 10 file staged đạt. Test thiếu ADMIN dừng trước
+HTTP, báo đúng biến còn thiếu. Hai kỳ vọng test ban đầu được sửa (SKU
+chuẩn hóa chữ hoa, lượng vượt kho phải trong giới hạn DTO) rồi chạy lại
+toàn bộ đạt; không sửa nghiệp vụ Java. Ảnh local không có revision label,
+không coi HEAD tài liệu là runtime SHA. Không stage thay đổi settings IDE
+có sẵn của người dùng hoặc `.verification` chứa environment private.
+
+[Hướng dẫn Postman](../tests/postman/README.md),
+[kịch bản demo](demo-luong-hoat-dong.md),
+[kết quả chi tiết](postman-tieng-viet-results.md) và
+[JSON bằng chứng](evidence/postman-tieng-viet-2026-10-14.json).
+Notification local vẫn gửi vào Mailpit, chưa xác minh email Internet.
+Mã nguồn lấy recipient từ email tài khoản Auth đã đăng ký; đã thêm
+[hướng dẫn SMTP thật](email-thuc.md). Chờ người dùng chọn môi trường/dịch
+vụ SMTP và cấu hình private trước khi bật gửi tới hộp thư thật.
+
+## Gmail SMTP VPS và mẫu hóa đơn HTML ngày 14/10/2026
+
+| Mốc | SHA | Thời gian +07 | Kiểm tra / deploy thực tế |
+|---|---|---|---|
+| 175-docs | `d14360b` | 2026-10-14T22:48:08+07:00 | Ghi checkpoint 174/Postman local, chưa thay runtime. |
+| 176-notification-service | `9f9f3b5fa40ab48bb53adcab1b223a8430744ac9` | 2026-10-14T22:56:29+07:00 | Script nhập app password kín và hướng dẫn Gmail; PowerShell parser/Bash syntax đạt. SMTP probe ban đầu bị 451, chưa thay runtime ở mốc này. |
+| 177-notification-service | `31b7d207b8ba4643fdbe99b179cde10dfc3e9bd4` | 2026-10-14T23:15:27+07:00 | Sửa AUTH thành challenge/response tuần tự; probe không credentials 250/334/501/221 đạt, sau đó SMTP auth thật đạt. VPS cập nhật SMTP/recreate riêng Notification 23:02:42, giữ binary d2779d1; sáu app healthy. Render hóa đơn HTML desktop 820px/mobile 390px không tràn ngang, kiểm tra sum/escaping đạt; gửi mẫu đúng địa chỉ được yêu cầu lúc 23:13:29, SMTP 250. Chưa xác nhận inbox, chưa áp dụng template vào mapper tự động, không CI/binary rollout mới. |
+
+Gmail cấu hình private trong `.env` VPS quyền 600, sandbox flag false;
+SMTP host smtp.gmail.com, port 587, auth/STARTTLS true. Giữ nguyên
+recipient credential Auth–Notification và image
+`d2779d1595fb5541675e65604eb07ac633ccf91b`; không pull/build app, không
+restart các app khác hoặc xóa volume. Backup environment quyền 600 giữ
+trên VPS. Không lưu app password vào Git, command arguments hoặc báo cáo.
+
+Đơn thử mới #145 (USER 223, Product 150, Payment 82), ONLINE mô phỏng,
+125.000 đồng, CONFIRMED. Notification ghi order.confirmed/SENT/attempts=1
+lúc 23:03:27 +07 qua Gmail. Người nhận lần đầu là alias Gmail của người
+dùng. Khi người dùng yêu cầu mẫu hóa đơn có giao diện trước khi gửi đúng
+địa chỉ chính, đã render/QA rồi gửi bản multipart text/HTML; mã SMTP 250,
+message id `e4035283-b60e-4bcc-b9ff-8cb0f9455892`. Không thay tài khoản
+ADMIN có email chính, không tạo giao dịch ngân hàng thật.
+
+[Mẫu và ảnh QA](email/README.md), [bằng chứng đã bỏ credentials](evidence/gmail-smtp-2026-10-14.json).
+Template là bản gửi thử; email tự động hiện vẫn dùng EmailMapper text,
+không gắn dữ liệu demo cố định vào thông báo của khách. Xác nhận inbox
+cần người nhận kiểm tra; SENT/250 chỉ là chứng cứ SMTP chấp nhận.
+
+## Kiểm thử production và thanh toán mô phỏng ngày 14/10/2026
+
+| Mốc | SHA | Thời gian +07 | Kiểm tra / deploy thực tế |
+|---|---|---|---|
+| 178-docs | `9d2011a` | 2026-10-14T23:16 | Ghi kết quả Gmail VPS và mẫu hóa đơn gửi riêng; chưa tích hợp HTML vào mapper tự động. |
+| 179-api-gateway | `56370ec5cc787b3081c6499975917b575a70a0ef` | 2026-10-14T23:38:50+07:00 | Main Postman đủ 14 folders trên HTTPS production: 280 HTTP executions/659 assertions, zero failures, exit 0, 5m58.5s. Bộ VNPay provider tắt: 6 HTTP/21 assertions, zero failures, exit 0, 8.1s. Tổng 680 assertions; quan sát đủ 41/41 operations. Không CI, push/PR hoặc rollout binary mới. |
+
+Đã chuyển hướng dẫn/environment mặc định sang production. Credentials và
+Gmail nhận thử nằm trong environment private ngoài Git, ACL chỉ user hiện
+tại. USER A #224, sản phẩm mới #151/#153, đơn #146–151 và payment #83–88;
+đối chiếu read-only trên VPS lúc 23:35:22 +07. Kho cuối cha 20/0, biến thể
+4/0; hai hồ sơ trả REFUNDED; hai sản phẩm xóa mềm đúng lượt thử. Không
+thay đơn khách hàng sẵn có hoặc xóa dữ liệu/volume.
+
+Mô phỏng SUCCESS tự phát payment.succeeded → Order CONFIRMED →
+order.confirmed → Notification gửi email qua RabbitMQ/Outbox, không gọi
+POST xác nhận/đặt lại đơn. API simulate hiện trả JSON, **chưa có link
+thanh toán giả lập**. Provider VNPay giữ tắt: IPN HTTP 200/RspCode 99,
+checkout/return/refund/reconcile 503. Không merchant, chữ ký/IPN thành công
+hoặc giao dịch ngân hàng thật được kiểm chứng trong lượt này.
+
+Đối chiếu 10 email deliveries của sáu đơn: tất cả SENT/attempts=1,
+error_code=null; 3 confirmed, 2 shipped, 2 completed, 2 cancelled, 1
+expired. Gmail alias lấy từ email đăng ký mới, chưa xác nhận inbox từ
+người nhận. Mẫu HTML vẫn gửi riêng, thông báo tự động là text. Monitoring
+preflight 23:25:44 +07 PASS; sáu service healthy sau chạy, giữ revision
+`d2779d1595fb5541675e65604eb07ac633ccf91b`.
+
+Kiểm tra tĩnh 376 hooks/81 JSON bodies, 33 links nội bộ, khởi tạo Gmail
+alias/đổi ID-token/missing mailbox/local fallback, PowerShell parser,
+`git diff --check` và quét credentials fixture trong 11 file staged đều
+đạt. Sau lượt live chỉ sửa mô tả collection/request; evidence giữ hash
+artifact đã chạy và hash hiện tại. Không sửa Java, không chạy tải/race.
+Settings IDE thay đổi sẵn của người dùng giữ nguyên ngoài commit.
+
+[Hướng dẫn production](test-production.md),
+[kịch bản demo](demo-luong-hoat-dong.md),
+[kết quả chi tiết](postman-production-results.md),
+[JSON bằng chứng](evidence/postman-production-2026-10-14.json).
+
+## VNPay sandbox trên trình duyệt và collection gộp ngày 15/10/2026
+
+| Mốc | SHA | Thời gian +07 | Kiểm tra / deploy thực tế |
+|---|---|---|---|
+| 180-docs | `4f8404f` | 2026-10-14T23:39 | Ghi kết quả Postman production 680 assertions; checkpoint trước khi cấu hình merchant sandbox. |
+| 181-payment-service | `e47ea2d260e7aff4591ae77c1351fdc9c5643a77` | 2026-10-15T00:07:53+07:00 | Payment 64/64 Java tests, zero fail/error/skip; bootJar đạt, lượt cuối 1m5s. Return JSON tương thích và trang HTML tiếng Việt đọc trạng thái lưu, chờ IPN có polling giới hạn. UI 820px/390px không tràn ngang, chuyển pending→success và nút refresh đạt với fixture. 181 Postman requests/19 folders, 363 hooks/80 bodies hợp lệ, bao phủ 41/41 operations; dừng sau link sandbox, xóa mềm cuối. Chưa deploy trang mới tại checkpoint này; đã push feature, CI/PR đang tiếp tục. |
+
+Theo yêu cầu và merchant sandbox do người dùng cung cấp, đã bật cấu hình
+private trên VPS, giữ image Payment `d2779d1`, chỉ recreate Payment. Đối
+chiếu lúc **2026-10-15T00:08:17+07:00**: VNPAY_ENABLED=true, sáu ứng dụng
+healthy; IPN không chữ ký trả HTTP 200/RspCode 97. Khóa không xuất hiện
+trong Git/arguments/logs; backup VPS quyền 600. Input tạm ngoài Git được
+bảo vệ ACL và mã hóa DPAPI sau khi dùng; tự động duyệt đã chặn thao tác
+xóa nên chọn cách bảo vệ file, không cố xóa qua công cụ khác.
+
+Không dùng merchant production/thẻ thật. Chưa thực hiện giao dịch trên
+hệ thống VNPay hoặc xác nhận VNPay đã đăng ký IPN. Return chỉ đọc; số
+tiền/reference/merchant/capture được đối chiếu database. Thành công trên
+return không tự cập nhật payment; IPN có chữ ký mới quyết định kết quả.
+Đơn đã hết hạn không được hồi sinh; trang hiển thị cảnh báo xử lý hoàn.
+Deadline Order vẫn 150 giây; không đổi TTL để phục vụ demo.
+
+[Hướng dẫn sandbox](vnpay-sandbox-browser.md),
+[một file Postman](postman-mot-file.md),
+[evidence chuẩn bị](evidence/vnpay-browser-integration-2026-10-15.json).
+Các contract OpenAPI xuất từ tests, chỉ giữ thay đổi của Payment/return;
+contract Auth/Order/Product không đổi ngữ nghĩa. Không stage settings IDE
+có sẵn của người dùng. Quét khóa sandbox trong các file staged và
+`git diff --check` đạt.

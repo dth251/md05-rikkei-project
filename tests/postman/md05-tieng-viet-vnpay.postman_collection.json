@@ -1,0 +1,1178 @@
+{
+  "info": {
+    "name": "MD05 - VNPay sandbox - Tiếng Việt",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "VNPay SANDBOX thử nghiệm: V00 → V01, mở vnpayCheckoutUrl trên trình duyệt và thanh toán bằng thẻ test, sau đó V02 đối chiếu IPN/đơn/kho. Trang return tiếng Việt cập nhật theo trạng thái lưu; xem docs/vnpay-sandbox-browser.md. V03/V04 là bài trả/hoàn riêng. Cần merchant sandbox private; không chứa HashSecret hoặc tạo callback giả."
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "if (!pm.environment.get('baseUrl')) { pm.execution.setNextRequest(null); throw new Error('Chọn environment và điền baseUrl trước khi chạy.'); }"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "V00 - Từ chối callback chưa ký",
+      "description": "Chỉ chạy khi VNPay sandbox được bật và cấu hình đúng. Kiểm tra IPN/return thiếu tham số bị từ chối; không dùng callback này để xác nhận thanh toán.",
+      "item": [
+        {
+          "name": "IPN thiếu chữ ký bị từ chối",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/payments/vnpay/ipn",
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Kỳ vọng HTTP 200. Kiểm tra dữ liệu trong trường data của ApiResponse."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Kiểm tra biến sau bước khởi tạo riêng của request.",
+                  "const thieu = [\"baseUrl\"].filter(key => { const value = pm.variables.get(key); return value === undefined || value === null || value === ''; });",
+                  "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error('Thiếu biến tiền đề: '+thieu.join(', ')+'. Chạy folder tiền đề hoặc cấu hình environment trước.'); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "function kiemTra(ten, ham) {",
+                  "    pm.test(ten, () => {",
+                  "        try { ham(); } catch (loi) { pm.execution.setNextRequest(null); throw loi; }",
+                  "    });",
+                  "}",
+                  "kiemTra('IPN dùng HTTP 200 theo giao thức nhà cung cấp', () => pm.expect(pm.response.code).to.eql(200));",
+                  "kiemTra('Phản hồi đi qua API Gateway', () => pm.expect(pm.response.headers.get('X-Gateway')).to.eql('api-gateway'));",
+                  "kiemTra('IPN từ chối tham số hoặc chữ ký không hợp lệ', () => pm.expect(pm.response.json().RspCode).to.eql('97'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Return thiếu chữ ký bị từ chối",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/payments/vnpay/return",
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Kỳ vọng HTTP 400. Kiểm tra hệ thống từ chối đúng trường hợp lỗi."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Kiểm tra biến sau bước khởi tạo riêng của request.",
+                  "const thieu = [\"baseUrl\"].filter(key => { const value = pm.variables.get(key); return value === undefined || value === null || value === ''; });",
+                  "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error('Thiếu biến tiền đề: '+thieu.join(', ')+'. Chạy folder tiền đề hoặc cấu hình environment trước.'); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "function kiemTra(ten, ham) {",
+                  "    pm.test(ten, () => {",
+                  "        try { ham(); } catch (loi) { pm.execution.setNextRequest(null); throw loi; }",
+                  "    });",
+                  "}",
+                  "kiemTra('Mã HTTP đúng 400', () => pm.expect(pm.response.code).to.eql(400));",
+                  "kiemTra('Phản hồi đi qua API Gateway', () => pm.expect(pm.response.headers.get('X-Gateway')).to.eql('api-gateway'));",
+                  "if (pm.response.code === 400) {",
+                  "const json = pm.response.json();",
+                  "kiemTra('Cờ success đúng kết quả', () => pm.expect(json.success).to.eql(false));",
+                  "const d = json.data;",
+                  "",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "V01 - Tạo checkout sandbox",
+      "description": "Chạy sau folder 01–05 của bộ chính, trước khi xóa sản phẩm. Cần VNPay sandbox được cấu hình. Không mô phỏng SUCCESS trên payment đã checkout.",
+      "item": [
+        {
+          "name": "Đọc kho đầu luồng vnpay",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/inventory/{{productId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "Kỳ vọng HTTP 200. Kiểm tra dữ liệu trong trường data của ApiResponse."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Kiểm tra biến sau bước khởi tạo riêng của request.",
+                  "const thieu = [\"baseUrl\",\"productId\",\"userToken\"].filter(key => { const value = pm.variables.get(key); return value === undefined || value === null || value === ''; });",
+                  "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error('Thiếu biến tiền đề: '+thieu.join(', ')+'. Chạy folder tiền đề hoặc cấu hình environment trước.'); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "function kiemTra(ten, ham) {",
+                  "    pm.test(ten, () => {",
+                  "        try { ham(); } catch (loi) { pm.execution.setNextRequest(null); throw loi; }",
+                  "    });",
+                  "}",
+                  "kiemTra('Mã HTTP đúng 200', () => pm.expect(pm.response.code).to.eql(200));",
+                  "kiemTra('Phản hồi đi qua API Gateway', () => pm.expect(pm.response.headers.get('X-Gateway')).to.eql('api-gateway'));",
+                  "if (pm.response.code === 200) {",
+                  "const json = pm.response.json();",
+                  "kiemTra('Cờ success đúng kết quả', () => pm.expect(json.success).to.eql(true));",
+                  "const d = json.data;",
+                  "kiemTra('Không có giữ chỗ từ luồng khác', () => pm.expect(d.reserved).to.eql(0));",
+                  "kiemTra('Đủ hàng để demo',()=>pm.expect(d.available).to.be.at.least(2));",
+                  "pm.environment.set('vnpayBaseline', d.available);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Tạo đơn vnpay",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/orders",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "Kỳ vọng HTTP 201. Kiểm tra dữ liệu trong trường data của ApiResponse.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"channel\": \"WEB\",\n  \"paymentMethod\": \"ONLINE\",\n  \"idempotencyKey\": \"{{vnpayKey}}\",\n  \"items\": [\n    {\n      \"productId\": {{productId}},\n      \"quantity\": 1\n    }\n  ],\n  \"shippingAddress\": {\n    \"recipientName\": \"Khách hàng demo A\",\n    \"phone\": \"0901234567\",\n    \"street\": \"123 Nguyễn Trãi\",\n    \"ward\": \"Phường Bến Thành\",\n    \"district\": \"Quận 1\",\n    \"province\": \"Thành phố Hồ Chí Minh\",\n    \"postalCode\": \"70000\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Kiểm tra biến sau bước khởi tạo riêng của request.",
+                  "pm.environment.set('vnpayKey', 'vi-'+pm.variables.replaceIn('{{$randomUUID}}'));",
+                  "pm.environment.unset('vnpayPaymentId');",
+                  "const thieu = [\"baseUrl\",\"vnpayKey\",\"productId\",\"userToken\"].filter(key => { const value = pm.variables.get(key); return value === undefined || value === null || value === ''; });",
+                  "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error('Thiếu biến tiền đề: '+thieu.join(', ')+'. Chạy folder tiền đề hoặc cấu hình environment trước.'); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "function kiemTra(ten, ham) {",
+                  "    pm.test(ten, () => {",
+                  "        try { ham(); } catch (loi) { pm.execution.setNextRequest(null); throw loi; }",
+                  "    });",
+                  "}",
+                  "kiemTra('Mã HTTP đúng 201', () => pm.expect(pm.response.code).to.eql(201));",
+                  "kiemTra('Phản hồi đi qua API Gateway', () => pm.expect(pm.response.headers.get('X-Gateway')).to.eql('api-gateway'));",
+                  "if (pm.response.code === 201) {",
+                  "const json = pm.response.json();",
+                  "kiemTra('Cờ success đúng kết quả', () => pm.expect(json.success).to.eql(true));",
+                  "const d = json.data;",
+                  "pm.environment.set('vnpayOrderId', d.id);",
+                  "pm.environment.set('vnpayCreatedAt', d.createdAt);",
+                  "pm.environment.set('vnpayAmount', d.totalAmount);",
+                  "kiemTra('Trạng thái là PENDING_PAYMENT', () => pm.expect(d.status).to.eql('PENDING_PAYMENT'));",
+                  "kiemTra('Tổng tiền lấy từ giá sản phẩm trên server', () => pm.expect(d.totalAmount).to.eql(125000));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Chờ tạo thanh toán vnpay",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/payments/by-order/{{vnpayOrderId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "Chạy bằng Runner, delay 1000 ms. Chờ tối đa 30 lượt; hết lượt hoặc lỗi ngoài dự kiến là FAIL và dừng. Send thủ công cần tự gửi lại."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Kiểm tra biến sau bước khởi tạo riêng của request.",
+                  "const thieu = [\"baseUrl\",\"vnpayOrderId\",\"userToken\"].filter(key => { const value = pm.variables.get(key); return value === undefined || value === null || value === ''; });",
+                  "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error('Thiếu biến tiền đề: '+thieu.join(', ')+'. Chạy folder tiền đề hoặc cấu hình environment trước.'); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "function kiemTra(ten, ham) {",
+                  "    pm.test(ten, () => {",
+                  "        try { ham(); } catch (loi) { pm.execution.setNextRequest(null); throw loi; }",
+                  "    });",
+                  "}",
+                  "",
+                  "const maCho = '_cho_' + pm.info.requestId;",
+                  "const lan = Number(pm.environment.get(maCho) || 0) + 1;",
+                  "const hopLe = [200,404].includes(pm.response.code);",
+                  "let d = null;",
+                  "if (pm.response.code === 200) { d = pm.response.json().data; }",
+                  "const xong = pm.response.code === 200 && (d !== null);",
+                  "if (hopLe && !xong && lan < 30) {",
+                  "    pm.environment.set(maCho, lan);",
+                  "    pm.execution.setNextRequest(pm.info.requestId);",
+                  "} else {",
+                  "    pm.environment.unset(maCho);",
+                  "    kiemTra('Xử lý bất đồng bộ hoàn tất trong giới hạn 30 lượt', () => pm.expect(xong).to.eql(true));",
+                  "    kiemTra('Phản hồi đi qua API Gateway', () => pm.expect(pm.response.headers.get('X-Gateway')).to.eql('api-gateway'));",
+                  "    if (xong) { kiemTra('Phản hồi thành công', () => pm.expect(pm.response.json().success).to.eql(true)); pm.environment.set('vnpayPaymentId', d.id);",
+                  "kiemTra('Thanh toán thuộc đúng đơn', () => pm.expect(d.orderId).to.eql(Number(pm.environment.get('vnpayOrderId'))));",
+                  "kiemTra('Số tiền khớp đơn', () => pm.expect(d.amount).to.eql(Number(pm.environment.get('vnpayAmount'))));",
+                  "kiemTra('Đúng phương thức thanh toán', () => pm.expect(d.paymentMethod).to.eql('ONLINE')); }",
+                  "}",
+                  ""
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Tạo URL thanh toán VNPay sandbox",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/api/payments/{{vnpayPaymentId}}/vnpay/checkout",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "Kỳ vọng HTTP 200. Kiểm tra dữ liệu trong trường data của ApiResponse."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Kiểm tra biến sau bước khởi tạo riêng của request.",
+                  "const thieu = [\"baseUrl\",\"vnpayPaymentId\",\"userToken\"].filter(key => { const value = pm.variables.get(key); return value === undefined || value === null || value === ''; });",
+                  "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error('Thiếu biến tiền đề: '+thieu.join(', ')+'. Chạy folder tiền đề hoặc cấu hình environment trước.'); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "function kiemTra(ten, ham) {",
+                  "    pm.test(ten, () => {",
+                  "        try { ham(); } catch (loi) { pm.execution.setNextRequest(null); throw loi; }",
+                  "    });",
+                  "}",
+                  "kiemTra('Mã HTTP đúng 200', () => pm.expect(pm.response.code).to.eql(200));",
+                  "kiemTra('Phản hồi đi qua API Gateway', () => pm.expect(pm.response.headers.get('X-Gateway')).to.eql('api-gateway'));",
+                  "if (pm.response.code === 200) {",
+                  "const json = pm.response.json();",
+                  "kiemTra('Cờ success đúng kết quả', () => pm.expect(json.success).to.eql(true));",
+                  "const d = json.data;",
+                  "pm.environment.set('vnpayCheckoutUrl', d.checkoutUrl);",
+                  "kiemTra('Link chỉ dẫn tới VNPay SANDBOX',()=>pm.expect(d.checkoutUrl.startsWith('https://sandbox.vnpayment.vn/paymentv2/vpcpay.html?')).to.eql(true));",
+                  "kiemTra('Payment trả về đúng đơn đang test',()=>pm.expect(d.paymentId).to.eql(Number(pm.environment.get('vnpayPaymentId'))));",
+                  "kiemTra('Link có return URL về dự án',()=>pm.expect(d.checkoutUrl).to.include('vnp_ReturnUrl='+encodeURIComponent(pm.environment.get('baseUrl').replace(/\\/$/,'')+'/api/payments/vnpay/return')));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "V02 - Đối chiếu sau thanh toán trên trình duyệt",
+      "description": "Chỉ chạy khi người demo đã mở vnpayCheckoutUrl và thanh toán sandbox thành công trước deadline. Return URL không thay thế IPN đã ký của nhà cung cấp.",
+      "item": [
+        {
+          "name": "Chờ IPN cập nhật Payment SUCCESS",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/payments/{{vnpayPaymentId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "Chạy bằng Runner, delay 1000 ms. Chờ tối đa 30 lượt; hết lượt hoặc lỗi ngoài dự kiến là FAIL và dừng. Send thủ công cần tự gửi lại."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Kiểm tra biến sau bước khởi tạo riêng của request.",
+                  "const thieu = [\"baseUrl\",\"vnpayPaymentId\",\"userToken\"].filter(key => { const value = pm.variables.get(key); return value === undefined || value === null || value === ''; });",
+                  "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error('Thiếu biến tiền đề: '+thieu.join(', ')+'. Chạy folder tiền đề hoặc cấu hình environment trước.'); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "function kiemTra(ten, ham) {",
+                  "    pm.test(ten, () => {",
+                  "        try { ham(); } catch (loi) { pm.execution.setNextRequest(null); throw loi; }",
+                  "    });",
+                  "}",
+                  "",
+                  "const maCho = '_cho_' + pm.info.requestId;",
+                  "const lan = Number(pm.environment.get(maCho) || 0) + 1;",
+                  "const hopLe = [200].includes(pm.response.code);",
+                  "let d = null;",
+                  "if (pm.response.code === 200) { d = pm.response.json().data; }",
+                  "const xong = pm.response.code === 200 && (d.status === 'SUCCESS');",
+                  "if (hopLe && !xong && lan < 30) {",
+                  "    pm.environment.set(maCho, lan);",
+                  "    pm.execution.setNextRequest(pm.info.requestId);",
+                  "} else {",
+                  "    pm.environment.unset(maCho);",
+                  "    kiemTra('Xử lý bất đồng bộ hoàn tất trong giới hạn 30 lượt', () => pm.expect(xong).to.eql(true));",
+                  "    kiemTra('Phản hồi đi qua API Gateway', () => pm.expect(pm.response.headers.get('X-Gateway')).to.eql('api-gateway'));",
+                  "    if (xong) { kiemTra('Phản hồi thành công', () => pm.expect(pm.response.json().success).to.eql(true)); kiemTra('Trạng thái là SUCCESS', () => pm.expect(d.status).to.eql('SUCCESS')); }",
+                  "}",
+                  ""
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Chờ đơn vnpay CONFIRMED",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/orders/{{vnpayOrderId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "Chạy bằng Runner, delay 1000 ms. Chờ tối đa 30 lượt; hết lượt hoặc lỗi ngoài dự kiến là FAIL và dừng. Send thủ công cần tự gửi lại."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Kiểm tra biến sau bước khởi tạo riêng của request.",
+                  "const thieu = [\"baseUrl\",\"vnpayOrderId\",\"userToken\"].filter(key => { const value = pm.variables.get(key); return value === undefined || value === null || value === ''; });",
+                  "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error('Thiếu biến tiền đề: '+thieu.join(', ')+'. Chạy folder tiền đề hoặc cấu hình environment trước.'); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "function kiemTra(ten, ham) {",
+                  "    pm.test(ten, () => {",
+                  "        try { ham(); } catch (loi) { pm.execution.setNextRequest(null); throw loi; }",
+                  "    });",
+                  "}",
+                  "",
+                  "const maCho = '_cho_' + pm.info.requestId;",
+                  "const lan = Number(pm.environment.get(maCho) || 0) + 1;",
+                  "const hopLe = [200].includes(pm.response.code);",
+                  "let d = null;",
+                  "if (pm.response.code === 200) { d = pm.response.json().data; }",
+                  "const xong = pm.response.code === 200 && (d.status === 'CONFIRMED');",
+                  "if (hopLe && !xong && lan < 30) {",
+                  "    pm.environment.set(maCho, lan);",
+                  "    pm.execution.setNextRequest(pm.info.requestId);",
+                  "} else {",
+                  "    pm.environment.unset(maCho);",
+                  "    kiemTra('Xử lý bất đồng bộ hoàn tất trong giới hạn 30 lượt', () => pm.expect(xong).to.eql(true));",
+                  "    kiemTra('Phản hồi đi qua API Gateway', () => pm.expect(pm.response.headers.get('X-Gateway')).to.eql('api-gateway'));",
+                  "    if (xong) { kiemTra('Phản hồi thành công', () => pm.expect(pm.response.json().success).to.eql(true)); kiemTra('Trạng thái là CONFIRMED', () => pm.expect(d.status).to.eql('CONFIRMED')); }",
+                  "}",
+                  ""
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Thanh toán VNPay chốt kho",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/inventory/{{productId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "Kỳ vọng HTTP 200. Kiểm tra dữ liệu trong trường data của ApiResponse."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Kiểm tra biến sau bước khởi tạo riêng của request.",
+                  "const thieu = [\"baseUrl\",\"productId\",\"userToken\"].filter(key => { const value = pm.variables.get(key); return value === undefined || value === null || value === ''; });",
+                  "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error('Thiếu biến tiền đề: '+thieu.join(', ')+'. Chạy folder tiền đề hoặc cấu hình environment trước.'); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "function kiemTra(ten, ham) {",
+                  "    pm.test(ten, () => {",
+                  "        try { ham(); } catch (loi) { pm.execution.setNextRequest(null); throw loi; }",
+                  "    });",
+                  "}",
+                  "kiemTra('Mã HTTP đúng 200', () => pm.expect(pm.response.code).to.eql(200));",
+                  "kiemTra('Phản hồi đi qua API Gateway', () => pm.expect(pm.response.headers.get('X-Gateway')).to.eql('api-gateway'));",
+                  "if (pm.response.code === 200) {",
+                  "const json = pm.response.json();",
+                  "kiemTra('Cờ success đúng kết quả', () => pm.expect(json.success).to.eql(true));",
+                  "const d = json.data;",
+                  "kiemTra('Số lượng có thể bán đúng kỳ vọng', () => pm.expect(d.available).to.eql(Number(pm.environment.get('vnpayBaseline'))-1));",
+                  "kiemTra('Số lượng giữ chỗ đúng kỳ vọng', () => pm.expect(d.reserved).to.eql(0));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "V03 - Giao hàng và yêu cầu hoàn VNPay",
+      "description": "Chỉ chạy một lần khi V02 đạt. Giao/hoàn tất đơn, tạo và nhận hồ sơ trả trước khi gửi refund. Timeout/UNKNOWN/PROCESSING phải đối soát ở V04; không gửi lại folder này khi chưa rõ kết quả.",
+      "item": [
+        {
+          "name": "Ghi nhận giao hàng vnpay",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/orders/{{vnpayOrderId}}/ship",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "Kỳ vọng HTTP 200. Kiểm tra dữ liệu trong trường data của ApiResponse.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"carrier\": \"Đơn vị vận chuyển demo\",\n  \"trackingNumber\": \"VI-{{vnpayOrderId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Kiểm tra biến sau bước khởi tạo riêng của request.",
+                  "const thieu = [\"baseUrl\",\"vnpayOrderId\",\"adminToken\"].filter(key => { const value = pm.variables.get(key); return value === undefined || value === null || value === ''; });",
+                  "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error('Thiếu biến tiền đề: '+thieu.join(', ')+'. Chạy folder tiền đề hoặc cấu hình environment trước.'); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "function kiemTra(ten, ham) {",
+                  "    pm.test(ten, () => {",
+                  "        try { ham(); } catch (loi) { pm.execution.setNextRequest(null); throw loi; }",
+                  "    });",
+                  "}",
+                  "kiemTra('Mã HTTP đúng 200', () => pm.expect(pm.response.code).to.eql(200));",
+                  "kiemTra('Phản hồi đi qua API Gateway', () => pm.expect(pm.response.headers.get('X-Gateway')).to.eql('api-gateway'));",
+                  "if (pm.response.code === 200) {",
+                  "const json = pm.response.json();",
+                  "kiemTra('Cờ success đúng kết quả', () => pm.expect(json.success).to.eql(true));",
+                  "const d = json.data;",
+                  "kiemTra('Trạng thái là SHIPPING', () => pm.expect(d.status).to.eql('SHIPPING'));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Hoàn tất đơn vnpay",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/api/orders/{{vnpayOrderId}}/complete",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "Kỳ vọng HTTP 200. Kiểm tra dữ liệu trong trường data của ApiResponse."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Kiểm tra biến sau bước khởi tạo riêng của request.",
+                  "const thieu = [\"baseUrl\",\"vnpayOrderId\",\"adminToken\"].filter(key => { const value = pm.variables.get(key); return value === undefined || value === null || value === ''; });",
+                  "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error('Thiếu biến tiền đề: '+thieu.join(', ')+'. Chạy folder tiền đề hoặc cấu hình environment trước.'); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "function kiemTra(ten, ham) {",
+                  "    pm.test(ten, () => {",
+                  "        try { ham(); } catch (loi) { pm.execution.setNextRequest(null); throw loi; }",
+                  "    });",
+                  "}",
+                  "kiemTra('Mã HTTP đúng 200', () => pm.expect(pm.response.code).to.eql(200));",
+                  "kiemTra('Phản hồi đi qua API Gateway', () => pm.expect(pm.response.headers.get('X-Gateway')).to.eql('api-gateway'));",
+                  "if (pm.response.code === 200) {",
+                  "const json = pm.response.json();",
+                  "kiemTra('Cờ success đúng kết quả', () => pm.expect(json.success).to.eql(true));",
+                  "const d = json.data;",
+                  "kiemTra('Trạng thái là COMPLETED', () => pm.expect(d.status).to.eql('COMPLETED'));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Yêu cầu trả toàn bộ đơn VNPay",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/orders/{{vnpayOrderId}}/return",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "Kỳ vọng HTTP 200. Kiểm tra dữ liệu trong trường data của ApiResponse.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idempotencyKey\": \"{{vnpayReturnKey}}\",\n  \"reason\": \"Trả toàn bộ đơn VNPay sandbox\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Kiểm tra biến sau bước khởi tạo riêng của request.",
+                  "pm.environment.set('vnpayReturnKey', 'vi-'+pm.variables.replaceIn('{{$randomUUID}}'));",
+                  "const thieu = [\"baseUrl\",\"vnpayOrderId\",\"vnpayReturnKey\",\"userToken\"].filter(key => { const value = pm.variables.get(key); return value === undefined || value === null || value === ''; });",
+                  "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error('Thiếu biến tiền đề: '+thieu.join(', ')+'. Chạy folder tiền đề hoặc cấu hình environment trước.'); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "function kiemTra(ten, ham) {",
+                  "    pm.test(ten, () => {",
+                  "        try { ham(); } catch (loi) { pm.execution.setNextRequest(null); throw loi; }",
+                  "    });",
+                  "}",
+                  "kiemTra('Mã HTTP đúng 200', () => pm.expect(pm.response.code).to.eql(200));",
+                  "kiemTra('Phản hồi đi qua API Gateway', () => pm.expect(pm.response.headers.get('X-Gateway')).to.eql('api-gateway'));",
+                  "if (pm.response.code === 200) {",
+                  "const json = pm.response.json();",
+                  "kiemTra('Cờ success đúng kết quả', () => pm.expect(json.success).to.eql(true));",
+                  "const d = json.data;",
+                  "kiemTra('Trạng thái là REQUESTED', () => pm.expect(d.status).to.eql('REQUESTED'));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Duyệt trả đơn VNPay",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/orders/{{vnpayOrderId}}/return/decision",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "Kỳ vọng HTTP 200. Kiểm tra dữ liệu trong trường data của ApiResponse.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"approved\": true,\n  \"note\": \"Duyệt trả hàng sandbox\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Kiểm tra biến sau bước khởi tạo riêng của request.",
+                  "const thieu = [\"baseUrl\",\"vnpayOrderId\",\"adminToken\"].filter(key => { const value = pm.variables.get(key); return value === undefined || value === null || value === ''; });",
+                  "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error('Thiếu biến tiền đề: '+thieu.join(', ')+'. Chạy folder tiền đề hoặc cấu hình environment trước.'); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "function kiemTra(ten, ham) {",
+                  "    pm.test(ten, () => {",
+                  "        try { ham(); } catch (loi) { pm.execution.setNextRequest(null); throw loi; }",
+                  "    });",
+                  "}",
+                  "kiemTra('Mã HTTP đúng 200', () => pm.expect(pm.response.code).to.eql(200));",
+                  "kiemTra('Phản hồi đi qua API Gateway', () => pm.expect(pm.response.headers.get('X-Gateway')).to.eql('api-gateway'));",
+                  "if (pm.response.code === 200) {",
+                  "const json = pm.response.json();",
+                  "kiemTra('Cờ success đúng kết quả', () => pm.expect(json.success).to.eql(true));",
+                  "const d = json.data;",
+                  "kiemTra('Trạng thái là APPROVED', () => pm.expect(d.status).to.eql('APPROVED'));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Nhận hàng của đơn VNPay",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/orders/{{vnpayOrderId}}/return/receive",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "Kỳ vọng HTTP 200. Kiểm tra dữ liệu trong trường data của ApiResponse.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"warehouseReceipt\": \"VNPAY-NHAP-{{vnpayOrderId}}\",\n  \"restock\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Kiểm tra biến sau bước khởi tạo riêng của request.",
+                  "const thieu = [\"baseUrl\",\"vnpayOrderId\",\"adminToken\"].filter(key => { const value = pm.variables.get(key); return value === undefined || value === null || value === ''; });",
+                  "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error('Thiếu biến tiền đề: '+thieu.join(', ')+'. Chạy folder tiền đề hoặc cấu hình environment trước.'); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "function kiemTra(ten, ham) {",
+                  "    pm.test(ten, () => {",
+                  "        try { ham(); } catch (loi) { pm.execution.setNextRequest(null); throw loi; }",
+                  "    });",
+                  "}",
+                  "kiemTra('Mã HTTP đúng 200', () => pm.expect(pm.response.code).to.eql(200));",
+                  "kiemTra('Phản hồi đi qua API Gateway', () => pm.expect(pm.response.headers.get('X-Gateway')).to.eql('api-gateway'));",
+                  "if (pm.response.code === 200) {",
+                  "const json = pm.response.json();",
+                  "kiemTra('Cờ success đúng kết quả', () => pm.expect(json.success).to.eql(true));",
+                  "const d = json.data;",
+                  "",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Chờ VNPay đủ điều kiện hoàn",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/payments/{{vnpayPaymentId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "Chạy bằng Runner, delay 1000 ms. Chờ tối đa 30 lượt; hết lượt hoặc lỗi ngoài dự kiến là FAIL và dừng. Send thủ công cần tự gửi lại."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Kiểm tra biến sau bước khởi tạo riêng của request.",
+                  "const thieu = [\"baseUrl\",\"vnpayPaymentId\",\"userToken\"].filter(key => { const value = pm.variables.get(key); return value === undefined || value === null || value === ''; });",
+                  "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error('Thiếu biến tiền đề: '+thieu.join(', ')+'. Chạy folder tiền đề hoặc cấu hình environment trước.'); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "function kiemTra(ten, ham) {",
+                  "    pm.test(ten, () => {",
+                  "        try { ham(); } catch (loi) { pm.execution.setNextRequest(null); throw loi; }",
+                  "    });",
+                  "}",
+                  "",
+                  "const maCho = '_cho_' + pm.info.requestId;",
+                  "const lan = Number(pm.environment.get(maCho) || 0) + 1;",
+                  "const hopLe = [200].includes(pm.response.code);",
+                  "let d = null;",
+                  "if (pm.response.code === 200) { d = pm.response.json().data; }",
+                  "const xong = pm.response.code === 200 && (d.refundStatus === 'REQUIRED');",
+                  "if (hopLe && !xong && lan < 30) {",
+                  "    pm.environment.set(maCho, lan);",
+                  "    pm.execution.setNextRequest(pm.info.requestId);",
+                  "} else {",
+                  "    pm.environment.unset(maCho);",
+                  "    kiemTra('Xử lý bất đồng bộ hoàn tất trong giới hạn 30 lượt', () => pm.expect(xong).to.eql(true));",
+                  "    kiemTra('Phản hồi đi qua API Gateway', () => pm.expect(pm.response.headers.get('X-Gateway')).to.eql('api-gateway'));",
+                  "    if (xong) { kiemTra('Phản hồi thành công', () => pm.expect(pm.response.json().success).to.eql(true));  }",
+                  "}",
+                  ""
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Yêu cầu hoàn tiền VNPay ADMIN",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/api/payments/{{vnpayPaymentId}}/vnpay/refund",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "Kỳ vọng HTTP 200. Kiểm tra dữ liệu trong trường data của ApiResponse."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Kiểm tra biến sau bước khởi tạo riêng của request.",
+                  "const thieu = [\"baseUrl\",\"vnpayPaymentId\",\"adminToken\"].filter(key => { const value = pm.variables.get(key); return value === undefined || value === null || value === ''; });",
+                  "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error('Thiếu biến tiền đề: '+thieu.join(', ')+'. Chạy folder tiền đề hoặc cấu hình environment trước.'); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "function kiemTra(ten, ham) {",
+                  "    pm.test(ten, () => {",
+                  "        try { ham(); } catch (loi) { pm.execution.setNextRequest(null); throw loi; }",
+                  "    });",
+                  "}",
+                  "kiemTra('Mã HTTP đúng 200', () => pm.expect(pm.response.code).to.eql(200));",
+                  "kiemTra('Phản hồi đi qua API Gateway', () => pm.expect(pm.response.headers.get('X-Gateway')).to.eql('api-gateway'));",
+                  "if (pm.response.code === 200) {",
+                  "const json = pm.response.json();",
+                  "kiemTra('Cờ success đúng kết quả', () => pm.expect(json.success).to.eql(true));",
+                  "const d = json.data;",
+                  "kiemTra('Có trạng thái yêu cầu hoàn',()=>pm.expect(d.state).to.be.a('string'));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "V04 - Đối soát hoàn VNPay",
+      "description": "Chạy request reconcile riêng sau V03. HTTP 200 chỉ xác nhận nhận kết quả đối soát, không chứng minh REFUNDED. Chỉ coi hoàn xong khi hai request chờ sau đó PASS.",
+      "item": [
+        {
+          "name": "Đối soát kết quả hoàn VNPay ADMIN",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/api/payments/{{vnpayPaymentId}}/vnpay/reconcile",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "Kỳ vọng HTTP 200. Kiểm tra dữ liệu trong trường data của ApiResponse."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Kiểm tra biến sau bước khởi tạo riêng của request.",
+                  "const thieu = [\"baseUrl\",\"vnpayPaymentId\",\"adminToken\"].filter(key => { const value = pm.variables.get(key); return value === undefined || value === null || value === ''; });",
+                  "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error('Thiếu biến tiền đề: '+thieu.join(', ')+'. Chạy folder tiền đề hoặc cấu hình environment trước.'); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "function kiemTra(ten, ham) {",
+                  "    pm.test(ten, () => {",
+                  "        try { ham(); } catch (loi) { pm.execution.setNextRequest(null); throw loi; }",
+                  "    });",
+                  "}",
+                  "kiemTra('Mã HTTP đúng 200', () => pm.expect(pm.response.code).to.eql(200));",
+                  "kiemTra('Phản hồi đi qua API Gateway', () => pm.expect(pm.response.headers.get('X-Gateway')).to.eql('api-gateway'));",
+                  "if (pm.response.code === 200) {",
+                  "const json = pm.response.json();",
+                  "kiemTra('Cờ success đúng kết quả', () => pm.expect(json.success).to.eql(true));",
+                  "const d = json.data;",
+                  "kiemTra('Có trạng thái đối soát',()=>pm.expect(d.state).to.be.a('string'));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Chờ Payment VNPay hoàn tiền thành công",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/payments/{{vnpayPaymentId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "Chạy bằng Runner, delay 1000 ms. Chờ tối đa 30 lượt; hết lượt hoặc lỗi ngoài dự kiến là FAIL và dừng. Send thủ công cần tự gửi lại."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Kiểm tra biến sau bước khởi tạo riêng của request.",
+                  "const thieu = [\"baseUrl\",\"vnpayPaymentId\",\"userToken\"].filter(key => { const value = pm.variables.get(key); return value === undefined || value === null || value === ''; });",
+                  "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error('Thiếu biến tiền đề: '+thieu.join(', ')+'. Chạy folder tiền đề hoặc cấu hình environment trước.'); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "function kiemTra(ten, ham) {",
+                  "    pm.test(ten, () => {",
+                  "        try { ham(); } catch (loi) { pm.execution.setNextRequest(null); throw loi; }",
+                  "    });",
+                  "}",
+                  "",
+                  "const maCho = '_cho_' + pm.info.requestId;",
+                  "const lan = Number(pm.environment.get(maCho) || 0) + 1;",
+                  "const hopLe = [200].includes(pm.response.code);",
+                  "let d = null;",
+                  "if (pm.response.code === 200) { d = pm.response.json().data; }",
+                  "const xong = pm.response.code === 200 && (d.refundStatus === 'REFUNDED');",
+                  "if (hopLe && !xong && lan < 30) {",
+                  "    pm.environment.set(maCho, lan);",
+                  "    pm.execution.setNextRequest(pm.info.requestId);",
+                  "} else {",
+                  "    pm.environment.unset(maCho);",
+                  "    kiemTra('Xử lý bất đồng bộ hoàn tất trong giới hạn 30 lượt', () => pm.expect(xong).to.eql(true));",
+                  "    kiemTra('Phản hồi đi qua API Gateway', () => pm.expect(pm.response.headers.get('X-Gateway')).to.eql('api-gateway'));",
+                  "    if (xong) { kiemTra('Phản hồi thành công', () => pm.expect(pm.response.json().success).to.eql(true)); kiemTra('Trạng thái là SUCCESS', () => pm.expect(d.status).to.eql('SUCCESS')); }",
+                  "}",
+                  ""
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Chờ hồ sơ VNPay REFUNDED",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/orders/{{vnpayOrderId}}/return",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "Chạy bằng Runner, delay 1000 ms. Chờ tối đa 30 lượt; hết lượt hoặc lỗi ngoài dự kiến là FAIL và dừng. Send thủ công cần tự gửi lại."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Kiểm tra biến sau bước khởi tạo riêng của request.",
+                  "const thieu = [\"baseUrl\",\"vnpayOrderId\",\"userToken\"].filter(key => { const value = pm.variables.get(key); return value === undefined || value === null || value === ''; });",
+                  "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error('Thiếu biến tiền đề: '+thieu.join(', ')+'. Chạy folder tiền đề hoặc cấu hình environment trước.'); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "function kiemTra(ten, ham) {",
+                  "    pm.test(ten, () => {",
+                  "        try { ham(); } catch (loi) { pm.execution.setNextRequest(null); throw loi; }",
+                  "    });",
+                  "}",
+                  "",
+                  "const maCho = '_cho_' + pm.info.requestId;",
+                  "const lan = Number(pm.environment.get(maCho) || 0) + 1;",
+                  "const hopLe = [200].includes(pm.response.code);",
+                  "let d = null;",
+                  "if (pm.response.code === 200) { d = pm.response.json().data; }",
+                  "const xong = pm.response.code === 200 && (d.status === 'REFUNDED');",
+                  "if (hopLe && !xong && lan < 30) {",
+                  "    pm.environment.set(maCho, lan);",
+                  "    pm.execution.setNextRequest(pm.info.requestId);",
+                  "} else {",
+                  "    pm.environment.unset(maCho);",
+                  "    kiemTra('Xử lý bất đồng bộ hoàn tất trong giới hạn 30 lượt', () => pm.expect(xong).to.eql(true));",
+                  "    kiemTra('Phản hồi đi qua API Gateway', () => pm.expect(pm.response.headers.get('X-Gateway')).to.eql('api-gateway'));",
+                  "    if (xong) { kiemTra('Phản hồi thành công', () => pm.expect(pm.response.json().success).to.eql(true)); kiemTra('Trạng thái là REFUNDED', () => pm.expect(d.status).to.eql('REFUNDED')); }",
+                  "}",
+                  ""
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

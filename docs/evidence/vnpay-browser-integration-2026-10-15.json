@@ -1,0 +1,81 @@
+{
+    "updatedAt":  "2026-10-15T00:07:50.3911506+07:00",
+    "stage":  "prepared-before-PR-deploy",
+    "runtimeAtConfiguration":  "d2779d1595fb5541675e65604eb07ac633ccf91b",
+    "sandboxConfig":  {
+                          "enabled":  true,
+                          "paymentServiceHealthy":  true,
+                          "paymentUrl":  "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html",
+                          "returnUrl":  "https://md05-rikkei-project.duckdns.org/api/payments/vnpay/return",
+                          "ipnUrl":  "https://md05-rikkei-project.duckdns.org/api/payments/vnpay/ipn",
+                          "credentials":  "VPS private environment only; temporary Windows input protected using DPAPI",
+                          "merchantTransactionVerified":  false,
+                          "ipnRegistrationVerified":  false
+                      },
+    "java":  {
+                 "service":  "payment-service",
+                 "tests":  64,
+                 "failures":  0,
+                 "errors":  0,
+                 "skipped":  0,
+                 "testExitCode":  0,
+                 "bootJar":  "PASS",
+                 "durationSeconds":  65
+             },
+    "browserQa":  {
+                      "value":  [
+                                    {
+                                        "name":  "vnpay-return-success-desktop.png",
+                                        "viewport":  820,
+                                        "scroll":  820,
+                                        "title":  "Thanh toÃ¡n thÃ nh cÃ´ng"
+                                    },
+                                    {
+                                        "name":  "vnpay-return-success-mobile.png",
+                                        "viewport":  390,
+                                        "scroll":  390,
+                                        "title":  "Thanh toÃ¡n thÃ nh cÃ´ng"
+                                    },
+                                    {
+                                        "name":  "vnpay-return-pending.png",
+                                        "viewport":  820,
+                                        "scroll":  820,
+                                        "title":  "Äang chá» xÃ¡c nháº­n thanh toÃ¡n"
+                                    },
+                                    {
+                                        "pendingToSuccess":  true,
+                                        "manualRefresh":  true,
+                                        "pollRequests":  3
+                                    }
+                                ],
+                      "Count":  4
+                  },
+    "static":  {
+                   "requests":  181,
+                   "folders":  19,
+                   "scripts":  363,
+                   "bodies":  80,
+                   "operations":  41,
+                   "missing":  [
+
+                               ],
+                   "collectionSha256":  "b84ef29b0f89661753d6c523583ae072bd13d151a9972451220789ea843101cb",
+                   "pauseAfterSandboxCheckout":  true,
+                   "cleanupLast":  true,
+                   "unrelatedOpenApiContractsPreserved":  true
+               },
+    "guarantees":  [
+                       "Signed return reads persisted payment state without writes",
+                       "Pending before IPN; success only after stored SUCCESS",
+                       "Amount/reference/merchant/capture validated",
+                       "Expired order capture shown as requiring refund",
+                       "HTML escaping and CSP/no-store/no-referrer",
+                       "Source URLs pinned to VNPay sandbox"
+                   ],
+    "limitations":  [
+                        "Real sandbox browser/IPN flow not yet completed",
+                        "New browser page not yet deployed at this checkpoint",
+                        "Order confirmation asynchronous; use GET order to verify",
+                        "SENT does not prove inbox receipt"
+                    ]
+}
