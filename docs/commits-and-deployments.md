@@ -1011,3 +1011,33 @@ Settings IDE thay đổi sẵn của người dùng giữ nguyên ngoài commit.
 [kịch bản demo](demo-luong-hoat-dong.md),
 [kết quả chi tiết](postman-production-results.md),
 [JSON bằng chứng](evidence/postman-production-2026-10-14.json).
+
+## VNPay sandbox trên trình duyệt và collection gộp ngày 15/10/2026
+
+| Mốc | SHA | Thời gian +07 | Kiểm tra / deploy thực tế |
+|---|---|---|---|
+| 180-docs | `4f8404f` | 2026-10-14T23:39 | Ghi kết quả Postman production 680 assertions; checkpoint trước khi cấu hình merchant sandbox. |
+| 181-payment-service | `e47ea2d260e7aff4591ae77c1351fdc9c5643a77` | 2026-10-15T00:07:53+07:00 | Payment 64/64 Java tests, zero fail/error/skip; bootJar đạt, lượt cuối 1m5s. Return JSON tương thích và trang HTML tiếng Việt đọc trạng thái lưu, chờ IPN có polling giới hạn. UI 820px/390px không tràn ngang, chuyển pending→success và nút refresh đạt với fixture. 181 Postman requests/19 folders, 363 hooks/80 bodies hợp lệ, bao phủ 41/41 operations; dừng sau link sandbox, xóa mềm cuối. Chưa deploy trang mới tại checkpoint này; đã push feature, CI/PR đang tiếp tục. |
+
+Theo yêu cầu và merchant sandbox do người dùng cung cấp, đã bật cấu hình
+private trên VPS, giữ image Payment `d2779d1`, chỉ recreate Payment. Đối
+chiếu lúc **2026-10-15T00:08:17+07:00**: VNPAY_ENABLED=true, sáu ứng dụng
+healthy; IPN không chữ ký trả HTTP 200/RspCode 97. Khóa không xuất hiện
+trong Git/arguments/logs; backup VPS quyền 600. Input tạm ngoài Git được
+bảo vệ ACL và mã hóa DPAPI sau khi dùng; tự động duyệt đã chặn thao tác
+xóa nên chọn cách bảo vệ file, không cố xóa qua công cụ khác.
+
+Không dùng merchant production/thẻ thật. Chưa thực hiện giao dịch trên
+hệ thống VNPay hoặc xác nhận VNPay đã đăng ký IPN. Return chỉ đọc; số
+tiền/reference/merchant/capture được đối chiếu database. Thành công trên
+return không tự cập nhật payment; IPN có chữ ký mới quyết định kết quả.
+Đơn đã hết hạn không được hồi sinh; trang hiển thị cảnh báo xử lý hoàn.
+Deadline Order vẫn 150 giây; không đổi TTL để phục vụ demo.
+
+[Hướng dẫn sandbox](vnpay-sandbox-browser.md),
+[một file Postman](postman-mot-file.md),
+[evidence chuẩn bị](evidence/vnpay-browser-integration-2026-10-15.json).
+Các contract OpenAPI xuất từ tests, chỉ giữ thay đổi của Payment/return;
+contract Auth/Order/Product không đổi ngữ nghĩa. Không stage settings IDE
+có sẵn của người dùng. Quét khóa sandbox trong các file staged và
+`git diff --check` đạt.
