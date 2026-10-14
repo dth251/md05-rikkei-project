@@ -1,0 +1,17 @@
+{
+  "orderNumber": "MD05-000145",
+  "orderDate": "14/10/2026",
+  "customerName": "Khách hàng demo MD05",
+  "customerEmail": "khachhang@example.com",
+  "paymentMethod": "Thanh toán trực tuyến",
+  "paymentStatus": "Thành công (mô phỏng)",
+  "note": "Đây là hóa đơn mẫu cho phiên demo MD05. Thanh toán được mô phỏng, không phát sinh chuyển tiền ngân hàng.",
+  "totalAmount": 125000,
+  "items": [
+    {
+      "name": "MD05 Gmail SMTP Demo",
+      "quantity": 1,
+      "unitPrice": 125000
+    }
+  ]
+}

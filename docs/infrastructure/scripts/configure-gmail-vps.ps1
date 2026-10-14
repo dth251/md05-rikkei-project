@@ -59,25 +59,50 @@ tag=${image##*:}
 [[ "$tag" =~ ^[0-9a-f]{40}$ ]]
 test "$(docker inspect -f '{{.State.Health.Status}}' omnichannel-day1-notification-service-1)" = healthy
 
-# Authenticate before changing the running service. Do not echo SMTP payloads.
-set +e
-auth_result=$(
-  {
-    printf 'EHLO md05.local\nAUTH LOGIN\n'
-    printf '%s' "$sender" | base64 -w 0
-    printf '\n'
-    printf '%s' "$gmail_password" | base64 -w 0
-    printf '\nQUIT\n'
-  } | timeout 25 openssl s_client -starttls smtp -connect smtp.gmail.com:587 \
-      -servername smtp.gmail.com -verify_return_error -crlf -quiet 2>/dev/null
-)
-set -e
-if ! grep -q '^235[ -]' <<< "$auth_result"; then
-  unset auth_result gmail_password
-  echo 'SMTP_AUTHENTICATION_FAILED: no runtime configuration changed' >&2
+# AUTH is a challenge/response exchange; never pipeline the credentials.
+coproc GMAIL_TLS { timeout 75 openssl s_client -starttls smtp -connect smtp.gmail.com:587 \
+    -servername smtp.gmail.com -verify_return_error -crlf -quiet 2>/dev/null; }
+smtp_pid=$GMAIL_TLS_PID
+exec 3>&"${GMAIL_TLS[1]}" 4<&"${GMAIL_TLS[0]}"
+reply_codes=()
+read_reply() {
+  local line
+  smtp_code=''
+  while IFS= read -r -t 15 line <&4; do
+    if [[ "$line" =~ ^[0-9]{3}[[:space:]-] ]]; then
+      smtp_code=${line:0:3}
+      if [[ "${line:3:1}" = ' ' ]]; then
+        reply_codes+=("$smtp_code")
+        return 0
+      fi
+    fi
+  done
+  return 1
+}
+smtp_ok=true
+printf 'EHLO md05.local\n' >&3
+if ! read_reply || [[ "$smtp_code" != 250 ]]; then smtp_ok=false; fi
+if "$smtp_ok"; then
+  printf 'AUTH LOGIN\n' >&3
+  if ! read_reply || [[ "$smtp_code" != 334 ]]; then smtp_ok=false; fi
+fi
+if "$smtp_ok"; then
+  printf '%s\n' "$(printf '%s' "$sender" | base64 -w 0)" >&3
+  if ! read_reply || [[ "$smtp_code" != 334 ]]; then smtp_ok=false; fi
+fi
+if "$smtp_ok"; then
+  printf '%s\n' "$(printf '%s' "$gmail_password" | base64 -w 0)" >&3
+  if ! read_reply || [[ "$smtp_code" != 235 ]]; then smtp_ok=false; fi
+fi
+printf 'QUIT\n' >&3 || true
+read_reply || true
+exec 3>&- 4<&-
+wait "$smtp_pid" || true
+if ! "$smtp_ok"; then
+  unset gmail_password
+  printf 'SMTP_AUTHENTICATION_FAILED reply_codes=%s: no runtime configuration changed\n' "${reply_codes[*]}" >&2
   exit 1
 fi
-unset auth_result
 
 backup="$root/.env.before-gmail-$(date -u +%Y%m%dT%H%M%SZ)-$$"
 cp -p "$env_file" "$backup"
@@ -149,6 +174,10 @@ printf 'INBOX_RECEIPT_NOT_YET_VERIFIED\n'
     $result.status = 'failed'
     $result.time = Get-Date -Format o
     $result.message = 'Gmail configuration failed or was cancelled. Credentials were not written to the result file.'
+    if ($null -ne $output) {
+        $safeStatus = @($output | Where-Object { $_ -match '^(SMTP_AUTHENTICATION_FAILED|COMPOSE_VALIDATION_FAILED|GMAIL_CONFIGURATION_ROLLED_BACK)' })
+        if ($safeStatus.Count -gt 0) { $result.detail = $safeStatus }
+    }
     $result | ConvertTo-Json | Set-Content -LiteralPath $resultPath -Encoding UTF8
     Write-Host 'Chua bat Gmail SMTP thanh cong. Hay bao lai trang thai nay de kiem tra.'
 } finally {
