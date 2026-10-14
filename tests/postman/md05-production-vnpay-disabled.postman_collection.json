@@ -1,0 +1,302 @@
+{
+    "info":  {
+                 "name":  "MD05 - Production - Kiểm tra VNPay đang tắt",
+                 "schema":  "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+                 "description":  "Chỉ xác minh 5 API VNPay trả đúng khi chưa có merchant/config, không chứng minh thanh toán hoặc hoàn tiền sandbox. Chạy cả folder theo thứ tự, Iterations=1, Delay=1100ms. Dùng environment production private và probePaymentId của payment ONLINE mô phỏng vừa tạo ở folder 06. Nếu VNPAY_ENABLED đã bật, request IPN dừng toàn bộ folder. Xem docs/test-production.md."
+             },
+    "event":  [
+                  {
+                      "listen":  "prerequest",
+                      "script":  {
+                                     "type":  "text/javascript",
+                                     "exec":  [
+                                                  "if(String(pm.environment.get(\u0027baseUrl\u0027)||\u0027\u0027).replace(/\\/$/,\u0027\u0027)!==\u0027https://md05-rikkei-project.duckdns.org\u0027) { pm.execution.setNextRequest(null); throw new Error(\u0027Chọn đúng environment production HTTPS.\u0027); }"
+                                              ]
+                                 }
+                  }
+              ],
+    "item":  [
+                 {
+                     "name":  "VNPay chưa cấu hình - kiểm tra phản hồi production",
+                     "item":  [
+                                  {
+                                      "name":  "01 - IPN xác nhận VNPay đang tắt",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/payments/vnpay/ipn",
+                                                      "auth":  {
+                                                                   "type":  "noauth"
+                                                               },
+                                                      "description":  "IPN kỳ vọng HTTP 200, JSON trực tiếp có RspCode=99. ADMIN login kỳ vọng HTTP 200 với data của ApiResponse."
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "prerequest",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.environment.unset(\u0027vnpayDisabledVerifiedAt\u0027);",
+                                                                                    "if(!pm.environment.get(\u0027probePaymentId\u0027) \u0026\u0026 pm.environment.get(\u0027onlinePaymentId\u0027)) pm.environment.set(\u0027probePaymentId\u0027,pm.environment.get(\u0027onlinePaymentId\u0027));"
+                                                                                ]
+                                                                   }
+                                                    },
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "function kiemTra(ten, ham) {",
+                                                                                    "    pm.test(ten, () =\u003e { try { ham(); } catch (loi) { pm.execution.setNextRequest(null); throw loi; } });",
+                                                                                    "}",
+                                                                                    "kiemTra(\u0027IPN dùng HTTP 200\u0027,()=\u003epm.expect(pm.response.code).to.eql(200));",
+                                                                                    "kiemTra(\u0027Đúng API Gateway\u0027,()=\u003epm.expect(pm.response.headers.get(\u0027X-Gateway\u0027)).to.eql(\u0027api-gateway\u0027));",
+                                                                                    "kiemTra(\u0027Provider đang tắt trả RspCode 99\u0027,()=\u003epm.expect(pm.response.json().RspCode).to.eql(\u002799\u0027));",
+                                                                                    "if(pm.response.code===200 \u0026\u0026 pm.response.json().RspCode===\u002799\u0027) pm.environment.set(\u0027vnpayDisabledVerifiedAt\u0027,String(Date.now()));"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "02 - Return khi VNPay tắt trả 503",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/payments/vnpay/return",
+                                                      "auth":  {
+                                                                   "type":  "noauth"
+                                                               },
+                                                      "description":  "Kỳ vọng HTTP 503 vì VNPay provider đang tắt."
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "function kiemTra(ten, ham) {",
+                                                                                    "    pm.test(ten, () =\u003e { try { ham(); } catch (loi) { pm.execution.setNextRequest(null); throw loi; } });",
+                                                                                    "}",
+                                                                                    "kiemTra(\u0027VNPay chưa cấu hình trả HTTP 503\u0027,()=\u003epm.expect(pm.response.code).to.eql(503));",
+                                                                                    "kiemTra(\u0027Đúng API Gateway\u0027,()=\u003epm.expect(pm.response.headers.get(\u0027X-Gateway\u0027)).to.eql(\u0027api-gateway\u0027));",
+                                                                                    "if(pm.response.code===503) kiemTra(\u0027Không báo thành công\u0027,()=\u003epm.expect(pm.response.json().success).to.eql(false));"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "03 - Đăng nhập ADMIN thử nghiệm",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/auth/login",
+                                                      "auth":  {
+                                                                   "type":  "noauth"
+                                                               },
+                                                      "description":  "IPN kỳ vọng HTTP 200, JSON trực tiếp có RspCode=99. ADMIN login kỳ vọng HTTP 200 với data của ApiResponse.",
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               }
+                                                               }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "prerequest",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "// Kiểm tra biến sau bước khởi tạo riêng của request.",
+                                                                                    "const thieu = [\"baseUrl\",\"adminEmail\",\"adminPassword\"].filter(key =\u003e { const value = pm.variables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
+                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy folder tiền đề hoặc cấu hình environment trước.\u0027); }"
+                                                                                ]
+                                                                   }
+                                                    },
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "function kiemTra(ten, ham) {",
+                                                                                    "    pm.test(ten, () =\u003e {",
+                                                                                    "        try { ham(); } catch (loi) { pm.execution.setNextRequest(null); throw loi; }",
+                                                                                    "    });",
+                                                                                    "}",
+                                                                                    "kiemTra(\u0027Mã HTTP đúng 200\u0027, () =\u003e pm.expect(pm.response.code).to.eql(200));",
+                                                                                    "kiemTra(\u0027Phản hồi đi qua API Gateway\u0027, () =\u003e pm.expect(pm.response.headers.get(\u0027X-Gateway\u0027)).to.eql(\u0027api-gateway\u0027));",
+                                                                                    "if (pm.response.code === 200) {",
+                                                                                    "const json = pm.response.json();",
+                                                                                    "kiemTra(\u0027Cờ success đúng kết quả\u0027, () =\u003e pm.expect(json.success).to.eql(true));",
+                                                                                    "const d = json.data;",
+                                                                                    "pm.environment.set(\u0027adminToken\u0027, d.accessToken);",
+                                                                                    "pm.environment.set(\u0027adminRefreshToken\u0027, d.refreshToken);",
+                                                                                    "pm.environment.set(\u0027adminId\u0027, d.user.id);",
+                                                                                    "kiemTra(\u0027Vai trò tài khoản đúng\u0027, () =\u003e pm.expect(d.user.role).to.eql(\u0027ADMIN\u0027));",
+                                                                                    "kiemTra(\u0027Có cặp access/refresh token\u0027,()=\u003e{pm.expect(d.accessToken).to.be.a(\u0027string\u0027).and.not.empty;pm.expect(d.refreshToken).to.be.a(\u0027string\u0027).and.not.empty;});",
+                                                                                    "kiemTra(\u0027Không cache thông tin phiên\u0027, () =\u003e pm.expect(pm.response.headers.get(\u0027Cache-Control\u0027)).to.eql(\u0027no-store\u0027));",
+                                                                                    "}"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "04 - Checkout khi VNPay tắt trả 503",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/payments/{{probePaymentId}}/vnpay/checkout",
+                                                      "auth":  {
+                                                                   "type":  "bearer",
+                                                                   "bearer":  [
+                                                                                  {
+                                                                                      "key":  "token",
+                                                                                      "value":  "{{adminToken}}",
+                                                                                      "type":  "string"
+                                                                                  }
+                                                                              ]
+                                                               },
+                                                      "description":  "Chỉ kiểm tra feature đang tắt trên payment mô phỏng của folder 06. Không thực hiện giao dịch nhà cung cấp."
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "prerequest",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "const checked=Number(pm.environment.get(\u0027vnpayDisabledVerifiedAt\u0027)||0);",
+                                                                                    "if(!checked || Date.now()-checked\u003e60000 || !pm.environment.get(\u0027probePaymentId\u0027) || !pm.environment.get(\u0027adminToken\u0027)) { pm.execution.setNextRequest(null); throw new Error(\u0027Chạy IPN/Login trước và đặt probePaymentId là ONLINE payment mô phỏng của lượt thử.\u0027); }"
+                                                                                ]
+                                                                   }
+                                                    },
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "function kiemTra(ten, ham) {",
+                                                                                    "    pm.test(ten, () =\u003e { try { ham(); } catch (loi) { pm.execution.setNextRequest(null); throw loi; } });",
+                                                                                    "}",
+                                                                                    "kiemTra(\u0027VNPay chưa cấu hình trả HTTP 503\u0027,()=\u003epm.expect(pm.response.code).to.eql(503));",
+                                                                                    "kiemTra(\u0027Đúng API Gateway\u0027,()=\u003epm.expect(pm.response.headers.get(\u0027X-Gateway\u0027)).to.eql(\u0027api-gateway\u0027));",
+                                                                                    "if(pm.response.code===503) kiemTra(\u0027Không báo thành công\u0027,()=\u003epm.expect(pm.response.json().success).to.eql(false));"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "05 - Refund khi VNPay tắt trả 503",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/payments/{{probePaymentId}}/vnpay/refund",
+                                                      "auth":  {
+                                                                   "type":  "bearer",
+                                                                   "bearer":  [
+                                                                                  {
+                                                                                      "key":  "token",
+                                                                                      "value":  "{{adminToken}}",
+                                                                                      "type":  "string"
+                                                                                  }
+                                                                              ]
+                                                               },
+                                                      "description":  "Chỉ kiểm tra feature đang tắt trên payment mô phỏng của folder 06. Không thực hiện giao dịch nhà cung cấp."
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "prerequest",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "const checked=Number(pm.environment.get(\u0027vnpayDisabledVerifiedAt\u0027)||0);",
+                                                                                    "if(!checked || Date.now()-checked\u003e60000 || !pm.environment.get(\u0027probePaymentId\u0027) || !pm.environment.get(\u0027adminToken\u0027)) { pm.execution.setNextRequest(null); throw new Error(\u0027Chạy IPN/Login trước và đặt probePaymentId là ONLINE payment mô phỏng của lượt thử.\u0027); }"
+                                                                                ]
+                                                                   }
+                                                    },
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "function kiemTra(ten, ham) {",
+                                                                                    "    pm.test(ten, () =\u003e { try { ham(); } catch (loi) { pm.execution.setNextRequest(null); throw loi; } });",
+                                                                                    "}",
+                                                                                    "kiemTra(\u0027VNPay chưa cấu hình trả HTTP 503\u0027,()=\u003epm.expect(pm.response.code).to.eql(503));",
+                                                                                    "kiemTra(\u0027Đúng API Gateway\u0027,()=\u003epm.expect(pm.response.headers.get(\u0027X-Gateway\u0027)).to.eql(\u0027api-gateway\u0027));",
+                                                                                    "if(pm.response.code===503) kiemTra(\u0027Không báo thành công\u0027,()=\u003epm.expect(pm.response.json().success).to.eql(false));"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "06 - Reconcile khi VNPay tắt trả 503",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/payments/{{probePaymentId}}/vnpay/reconcile",
+                                                      "auth":  {
+                                                                   "type":  "bearer",
+                                                                   "bearer":  [
+                                                                                  {
+                                                                                      "key":  "token",
+                                                                                      "value":  "{{adminToken}}",
+                                                                                      "type":  "string"
+                                                                                  }
+                                                                              ]
+                                                               },
+                                                      "description":  "Chỉ kiểm tra feature đang tắt trên payment mô phỏng của folder 06. Không thực hiện giao dịch nhà cung cấp."
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "prerequest",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "const checked=Number(pm.environment.get(\u0027vnpayDisabledVerifiedAt\u0027)||0);",
+                                                                                    "if(!checked || Date.now()-checked\u003e60000 || !pm.environment.get(\u0027probePaymentId\u0027) || !pm.environment.get(\u0027adminToken\u0027)) { pm.execution.setNextRequest(null); throw new Error(\u0027Chạy IPN/Login trước và đặt probePaymentId là ONLINE payment mô phỏng của lượt thử.\u0027); }"
+                                                                                ]
+                                                                   }
+                                                    },
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "function kiemTra(ten, ham) {",
+                                                                                    "    pm.test(ten, () =\u003e { try { ham(); } catch (loi) { pm.execution.setNextRequest(null); throw loi; } });",
+                                                                                    "}",
+                                                                                    "kiemTra(\u0027VNPay chưa cấu hình trả HTTP 503\u0027,()=\u003epm.expect(pm.response.code).to.eql(503));",
+                                                                                    "kiemTra(\u0027Đúng API Gateway\u0027,()=\u003epm.expect(pm.response.headers.get(\u0027X-Gateway\u0027)).to.eql(\u0027api-gateway\u0027));",
+                                                                                    "if(pm.response.code===503) kiemTra(\u0027Không báo thành công\u0027,()=\u003epm.expect(pm.response.json().success).to.eql(false));"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  }
+                              ]
+                 }
+             ]
+}

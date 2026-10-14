@@ -1,5 +1,9 @@
 # Kết quả kiểm chứng bộ Postman tiếng Việt
 
+Đây là bằng chứng lượt **local trước đó**. Hướng dẫn hiện tại dùng
+[production](test-production.md); xem [kết quả production mới](postman-production-results.md)
+với 680 assertions đạt và Gmail SMTP, thanh toán mô phỏng.
+
 Ngày 14/10/2026 (+07:00). Nguồn đối chiếu: controller/DTO hiện tại và `docs/openapi/api-gateway.json`; HEAD trước thay đổi `2118079` (mốc 173). Bộ mới gồm 162 requests nghiệp vụ và 19 requests VNPay tùy chọn, với environment local mẫu không chứa credentials.
 
 ## Kiểm tra tĩnh

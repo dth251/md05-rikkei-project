@@ -2,7 +2,7 @@
   "info": {
     "name": "MD05 - Kiểm thử API và demo bằng tiếng Việt",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "description": "Import kèm md05-tieng-viet.local.postman_environment.json. Chạy folder 01–14 theo thứ tự, Iterations=1, Delay=1000 ms, dừng khi lỗi. Chỉ đặt credentials ADMIN trong môi trường private. Mỗi lượt sinh tài khoản/SKU/key riêng; lưu token/ID bằng environment. VNPay có collection riêng. Notification/SMTP/monitoring kiểm tra qua Mailpit/Grafana private theo docs/demo-luong-hoat-dong.md. Đây là kiểm thử chức năng tuần tự, không thay thế Java tests hoặc k6."
+    "description": "Production: import md05-tieng-viet.production.postman_environment.json, điền ADMIN private và notificationMailbox bằng Gmail nhận thử. Xem docs/test-production.md. Chạy folder 01–14 theo thứ tự, Iterations=1, Delay=1100 ms, dừng khi lỗi. Mỗi lượt sinh tài khoản/SKU/key riêng; lưu token/ID bằng environment. Gmail nhận thư qua địa chỉ +md05-a/b riêng cho lượt thử. Thanh toán dùng simulate, chưa có link giả lập; VNPay provider hiện tắt và có collection kiểm tra riêng. Local có environment riêng. Đây là kiểm thử chức năng tuần tự, không thay thế Java tests hoặc k6."
   },
   "variable": [
     {
@@ -61,8 +61,13 @@
                   "// Kiểm tra biến sau bước khởi tạo riêng của request.",
                   "const run = pm.variables.replaceIn('{{$randomUUID}}');",
                   "pm.environment.set('runId', run);",
-                  "pm.environment.set('email', 'postman-vi-a-'+run+'@example.com');",
-                  "pm.environment.set('emailB', 'postman-vi-b-'+run+'@example.com');",
+                "const mailbox = String(pm.environment.get('notificationMailbox') || '').trim().toLowerCase();",
+                "const requireMailbox = String(pm.environment.get('requireRealMailbox') || '').toLowerCase() === 'true';",
+                "if ((requireMailbox && !mailbox) || (mailbox && !/^[a-z0-9._%+-]+@gmail\\.com$/.test(mailbox))) { pm.execution.setNextRequest(null); throw new Error('Điền notificationMailbox bằng Gmail nhận thử của bạn trước khi chạy production.'); }",
+                "const local = mailbox ? mailbox.split('@')[0].split('+')[0] : '';",
+                "const tag = run.replace(/-/g, '').slice(0, 20);",
+                "pm.environment.set('email', mailbox ? local+'+md05-a-'+tag+'@gmail.com' : 'postman-vi-a-'+run+'@example.com');",
+                "pm.environment.set('emailB', mailbox ? local+'+md05-b-'+tag+'@gmail.com' : 'postman-vi-b-'+run+'@example.com');",
                   "if (!pm.environment.get('password')) pm.environment.set('password', 'Vi!'+pm.variables.replaceIn('{{$randomUUID}}'));",
                   "if (!pm.environment.get('passwordB')) pm.environment.set('passwordB', 'Vi!'+pm.variables.replaceIn('{{$randomUUID}}'));",
                   "for (const key of Object.keys(pm.environment.toObject())) {",

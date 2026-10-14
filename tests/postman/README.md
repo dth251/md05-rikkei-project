@@ -1,15 +1,19 @@
-# Kiểm thử Postman bằng tiếng Việt
+# Kiểm thử Postman bằng tiếng Việt — production
+
+Hướng dẫn chính theo yêu cầu hiện tại: **[test toàn bộ trên production](../../docs/test-production.md)**.
+Domain API: **https://md05-rikkei-project.duckdns.org**. Thanh toán dùng mô
+phỏng SUCCESS/FAILED/hết hạn trên VPS; không cần merchant hoặc tiền thật.
 
 Import hai file vào Postman:
 
 - [Collection nghiệp vụ](md05-tieng-viet.postman_collection.json): 162 requests trong 14 folders, tên request và assertion bằng tiếng Việt.
-- [Environment local mẫu](md05-tieng-viet.local.postman_environment.json): mặc định `http://127.0.0.1:8080`, không có credentials.
+- [Environment production mẫu](md05-tieng-viet.production.postman_environment.json): đúng domain HTTPS, không có credentials.
 
-Chọn environment vừa import, điền `adminEmail` và `adminPassword` của một ADMIN thử nghiệm vào giá trị private/local. Đăng ký công khai chỉ tạo USER; không có API cấp ADMIN. Nếu chưa có ADMIN, chạy được folders 01–03.
+Chọn environment production, điền `adminEmail`, `adminPassword` của ADMIN thử nghiệm và `notificationMailbox` là Gmail nhận thử vào giá trị private/local. Có thể import bản private đã chuẩn bị theo hướng dẫn production để dùng ADMIN sẵn có. Đăng ký công khai chỉ tạo USER; không có API cấp ADMIN.
 
-Trong **Collection Runner**, chọn folders theo thứ tự số, **Iterations = 1**, **Delay = 1000 ms**. Dừng khi có lỗi request/script/assertion. Request tự dừng luồng khi assertion thất bại hoặc thiếu biến tiền đề. Không chạy song song hai phiên dùng chung environment.
+Trong **Collection Runner**, chọn folders theo thứ tự số, **Iterations = 1**, **Delay = 1100 ms**. Dừng khi có lỗi request/script/assertion. Request tự dừng luồng khi assertion thất bại hoặc thiếu biến tiền đề. Không chạy song song hai phiên dùng chung environment.
 
-Folder 01 tạo USER A/B và `runId` mới. Mật khẩu USER được sinh ngẫu nhiên nếu chưa điền. Các folder sau tự lưu token/ID/key vào environment; dùng cùng environment trong cả phiên. Không tạo globals hoặc dữ liệu iteration trùng tên vì chúng có thể che giá trị vừa lưu. Khi bấm Send thủ công, cần chạy đúng thứ tự và tự gửi lại request đang chờ; `setNextRequest` chỉ điều khiển Runner.
+Folder 01 tạo USER A/B và `runId` mới, dùng nhãn `+md05-a/b-...` trên Gmail nhận thử để thư về cùng inbox. Mật khẩu USER được sinh ngẫu nhiên nếu chưa điền. Các folder sau tự lưu token/ID/key vào environment; dùng cùng environment trong cả phiên. Không tạo globals hoặc dữ liệu iteration trùng tên vì chúng có thể che giá trị vừa lưu. Khi bấm Send thủ công, cần chạy đúng thứ tự và tự gửi lại request đang chờ; `setNextRequest` chỉ điều khiển Runner.
 
 | Folder | Requests | Nội dung / tiền đề |
 |---|---:|---|
@@ -30,20 +34,30 @@ Folder 01 tạo USER A/B và `runId` mới. Mật khẩu USER được sinh ng�
 
 Từng luồng lấy baseline kho, không phụ thuộc ID production có sẵn. Chạy lại folder tạo đơn sẽ sinh key mới và có thể tiêu thụ thêm hàng. Chạy lại 04/05 với cùng `runId` sẽ xung đột SKU/phiếu; muốn phiên mới, bắt đầu lại 01. Folder 10/13 chỉ chạy khi đơn chưa có hồ sơ trả; request replay riêng dùng nguyên key/body đã lưu.
 
-Chạy local bằng Postman CLI, sau khi tạo bản environment private ngoài Git:
+Chạy production bằng Postman CLI, dùng environment private ngoài Git:
 
 ```powershell
 postman collection run tests/postman/md05-tieng-viet.postman_collection.json `
   -e '<duong-dan-environment-private.json>' `
-  --delay-request 1000 --timeout-request 10000 --timeout 900000 `
+  --delay-request 1100 --timeout-request 15000 --timeout 1200000 `
   --bail --no-report-events
 ```
 
 Không cần login Postman cloud để chạy file local. CLI có thể nhắc login để publish; kiểm tra exit code và bảng assertions cuối lượt. `--no-report-events` tắt gửi sự kiện chạy. Không truyền mật khẩu trên command line hoặc export token/credentials vào Git.
 
-VPS: sao chép environment, đổi `baseUrl` sang domain đang triển khai và dùng ADMIN/dữ liệu thử riêng. Collection có thao tác tạo tài khoản, nhập kho, ghi nhận thu/chi demo và xóa mềm sản phẩm mới; chỉ chạy trên môi trường bạn định kiểm thử. Bộ này chưa mặc nhiên được chạy trên VPS.
+Collection tạo tài khoản, nhập kho, ghi nhận thu/chi demo và xóa mềm sản phẩm mới của lượt thử. Xem [kết quả production](../../docs/postman-production-results.md) cho trạng thái thực tế. Environment local cũ vẫn có trong repository để dùng riêng khi cần, không phải environment của hướng dẫn này.
 
-## VNPay sandbox riêng
+## VNPay mô phỏng trên production
+
+Dùng folders **06, 07, 11** của bộ chính cho SUCCESS, FAILED và EXPIRED.
+API simulate trả JSON, chưa sinh link thanh toán giả lập. SUCCESS tự xác
+nhận đơn qua sự kiện và gửi email; không cần POST xác nhận đơn lần nữa.
+Đây là API simulate kết quả thanh toán, không phát sinh tiền thật và chưa
+kiểm chứng callback/chữ ký nhà cung cấp. Khi VNPay trên VPS đang tắt, có
+[bộ kiểm tra phản hồi feature tắt](md05-production-vnpay-disabled.postman_collection.json)
+riêng; xem thứ tự trong hướng dẫn production.
+
+## VNPay sandbox có merchant — ngoài bài mô phỏng hiện tại
 
 Import [collection VNPay tiếng Việt](md05-tieng-viet-vnpay.postman_collection.json), dùng cùng environment. Chạy 01–05 của collection nghiệp vụ trước, chưa chạy 14. Cần merchant sandbox đã cấu hình, không đưa hash secret vào Postman.
 
@@ -57,7 +71,7 @@ Không Run toàn bộ collection VNPay liên tục: giữa V01/V02 cần thao t�
 
 ## Phạm vi và kết quả
 
-Hai collection bao phủ các HTTP operation nghiệp vụ công khai trong [OpenAPI Gateway](../../docs/openapi/api-gateway.json). API recipient nội bộ của Notification, tài liệu OpenAPI private và Actuator không nằm trong bộ HTTP nghiệp vụ này. Notification nhận event, kiểm tra email qua Mailpit; monitoring qua Grafana/Prometheus private. Không tạo endpoint Notification giả để demo.
+Các collection bao phủ các HTTP operation nghiệp vụ công khai trong [OpenAPI Gateway](../../docs/openapi/api-gateway.json). API recipient nội bộ của Notification, tài liệu OpenAPI private và Actuator không nằm trong bộ HTTP nghiệp vụ này. Production kiểm tra email qua Gmail; monitoring qua Grafana/Prometheus private trên VPS. Không tạo endpoint Notification giả để demo.
 
 [Kịch bản demo và lời dẫn](../../docs/demo-luong-hoat-dong.md) có thứ tự trình bày, bảng tồn kho và checklist bằng chứng. [Kết quả kiểm chứng](../../docs/postman-tieng-viet-results.md) phân biệt phần chạy live, kiểm tra tĩnh và phần chưa chạy. Postman tuần tự không thay thế Java unit/integration tests, kiểm thử race hoặc k6.
 

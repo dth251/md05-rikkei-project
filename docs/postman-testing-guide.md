@@ -1,5 +1,10 @@
 # Hướng dẫn kiểm thử API bằng Postman và đối chiếu yêu cầu dự án
 
+Theo yêu cầu hiện tại, dùng **[hướng dẫn test production](test-production.md)**
+và [kết quả live production](postman-production-results.md). Thanh toán dùng
+API simulate, chưa có link giả lập; không cần merchant VNPay. Hướng dẫn
+bên dưới giữ các chi tiết đối chiếu contract và môi trường lịch sử.
+
 Bộ mới có tên request/assertion bằng tiếng Việt, tự tạo fixture và chạy theo
 luồng: [hướng dẫn import và chạy](../tests/postman/README.md),
 [kịch bản demo có lời dẫn](demo-luong-hoat-dong.md),
@@ -9,8 +14,9 @@ Cập nhật **14/10/2026 (+07:00)**. Hướng dẫn này mô tả request và k
 kiểm tra; không tự coi các bước chưa chạy là kết quả PASS.
 
 VPS đã rollout main mốc 168 ngày 14/10/2026: deadline ONLINE 150 giây,
-SMTP Mailpit sandbox và Prometheus/Grafana đã được kiểm chứng. VNPay cần
-cấu hình merchant/sandbox private đang bật trước khi chạy. Trạng thái CI/CD
+Prometheus/Grafana đã được kiểm chứng. Gmail SMTP thay Mailpit trên VPS từ
+23:02 cùng ngày. VNPay provider đang tắt, test hiện tại dùng simulate.
+Trạng thái CI/CD
 và từng nhóm nằm trong [nhật ký triển khai](commits-and-deployments.md).
 Để trình bày và tự test theo thứ tự, dùng [kịch bản demo](demo-test-guide.md).
 
