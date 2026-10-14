@@ -1,5 +1,5 @@
 {
-    "checkedAt":  "2026-10-15T02:42:21.6878611+07:00",
+    "checkedAt":  "2026-10-15T03:01:37.7971181+07:00",
     "stage":  "local-tests-passed-awaiting-ci-deploy",
     "paymentCommit":  "4bfed7a32c34e47b03a61f6b55f967066f14352e",
     "orderCommit":  "e6d269196ed805fd89bfece1e49666901e10368c",
@@ -39,5 +39,36 @@
                         "VPS still runs previous image and 150-second policy at this checkpoint",
                         "Previously expired orders cannot be revived because stock was released",
                         "IPN registration/delivery remains unverified"
-                    ]
+                    ],
+    "notification":  {
+                         "bootJar":  "PASS",
+                         "stages":  [
+                                        "confirmed",
+                                        "cancelled",
+                                        "expired",
+                                        "shipped",
+                                        "completed"
+                                    ],
+                         "failures":  0,
+                         "liveInboxVerified":  false,
+                         "errors":  0,
+                         "commit":  "2f4109134b0caa64ee6b93c104bb6e86939c911d",
+                         "previewDesktop":  {
+                                                "viewport":  820,
+                                                "scroll":  820
+                                            },
+                         "mime":  "multipart/alternative with UTF-8 text/plain and text/html",
+                         "previewMobile":  {
+                                               "viewport":  390,
+                                               "scroll":  390
+                                           },
+                         "skipped":  0,
+                         "tests":  22
+                     },
+    "initialCiFailure":  {
+                             "fix":  "Aged fixture to 201 seconds; real wait uses 200-second boundary and 220-second timeout; HTML and text Mailpit assertions added",
+                             "prRun":  38626143745,
+                             "pushRun":  38625930469,
+                             "cause":  "EmailLiveTests still aged fixture to 151 seconds and waited against 150-second policy"
+                         }
 }

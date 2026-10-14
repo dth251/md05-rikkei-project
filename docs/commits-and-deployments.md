@@ -1211,3 +1211,8 @@ của ledger client giữ nguyên; throttle một lần/reference/phút/instance
 bộ nhớ tối đa 256 references. Không tạo frontend/module chung, không
 commit credentials hoặc .verification. Thay đổi .vscode sẵn có giữ nguyên.
 [Bằng chứng](evidence/vnpay-pending-recovery-2026-10-15.json).
+
+
+Mốc 197-notification-service: `2f4109134b0caa64ee6b93c104bb6e86939c911d` tại 2026-10-15T03:01:37.7971181+07:00. Người dùng yêu cầu email Gmail có giao diện: Notification chuyển sang MIME multipart/alternative, text/plain dự phòng và text/html UTF-8 theo mẫu MD05 cho năm trạng thái đơn. Không đưa dữ liệu hóa đơn mẫu vào email thật. GreenMail kiểm tra SMTP thực, đúng recipient/subject/order/status, hai MIME parts và Message-ID ổn định; Notification 22/22 tests, bootJar đạt. Preview 820px/390px không tràn ngang; chưa xác nhận Gmail inbox hoặc deploy tại checkpoint.
+
+CI đầu 38625930469 và PR 38626143745 thất bại tại EmailLiveTests còn mốc 150 giây; đã sửa fixture già 201 giây và timeout/boundary theo TTL 200 giây. Chưa merge/deploy khi CI lỗi; CI mới cần xác nhận lại. Bổ sung kiểm tra Mailpit có cả HTML/Text cho replay, cancellation, expiry và restart.

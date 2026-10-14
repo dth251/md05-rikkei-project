@@ -53,8 +53,16 @@ và kiểm tra mẫu rồi gửi bản HTML đến đúng địa chỉ người 
 23:13:29 +07; Gmail SMTP trả 250. Chưa xác nhận nội dung trong inbox tại
 thời điểm ghi tài liệu.
 
-Đây là template và công cụ gửi **mẫu**. Notification tự động hiện vẫn dùng
-`EmailMapper` text hiện tại; chưa thay mapper hoặc deploy binary để tự
-render hóa đơn HTML cho mọi đơn. Việc áp dụng động cần lấy snapshot
-sản phẩm/phương thức thanh toán của đúng đơn và kiểm tra quyền truy cập;
-không dùng dữ liệu cố định của file demo cho email khách thật.
+Thông báo tự động đã có template HTML riêng theo giao diện MD05:
+[xem mẫu](order-notification-preview.html),
+[desktop](order-notification-preview.png),
+[điện thoại](order-notification-preview-mobile.png).
+Notification gửi `multipart/alternative`: HTML cho Gmail và text dự phòng,
+cho confirmed/cancelled/expired/shipped/completed. Mã đơn và trạng thái
+lấy từ đúng EmailTask; không chèn sản phẩm/tổng tiền/người nhận cố định
+của mẫu hóa đơn vào thông báo thật. Bộ Java/SMTP đã đạt, CI và rollout
+đang chờ xác nhận tại checkpoint 15/10/2026.
+
+Template hóa đơn chi tiết và công cụ gửi mẫu phía trên vẫn là luồng riêng.
+Thông báo tự động hiện là phiếu cập nhật trạng thái đơn; không phát hành
+hóa đơn thuế hoặc khẳng định COD đã thanh toán chỉ từ order.confirmed.

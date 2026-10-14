@@ -56,8 +56,8 @@ VNPay cấu hình. Trang kết quả mới cần được triển khai qua PR/CI
 4. Chọn thẻ nội địa/ngân hàng NCB và dùng thông tin test bên dưới. Hoàn tất
    thao tác xác thực, VNPay chuyển trình duyệt về Return URL của dự án.
 5. Trang tiếng Việt hiển thị đơn, payment, tổng tiền và trạng thái đã lưu.
-   Nếu IPN chưa tới: “Đang chờ xác nhận thanh toán”, tự kiểm tra tối đa 24
-   lượt, cách 2,5 giây, có nút kiểm tra lại. Sau IPN thành công: “Thanh toán
+   Nếu IPN chưa ghi capture, backend tự querydr để đối chiếu với VNPay. Nếu chưa xác minh được: “Đang chờ xác nhận thanh toán”, tự kiểm tra tối đa 24
+   lượt, cách 2,5 giây, có nút kiểm tra lại. Sau IPN hoặc querydr hợp lệ: “Thanh toán
    thành công”. Payment phát sự kiện để Order xác nhận đơn và Notification
    gửi email đã đăng ký. Không POST tạo hoặc xác nhận đơn lần nữa.
 

@@ -12,7 +12,7 @@ những bài simulate nghiệp vụ riêng. [Trạng thái sandbox](vnpay-sandbo
 1. Import collection nghiệp vụ và environment production, target `https://md05-rikkei-project.duckdns.org`. Có thể dùng bản private đã chuẩn bị theo hướng dẫn chính; ADMIN thử riêng, `notificationMailbox` là Gmail nhận thử.
 2. Runner: Iterations 1, Delay 1100 ms, dừng khi lỗi. Dùng một environment cho cả phiên; để collection tự tạo các ID mới, không lấy ID khách hàng sẵn có.
 3. Mở Gmail và Grafana của VPS. Dùng tunnel theo [hướng dẫn production](test-production.md#4-email-và-monitoring-đều-ở-vps); không mở cổng monitoring công khai. Chọn cửa sổ dashboard đúng thời gian demo, ghi baseline trước khi thao tác.
-4. Kiểm tra thời hạn ONLINE đang là 150 giây; login lại khi token sắp hết hạn. Demo đầy đủ dài hơn TTL token mặc định, nên chạy lại **riêng request login A/B/ADMIN** trước folder 11 nếu cần, giữ các ID/key hiện có. Không chạy lại request đăng ký đầu tiên giữa phiên vì nó khởi tạo dữ liệu mới.
+4. Kiểm tra thời hạn ONLINE đang là 200 giây; login lại khi token sắp hết hạn. Demo đầy đủ dài hơn TTL token mặc định, nên chạy lại **riêng request login A/B/ADMIN** trước folder 11 nếu cần, giữ các ID/key hiện có. Không chạy lại request đăng ký đầu tiên giữa phiên vì nó khởi tạo dữ liệu mới.
 5. Để nguyên body/key ở các request replay. Một lần bấm create mới là một đơn mới. Chỉ ghi nhận biên nhận COD trên dữ liệu demo; API không tự chuyển tiền mặt.
 
 VPS chuyển sang Gmail SMTP từ 23:02 ngày 14/10/2026. Bộ Postman dùng
@@ -47,7 +47,7 @@ flowchart LR
 | D05 | 2 phút | 07 | Thanh toán thất bại, Saga hoàn kho |
 | D06 | 3 phút | 08, 09 | COD thu đủ tiền và hủy trước giao |
 | D07 | 3 phút | 10 | Trả toàn bộ COD, nhập lại và hoàn tiền |
-| D08 | 4 phút | 11 | Hết hạn thật 150 giây và từ chối tiền muộn |
+| D08 | 4 phút | 11 | Hết hạn thật 200 giây và từ chối tiền muộn |
 | D09 | 2 phút | 12, 13, 14 | POS/variant, hoàn ONLINE, snapshot khi xóa mềm |
 | D10 | Trong phiên | Gmail/Grafana VPS | Đối chiếu email và vận hành |
 
@@ -107,11 +107,11 @@ Chờ Payment `refundStatus=REQUIRED`, ADMIN ghi chi hoàn **125.000**. Sai số
 
 Lời dẫn: “Trả hàng có tiến trình riêng với lịch sử giao hàng. Nhập lại kho và hoàn tiền là hai bước; REQUIRED nghĩa là cần hoàn, chưa phải đã hoàn.”
 
-## D08 — Hết hạn 150 giây
+## D08 — Hết hạn 200 giây
 
-Chạy 11, giữ Runner mở. Đơn mới có `expiryCreatedAt`; không simulate. Kho giữ **17/1**. Trong khoảng chờ, trình bày kiến trúc, Gmail và Grafana. Collection poll có giới hạn 190 lượt; không coi 404 hoặc PENDING mãi là PASS.
+Chạy 11, giữ Runner mở. Đơn mới có `expiryCreatedAt`; không simulate. Kho giữ **17/1**. Trong khoảng chờ, trình bày kiến trúc, Gmail và Grafana. Collection poll có giới hạn 240 lượt; không coi 404 hoặc PENDING mãi là PASS.
 
-Từ deadline 150 giây, Order chuyển **EXPIRED**, kho về **18/0**; chờ Payment `reservationExpired=true`, FAILED. Simulate SUCCESS muộn nhận **409**; đọc lại không làm tăng kho. Gmail có thông báo quá hạn đúng order/email.
+Từ deadline 200 giây, Order chuyển **EXPIRED**, kho về **18/0**; chờ Payment `reservationExpired=true`, FAILED. Simulate SUCCESS muộn nhận **409**; đọc lại không làm tăng kho. Gmail có thông báo quá hạn đúng order/email.
 
 Nếu vượt giới hạn, ghi FAIL và kiểm tra scheduler/queue/Outbox. Không sửa createdAt hoặc rút TTL trong bài chứng minh chờ thật. Bài tuần tự này không chứng minh race giữa payment và scheduler; race có Java tests riêng.
 

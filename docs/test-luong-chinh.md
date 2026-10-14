@@ -109,7 +109,7 @@ khác. Đơn phải COMPLETED trước khi yêu cầu trả; cần duyệt và n
 trước khi ghi nhận hoàn tiền. Đơn gốc vẫn COMPLETED, hồ sơ trả là REFUNDED.
 
 Nếu token hết hạn, chạy lại riêng request đăng nhập khách hàng/ADMIN,
-giữ các ID đang thử. Nếu VNPay còn chưa xác nhận IPN thì 07 không thể
+giữ các ID đang thử. Nếu backend chưa xác nhận qua IPN hoặc querydr thì 07 không thể
 đạt chỉ bằng việc trình duyệt quay về; xem [cấu hình và trạng thái sandbox](vnpay-sandbox-browser.md).
 Hoàn tiền VNPay chỉ được đánh dấu REFUNDED khi backend nhận kết quả đã
 xác minh. Nếu provider trả trạng thái chưa rõ, dừng và dùng đối soát theo
