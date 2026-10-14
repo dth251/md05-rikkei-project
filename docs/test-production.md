@@ -3,6 +3,8 @@
 Yêu cầu mới: thanh toán qua **VNPay sandbox trên trình duyệt** rồi quay về
 dự án, xem [hướng dẫn riêng](vnpay-sandbox-browser.md). Luồng này cần
 merchant sandbox private và bản Payment có trang kết quả đã triển khai.
+Hiện đã cấu hình sandbox và triển khai trang kết quả; dùng
+**[một file Postman gộp](postman-mot-file.md)** cho bài đầy đủ.
 Các kết quả 680 assertions bên dưới là checkpoint mô phỏng trước đó;
 không phải bằng chứng đã giao dịch trên VNPay sandbox.
 
@@ -79,11 +81,12 @@ Khi demo chậm và JWT hết hạn, chạy lại riêng các request login A/B/
 giữ ID đang thử. Muốn phiên mới, bắt đầu lại 01; không chạy lại 01 giữa
 phiên đang kiểm tra vì nó khởi tạo người dùng/SKU/keys mới.
 
-## 3. Phần VNPay giả lập
+## 3. Mô phỏng nghiệp vụ và VNPay sandbox
 
-**Trạng thái hiện tại:** `/simulate` trả JSON, chưa có đường link/trang
-thanh toán giả lập. `POST /api/payments/{id}/vnpay/checkout` trên VPS hiện
-trả 503. Sau khi mô phỏng SUCCESS đúng hạn, Payment phát
+`/simulate` là bài nghiệp vụ riêng, trả JSON. Với sandbox thử nghiệm,
+`POST /api/payments/{id}/vnpay/checkout` hiện trả link sang VNPay sau khi
+merchant private đã được bật; xem hướng dẫn riêng ở đầu tài liệu.
+Sau khi mô phỏng SUCCESS đúng hạn, Payment phát
 `payment.succeeded` qua Outbox/RabbitMQ; Order tự chuyển CONFIRMED và phát
 `order.confirmed`; Notification tự gửi email. Không gọi thêm POST đặt hàng
 hoặc POST xác nhận đơn. Đơn được tạo trước khi thanh toán. Việc xử lý là
@@ -103,10 +106,11 @@ thanh toán ngân hàng để chạy bộ này. Đường dẫn checkout VNPay t
 khi merchant sandbox đã cấu hình; không dùng link giả để kết luận đã tích
 hợp nhà cung cấp.
 
-VPS hiện `VNPAY_ENABLED=false`. Nếu muốn kiểm tra đủ các URL VNPay trong
-trạng thái hiện tại, import thêm
+Ở checkpoint 680 assertions ngày 14/10, VPS có `VNPAY_ENABLED=false`.
+Hiện provider sandbox đã bật. Bộ dưới chỉ dành cho một môi trường được
+xác nhận đang tắt provider, không chạy trong bài sandbox hiện tại:
 [collection VNPay đang tắt — 6 requests](../tests/postman/md05-production-vnpay-disabled.postman_collection.json)
-và chạy sau bộ chính, cùng environment:
+với cùng environment của môi trường provider tắt:
 
 1. IPN trả HTTP 200 với `RspCode=99` xác nhận provider đang tắt.
 2. Return, checkout, refund, reconcile trả 503 theo feature guard.

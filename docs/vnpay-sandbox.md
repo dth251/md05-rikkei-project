@@ -1,10 +1,13 @@
 # VNPay sandbox: checkpoint phát triển
 
 Luồng checkout, IPN, return và hoàn tiền đã có trong image main 168
-`d2779d1` trên VPS; provider vẫn tắt vì chưa có merchant sandbox private.
-Gmail SMTP trên VPS đã được cấu hình riêng. Theo yêu cầu mới, bổ sung
+`d2779d1` trước đó trên VPS. Ngày 15/10 đã bật merchant sandbox private
+và triển khai Payment `e47ea2d` từ CI sau khi merge PR #37. Gmail SMTP
+trên VPS đã được cấu hình riêng. Theo yêu cầu mới, bổ sung
 [luồng sandbox trên trình duyệt và trang quay về](vnpay-sandbox-browser.md)
-trong nhánh feature; chưa ghi nhận giao dịch với hệ thống VNPay.
+đã lên production; link mở được trang chọn ngân hàng Test. Chưa ghi nhận
+giao dịch thanh toán/IPN thực với hệ thống VNPay; xem trạng thái mới ở
+hướng dẫn trình duyệt.
 
 ## API và trạng thái
 

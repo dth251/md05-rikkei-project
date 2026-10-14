@@ -2,6 +2,11 @@
 
 Kịch bản ngày 14/10/2026, dùng [bộ Postman tiếng Việt](../tests/postman/README.md) trên **production** theo [hướng dẫn chính](test-production.md). Dành khoảng 25–30 phút cho bài đầy đủ; thanh toán dùng simulate. Mỗi bước dưới đây là kết quả mong đợi của phiên trình bày; [kết quả live đã kiểm chứng](postman-production-results.md) được ghi riêng.
 
+Cập nhật 15/10: đã bật VNPay sandbox và triển khai trang quay về. Bài có
+VNPay dùng **[collection gộp](postman-mot-file.md)**: P1 → mở link sandbox →
+P2 → P3. Hoãn folder 14 xóa mềm tới cuối; các D04/D05 bên dưới vẫn là
+những bài simulate nghiệp vụ riêng. [Trạng thái sandbox](vnpay-sandbox-browser.md#trạng-thái-triển-khai).
+
 ## Chuẩn bị
 
 1. Import collection nghiệp vụ và environment production, target `https://md05-rikkei-project.duckdns.org`. Có thể dùng bản private đã chuẩn bị theo hướng dẫn chính; ADMIN thử riêng, `notificationMailbox` là Gmail nhận thử.
@@ -145,10 +150,10 @@ Demo sự cố dependency dùng [script riêng](infrastructure/scripts/dependenc
 
 ## VNPay tùy chọn và ghi nhận kết quả
 
-Theo yêu cầu hiện tại, dùng simulate ở 06/07/11, không cần merchant VNPay.
-Provider trên VPS đang tắt; checkout trả 503, chưa có link giả lập. Bộ
-kiểm tra VNPay đang tắt nằm trong hướng dẫn production. Nội dung merchant
-bên dưới là bài riêng, ngoài phạm vi demo mô phỏng hiện tại.
+Các bài simulate ở 06/07/11 không cần merchant. Provider sandbox trên VPS
+hiện đã bật; bài VNPay trên trình duyệt dùng merchant thử nghiệm và trang
+kết quả đã triển khai theo hướng dẫn mới. Không chạy collection kiểm tra
+provider tắt ở môi trường hiện tại.
 
 Dùng [collection sandbox riêng](../tests/postman/md05-tieng-viet-vnpay.postman_collection.json) với thứ tự V00 → V01 → **thanh toán trên trình duyệt** → V02 → V03 → V04, trước khi xóa sản phẩm. Merchant/config phải sẵn sàng. IPN có chữ ký của nhà cung cấp mới cập nhật persisted payment; return URL không tự xác nhận nhận tiền. V03 gửi refund một lần; chưa rõ kết quả thì reconcile V04 theo [runbook VNPay](vnpay-sandbox.md). Nếu quá deadline, giữ kết quả thất bại, tạo lượt mới; không bypass bằng simulate.
 

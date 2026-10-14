@@ -1041,3 +1041,48 @@ Các contract OpenAPI xuất từ tests, chỉ giữ thay đổi của Payment/r
 contract Auth/Order/Product không đổi ngữ nghĩa. Không stage settings IDE
 có sẵn của người dùng. Quét khóa sandbox trong các file staged và
 `git diff --check` đạt.
+
+## Triển khai trang kết quả VNPay sandbox ngày 15/10/2026
+
+| Mốc | SHA | Thời gian +07 | Kiểm tra / deploy thực tế |
+|---|---|---|---|
+| 182-docs | `31fceedfc28f89699e26a9aef8955ec0e5b827e0` | 2026-10-15T00:08:46+07:00 | Checkpoint chuẩn bị sandbox, push feature và mở PR #37. |
+| 183-payment-service | `6e2ab03183b0f1874161d72323ffb23459890104` | 2026-10-15T00:27:22+07:00 | Merge PR #37 sau CI 38604216557 success. CI nhánh 38604057126 verify/publish Payment success; image nguồn e47ea2d đã nằm trong main. Triển khai riêng Payment bằng deploy.sh/image e47ea2d, đối chiếu 00:29:49: sáu app healthy, monitoring 6 app/5 dependency UP, Gmail giữ nguyên. Không coi push-main CI 38606802592 đang chạy là đã hoàn tất. |
+
+Image thực tế Payment:
+`ghcr.io/dth251/md05-rikkei-project/payment-service:e47ea2d260e7aff4591ae77c1351fdc9c5643a77`,
+digest `sha256:2bffee5de929d462e556a5381c502fc81b535d181eae5923445b7859e11597b1`.
+Đã kiểm tra revision label/ancestry trước rollout. Các app khác tại thời
+điểm đối chiếu vẫn `d2779d1`. Release mới dùng `.env` private VPS qua symlink;
+provider true, SMTP host smtp.gmail.com. Schema Payment 001–004 chỉ verify,
+không có migration mới, không xóa volume/dữ liệu cũ. Pipeline main sẽ tiếp
+tục quy trình publish/deploy theo service; journal ghi trạng thái đã quan
+sát, không gán SHA merge cho image chưa chạy.
+
+Collection gộp **181 requests/19 folders** chạy P1 trên HTTPS production:
+**270 HTTP executions/669 assertions, zero failures, exit 0, 6m59.2s**.
+Dừng đúng sau checkout; P2/P3 chưa chạy. Đơn #160/payment #95 tạo link
+hợp lệ tới VNPay; GET lúc 00:18:59 mở trang PaymentMethod.html (Test),
+HTTP 200, có chọn ngân hàng, không phải trang lỗi checksum. Chưa thực
+hiện thanh toán trên trang ngân hàng; đơn sau đó tự EXPIRED đúng chính
+sách giữ hàng 150 giây. Không giả chữ ký/IPN bằng key thật để ép PASS.
+
+Sau rollout, smoke qua HTTPS đạt **3 requests/12 assertions**, zero
+failures, exit 0, 4.5s: IPN unsigned 97, return JSON 400, HTML 400 có
+trang tiếng Việt/CSP/no-store/no-referrer. Java Payment trước rollout
+64/64 tests và bootJar đạt; UI desktop 820/mobile 390, polling và refresh
+đã kiểm chứng với fixture, không phải giao dịch VNPay thực tế.
+
+Đối chiếu read-only các fixture USER A #226 lúc 00:32:24: đơn #153–158
+và #160 đúng trạng thái, kho cha #154=20/0, biến thể #156=4/0. Có 11
+deliveries gửi về Gmail alias tài khoản thử, tất cả SENT/attempts=1 (3
+confirmed, 2 shipped, 2 completed, 2 cancelled, 2 expired); chưa xác nhận
+inbox. Thư đăng ký IPN tới VNPay chỉ có bản nháp, **chưa gửi**; người dùng
+đã nêu rõ quan ngại việc gửi bên thứ ba, không thực hiện gửi thư.
+
+Chưa xác nhận VNPay đã đăng ký IPN, chưa có bằng chứng giao dịch thanh
+toán/IPN thực hoặc hoàn tiền thực tại sandbox. Đây là bước bên ngoài dự
+án còn cần cấu hình/đối chiếu; không suy ra từ 669 assertions hoặc trang
+chọn ngân hàng. [File Postman gộp](postman-mot-file.md),
+[hướng dẫn sandbox](vnpay-sandbox-browser.md),
+[bằng chứng runtime](evidence/vnpay-browser-integration-2026-10-15.json).

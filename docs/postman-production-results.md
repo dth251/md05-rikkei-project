@@ -1,5 +1,9 @@
 # Kết quả test Postman trên production
 
+Đây là checkpoint mô phỏng ngày 14/10. Bản cập nhật 15/10 đã bật merchant
+sandbox, triển khai trang kết quả và chạy P1 của collection gộp đạt 669
+assertions; xem [trạng thái mới](vnpay-sandbox-browser.md#trạng-thái-triển-khai).
+
 Ngày 14/10/2026 (+07), target **https://md05-rikkei-project.duckdns.org**.
 Dùng [hướng dẫn production](test-production.md), ADMIN thử riêng và hai
 USER mới; thanh toán ONLINE được mô phỏng, không giao dịch ngân hàng.

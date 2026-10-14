@@ -37,3 +37,10 @@ File được tạo từ hai collection nguồn bằng
 [build-postman-all.ps1](infrastructure/scripts/build-postman-all.ps1).
 Khi sửa nguồn, chạy lại script và kiểm tra cả scripts/requests trước khi
 chia sẻ bản gộp.
+
+Kiểm chứng 15/10 trên HTTPS production: P1 đạt **669 assertions, 270 HTTP
+executions, zero failures**, 6m59.2s, dừng đúng sau checkout. Link tạo cho
+đơn thử mở được trang chọn phương thức thanh toán Test của VNPay.
+P2/P3 của phiên này chưa chạy; chưa có bằng chứng giao dịch/IPN thực từ
+VNPay. Trang kết quả mới đã triển khai, smoke sau triển khai 12 assertions
+đạt. Xem [runtime và bằng chứng](vnpay-sandbox-browser.md#trạng-thái-triển-khai).

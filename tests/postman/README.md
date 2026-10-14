@@ -50,11 +50,13 @@ Không cần login Postman cloud để chạy file local. CLI có thể nhắc l
 
 Collection tạo tài khoản, nhập kho, ghi nhận thu/chi demo và xóa mềm sản phẩm mới của lượt thử. Xem [kết quả production](../../docs/postman-production-results.md) cho trạng thái thực tế. Environment local cũ vẫn có trong repository để dùng riêng khi cần, không phải environment của hướng dẫn này.
 
-## VNPay mô phỏng trên production
+## ONLINE mô phỏng trên production
 
 Dùng folders **06, 07, 11** của bộ chính cho SUCCESS, FAILED và EXPIRED.
-API simulate trả JSON, chưa sinh link thanh toán giả lập. SUCCESS tự xác
+API simulate trả JSON. SUCCESS tự xác
 nhận đơn qua sự kiện và gửi email; không cần POST xác nhận đơn lần nữa.
+Để tạo link sang VNPay sandbox và thao tác trên trang thanh toán, dùng
+bản gộp hoặc collection sandbox ở phần tiếp theo.
 Đây là API simulate kết quả thanh toán, không phát sinh tiền thật và chưa
 kiểm chứng callback/chữ ký nhà cung cấp. Khi VNPay trên VPS đang tắt, có
 [bộ kiểm tra phản hồi feature tắt](md05-production-vnpay-disabled.postman_collection.json)

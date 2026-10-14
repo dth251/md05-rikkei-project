@@ -1,6 +1,6 @@
 {
-    "updatedAt":  "2026-10-15T00:07:50.3911506+07:00",
-    "stage":  "prepared-before-PR-deploy",
+    "updatedAt":  "2026-10-15T00:31:52.5968884+07:00",
+    "stage":  "deployed-with-live-HTTPS-smoke",
     "runtimeAtConfiguration":  "d2779d1595fb5541675e65604eb07ac633ccf91b",
     "sandboxConfig":  {
                           "enabled":  true,
@@ -28,19 +28,19 @@
                                         "name":  "vnpay-return-success-desktop.png",
                                         "viewport":  820,
                                         "scroll":  820,
-                                        "title":  "Thanh toÃ¡n thÃ nh cÃ´ng"
+                                        "title":  "Thanh toán thành công"
                                     },
                                     {
                                         "name":  "vnpay-return-success-mobile.png",
                                         "viewport":  390,
                                         "scroll":  390,
-                                        "title":  "Thanh toÃ¡n thÃ nh cÃ´ng"
+                                        "title":  "Thanh toán thành công"
                                     },
                                     {
                                         "name":  "vnpay-return-pending.png",
                                         "viewport":  820,
                                         "scroll":  820,
-                                        "title":  "Äang chá» xÃ¡c nháº­n thanh toÃ¡n"
+                                        "title":  "Đang chờ xác nhận thanh toán"
                                     },
                                     {
                                         "pendingToSuccess":  true,
@@ -73,9 +73,121 @@
                        "Source URLs pinned to VNPay sandbox"
                    ],
     "limitations":  [
-                        "Real sandbox browser/IPN flow not yet completed",
-                        "New browser page not yet deployed at this checkpoint",
+                        "Real sandbox payment, signed return and IPN delivery not yet completed",
+                        "VNPay IPN registration not confirmed; no email sent to VNPay",
+                        "Bank selection page proves checkout URL acceptance, not successful payment",
                         "Order confirmation asynchronous; use GET order to verify",
-                        "SENT does not prove inbox receipt"
-                    ]
+                        "SENT does not prove inbox receipt",
+                        "Main push pipeline still in progress at checkpoint"
+                    ],
+    "providerCheckoutPreflight":  {
+                                      "observedAt":  "2026-10-15T00:18:59.1142192+07:00",
+                                      "paymentId":  "95",
+                                      "orderId":  160,
+                                      "status":  200,
+                                      "host":  "sandbox.vnpayment.vn",
+                                      "path":  "/paymentv2/Transaction/PaymentMethod.html",
+                                      "title":  "Chọn phương thức thanh toán (Test)",
+                                      "isErrorPage":  false,
+                                      "bankFormObserved":  true,
+                                      "bankTransactionPerformed":  false
+                                  },
+    "gitAndCi":  {
+                     "pr":  37,
+                     "prUrl":  "https://github.com/dth251/md05-rikkei-project/pull/37",
+                     "mergedMainSha":  "6e2ab03183b0f1874161d72323ffb23459890104",
+                     "prCiRunId":  38604216557,
+                     "prCiConclusion":  "success",
+                     "imageCiRunId":  38604057126,
+                     "paymentImagePublish":  "success",
+                     "mainPushCiRunId":  38606802592,
+                     "mainPushCiStatus":  "in_progress_at_checkpoint"
+                 },
+    "deployment":  {
+                       "verifiedAt":  "2026-10-15T00:29:49+07:00",
+                       "service":  "payment-service",
+                       "sourceCommit":  "e47ea2d260e7aff4591ae77c1351fdc9c5643a77",
+                       "sourceIntegratedIntoMain":  true,
+                       "image":  "ghcr.io/dth251/md05-rikkei-project/payment-service:e47ea2d260e7aff4591ae77c1351fdc9c5643a77",
+                       "digest":  "sha256:2bffee5de929d462e556a5381c502fc81b535d181eae5923445b7859e11597b1",
+                       "health":  "healthy",
+                       "otherApplicationsHealthy":  5,
+                       "otherApplicationImageRevision":  "d2779d1595fb5541675e65604eb07ac633ccf91b",
+                       "monitoringApplicationTargetsUp":  6,
+                       "monitoringDependencyTargetsUp":  5,
+                       "gmailHost":  "smtp.gmail.com",
+                       "volumesDeleted":  false,
+                       "existingCustomerDataChanged":  false
+                   },
+    "productionCombinedP1":  {
+                                 "collection":  "tests/postman/md05-tat-ca-api.postman_collection.json",
+                                 "sha256":  "b84ef29b0f89661753d6c523583ae072bd13d151a9972451220789ea843101cb",
+                                 "savedRequestsExecuted":  163,
+                                 "httpExecutions":  270,
+                                 "assertions":  669,
+                                 "failures":  0,
+                                 "exitCode":  0,
+                                 "durationSeconds":  419.2,
+                                 "averageResponseMs":  346,
+                                 "pauseAtCheckout":  true,
+                                 "P2Executed":  false,
+                                 "P3Executed":  false,
+                                 "orderId":  160,
+                                 "paymentId":  95
+                             },
+    "postDeploySmoke":  {
+                            "httpExecutions":  3,
+                            "assertions":  12,
+                            "failures":  0,
+                            "exitCode":  0,
+                            "durationSeconds":  4.5,
+                            "checks":  [
+                                           "Unsigned IPN returns 97",
+                                           "Unsigned return JSON returns 400",
+                                           "Unsigned return HTML returns 400 with safe Vietnamese page",
+                                           "CSP, no-store and no-referrer headers"
+                                       ]
+                        },
+    "thirdPartyEmail":  {
+                            "sentToVnpay":  false,
+                            "draftOnly":  true,
+                            "authorization":  "No sending; user expressed concern about third-party email"
+                        },
+    "fixtureAudit":  {
+                         "at":  "2026-10-15T00:32:24+07:00",
+                         "userId":  226,
+                         "orderIds":  [
+                                          153,
+                                          154,
+                                          155,
+                                          156,
+                                          157,
+                                          158,
+                                          160
+                                      ],
+                         "sandboxOrder160":  "EXPIRED without bank payment",
+                         "stock":  [
+                                       {
+                                           "productId":  154,
+                                           "reserved":  0,
+                                           "available":  20
+                                       },
+                                       {
+                                           "productId":  156,
+                                           "reserved":  0,
+                                           "available":  4
+                                       }
+                                   ],
+                         "emailDeliveries":  11,
+                         "emailSent":  11,
+                         "attemptsPerDelivery":  1,
+                         "events":  {
+                                        "order.cancelled":  2,
+                                        "order.shipped":  2,
+                                        "order.confirmed":  3,
+                                        "order.expired":  2,
+                                        "order.completed":  2
+                                    },
+                         "inboxConfirmed":  false
+                     }
 }
