@@ -198,7 +198,7 @@
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
                                                                                     "const thieu = [\"baseUrl\",\"userToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
+                                                                                    "if (thieu.length) {\n    pm.execution.setNextRequest(null);\n    const huongDan = thieu.includes(\u0027userToken\u0027)\n        ? \u0027Mở 01 → Đăng nhập khách hàng trong CHÍNH collection này, nhập Body rồi Send. Đăng nhập ADMIN không tạo userToken.\u0027\n        : thieu.includes(\u0027adminToken\u0027)\n            ? \u0027Mở 02 → Đăng nhập ADMIN trong CHÍNH collection này, nhập Body rồi Send.\u0027\n            : \u0027Chạy request tạo dữ liệu trước; token và ID nằm ở collection → Variables.\u0027;\n    throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. \u0027+huongDan);\n}"
                                                                                 ]
                                                                    }
                                                     },
@@ -343,7 +343,7 @@
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
                                                                                     "const thieu = [\"baseUrl\",\"runId\",\"adminToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
+                                                                                    "if (thieu.length) {\n    pm.execution.setNextRequest(null);\n    const huongDan = thieu.includes(\u0027userToken\u0027)\n        ? \u0027Mở 01 → Đăng nhập khách hàng trong CHÍNH collection này, nhập Body rồi Send. Đăng nhập ADMIN không tạo userToken.\u0027\n        : thieu.includes(\u0027adminToken\u0027)\n            ? \u0027Mở 02 → Đăng nhập ADMIN trong CHÍNH collection này, nhập Body rồi Send.\u0027\n            : \u0027Chạy request tạo dữ liệu trước; token và ID nằm ở collection → Variables.\u0027;\n    throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. \u0027+huongDan);\n}"
                                                                                 ]
                                                                    }
                                                     },
@@ -392,7 +392,7 @@
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
                                                                                     "const thieu = [\"baseUrl\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
+                                                                                    "if (thieu.length) {\n    pm.execution.setNextRequest(null);\n    const huongDan = thieu.includes(\u0027userToken\u0027)\n        ? \u0027Mở 01 → Đăng nhập khách hàng trong CHÍNH collection này, nhập Body rồi Send. Đăng nhập ADMIN không tạo userToken.\u0027\n        : thieu.includes(\u0027adminToken\u0027)\n            ? \u0027Mở 02 → Đăng nhập ADMIN trong CHÍNH collection này, nhập Body rồi Send.\u0027\n            : \u0027Chạy request tạo dữ liệu trước; token và ID nằm ở collection → Variables.\u0027;\n    throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. \u0027+huongDan);\n}"
                                                                                 ]
                                                                    }
                                                     },
@@ -440,7 +440,7 @@
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
                                                                                     "const thieu = [\"baseUrl\",\"productId\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
+                                                                                    "if (thieu.length) {\n    pm.execution.setNextRequest(null);\n    const huongDan = thieu.includes(\u0027userToken\u0027)\n        ? \u0027Mở 01 → Đăng nhập khách hàng trong CHÍNH collection này, nhập Body rồi Send. Đăng nhập ADMIN không tạo userToken.\u0027\n        : thieu.includes(\u0027adminToken\u0027)\n            ? \u0027Mở 02 → Đăng nhập ADMIN trong CHÍNH collection này, nhập Body rồi Send.\u0027\n            : \u0027Chạy request tạo dữ liệu trước; token và ID nằm ở collection → Variables.\u0027;\n    throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. \u0027+huongDan);\n}"
                                                                                 ]
                                                                    }
                                                     },
@@ -508,7 +508,7 @@
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
                                                                                     "pm.collectionVariables.set(\u0027receiptKey\u0027, \u0027vi-\u0027+pm.variables.replaceIn(\u0027{{$randomUUID}}\u0027));",
                                                                                     "const thieu = [\"baseUrl\",\"productId\",\"receiptKey\",\"adminToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
+                                                                                    "if (thieu.length) {\n    pm.execution.setNextRequest(null);\n    const huongDan = thieu.includes(\u0027userToken\u0027)\n        ? \u0027Mở 01 → Đăng nhập khách hàng trong CHÍNH collection này, nhập Body rồi Send. Đăng nhập ADMIN không tạo userToken.\u0027\n        : thieu.includes(\u0027adminToken\u0027)\n            ? \u0027Mở 02 → Đăng nhập ADMIN trong CHÍNH collection này, nhập Body rồi Send.\u0027\n            : \u0027Chạy request tạo dữ liệu trước; token và ID nằm ở collection → Variables.\u0027;\n    throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. \u0027+huongDan);\n}"
                                                                                 ]
                                                                    }
                                                     },
@@ -549,12 +549,12 @@
                                                                    "bearer":  [
                                                                                   {
                                                                                       "key":  "token",
-                                                                                      "value":  "{{userToken}}",
+                                                                                      "value":  "{{adminToken}}",
                                                                                       "type":  "string"
                                                                                   }
                                                                               ]
                                                                },
-                                                      "description":  "Kỳ vọng HTTP 200. Kiểm tra dữ liệu trong trường data của ApiResponse."
+                                                      "description":  "ADMIN xem tồn kho sau khi nhập hàng. Dùng adminToken từ request Đăng nhập ADMIN trong cùng collection; không yêu cầu đăng nhập USER cho nhóm 02."
                                                   },
                                       "event":  [
                                                     {
@@ -563,8 +563,8 @@
                                                                        "type":  "text/javascript",
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
-                                                                                    "const thieu = [\"baseUrl\",\"productId\",\"userToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
+                                                                                    "const thieu = [\"baseUrl\",\"productId\",\"adminToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
+                                                                                    "if (thieu.length) {\n    pm.execution.setNextRequest(null);\n    const huongDan = thieu.includes(\u0027userToken\u0027)\n        ? \u0027Mở 01 → Đăng nhập khách hàng trong CHÍNH collection này, nhập Body rồi Send. Đăng nhập ADMIN không tạo userToken.\u0027\n        : thieu.includes(\u0027adminToken\u0027)\n            ? \u0027Mở 02 → Đăng nhập ADMIN trong CHÍNH collection này, nhập Body rồi Send.\u0027\n            : \u0027Chạy request tạo dữ liệu trước; token và ID nằm ở collection → Variables.\u0027;\n    throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. \u0027+huongDan);\n}"
                                                                                 ]
                                                                    }
                                                     },
@@ -641,7 +641,7 @@
                                                                                     "pm.collectionVariables.set(\u0027codKey\u0027, \u0027vi-\u0027+pm.variables.replaceIn(\u0027{{$randomUUID}}\u0027));",
                                                                                     "pm.collectionVariables.unset(\u0027codPaymentId\u0027);",
                                                                                     "const thieu = [\"baseUrl\",\"codKey\",\"productId\",\"userToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
+                                                                                    "if (thieu.length) {\n    pm.execution.setNextRequest(null);\n    const huongDan = thieu.includes(\u0027userToken\u0027)\n        ? \u0027Mở 01 → Đăng nhập khách hàng trong CHÍNH collection này, nhập Body rồi Send. Đăng nhập ADMIN không tạo userToken.\u0027\n        : thieu.includes(\u0027adminToken\u0027)\n            ? \u0027Mở 02 → Đăng nhập ADMIN trong CHÍNH collection này, nhập Body rồi Send.\u0027\n            : \u0027Chạy request tạo dữ liệu trước; token và ID nằm ở collection → Variables.\u0027;\n    throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. \u0027+huongDan);\n}"
                                                                                 ]
                                                                    }
                                                     },
@@ -700,7 +700,7 @@
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
                                                                                     "const thieu = [\"baseUrl\",\"codOrderId\",\"userToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
+                                                                                    "if (thieu.length) {\n    pm.execution.setNextRequest(null);\n    const huongDan = thieu.includes(\u0027userToken\u0027)\n        ? \u0027Mở 01 → Đăng nhập khách hàng trong CHÍNH collection này, nhập Body rồi Send. Đăng nhập ADMIN không tạo userToken.\u0027\n        : thieu.includes(\u0027adminToken\u0027)\n            ? \u0027Mở 02 → Đăng nhập ADMIN trong CHÍNH collection này, nhập Body rồi Send.\u0027\n            : \u0027Chạy request tạo dữ liệu trước; token và ID nằm ở collection → Variables.\u0027;\n    throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. \u0027+huongDan);\n}"
                                                                                 ]
                                                                    }
                                                     },
@@ -779,7 +779,7 @@
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
                                                                                     "const thieu = [\"baseUrl\",\"codOrderId\",\"adminToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
+                                                                                    "if (thieu.length) {\n    pm.execution.setNextRequest(null);\n    const huongDan = thieu.includes(\u0027userToken\u0027)\n        ? \u0027Mở 01 → Đăng nhập khách hàng trong CHÍNH collection này, nhập Body rồi Send. Đăng nhập ADMIN không tạo userToken.\u0027\n        : thieu.includes(\u0027adminToken\u0027)\n            ? \u0027Mở 02 → Đăng nhập ADMIN trong CHÍNH collection này, nhập Body rồi Send.\u0027\n            : \u0027Chạy request tạo dữ liệu trước; token và ID nằm ở collection → Variables.\u0027;\n    throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. \u0027+huongDan);\n}"
                                                                                 ]
                                                                    }
                                                     },
@@ -846,7 +846,7 @@
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
                                                                                     "const thieu = [\"baseUrl\",\"codPaymentId\",\"collectKey\",\"codOrderId\",\"adminToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
+                                                                                    "if (thieu.length) {\n    pm.execution.setNextRequest(null);\n    const huongDan = thieu.includes(\u0027userToken\u0027)\n        ? \u0027Mở 01 → Đăng nhập khách hàng trong CHÍNH collection này, nhập Body rồi Send. Đăng nhập ADMIN không tạo userToken.\u0027\n        : thieu.includes(\u0027adminToken\u0027)\n            ? \u0027Mở 02 → Đăng nhập ADMIN trong CHÍNH collection này, nhập Body rồi Send.\u0027\n            : \u0027Chạy request tạo dữ liệu trước; token và ID nằm ở collection → Variables.\u0027;\n    throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. \u0027+huongDan);\n}"
                                                                                 ]
                                                                    }
                                                     },
@@ -910,7 +910,7 @@
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
                                                                                     "const thieu = [\"baseUrl\",\"codOrderId\",\"userToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
+                                                                                    "if (thieu.length) {\n    pm.execution.setNextRequest(null);\n    const huongDan = thieu.includes(\u0027userToken\u0027)\n        ? \u0027Mở 01 → Đăng nhập khách hàng trong CHÍNH collection này, nhập Body rồi Send. Đăng nhập ADMIN không tạo userToken.\u0027\n        : thieu.includes(\u0027adminToken\u0027)\n            ? \u0027Mở 02 → Đăng nhập ADMIN trong CHÍNH collection này, nhập Body rồi Send.\u0027\n            : \u0027Chạy request tạo dữ liệu trước; token và ID nằm ở collection → Variables.\u0027;\n    throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. \u0027+huongDan);\n}"
                                                                                 ]
                                                                    }
                                                     },
@@ -974,7 +974,7 @@
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
                                                                                     "const thieu = [\"baseUrl\",\"codOrderId\",\"adminToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
+                                                                                    "if (thieu.length) {\n    pm.execution.setNextRequest(null);\n    const huongDan = thieu.includes(\u0027userToken\u0027)\n        ? \u0027Mở 01 → Đăng nhập khách hàng trong CHÍNH collection này, nhập Body rồi Send. Đăng nhập ADMIN không tạo userToken.\u0027\n        : thieu.includes(\u0027adminToken\u0027)\n            ? \u0027Mở 02 → Đăng nhập ADMIN trong CHÍNH collection này, nhập Body rồi Send.\u0027\n            : \u0027Chạy request tạo dữ liệu trước; token và ID nằm ở collection → Variables.\u0027;\n    throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. \u0027+huongDan);\n}"
                                                                                 ]
                                                                    }
                                                     },
@@ -1048,7 +1048,7 @@
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
                                                                                     "pm.collectionVariables.set(\u0027returnKey\u0027, \u0027vi-\u0027+pm.variables.replaceIn(\u0027{{$randomUUID}}\u0027));",
                                                                                     "const thieu = [\"baseUrl\",\"codOrderId\",\"returnKey\",\"userToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
+                                                                                    "if (thieu.length) {\n    pm.execution.setNextRequest(null);\n    const huongDan = thieu.includes(\u0027userToken\u0027)\n        ? \u0027Mở 01 → Đăng nhập khách hàng trong CHÍNH collection này, nhập Body rồi Send. Đăng nhập ADMIN không tạo userToken.\u0027\n        : thieu.includes(\u0027adminToken\u0027)\n            ? \u0027Mở 02 → Đăng nhập ADMIN trong CHÍNH collection này, nhập Body rồi Send.\u0027\n            : \u0027Chạy request tạo dữ liệu trước; token và ID nằm ở collection → Variables.\u0027;\n    throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. \u0027+huongDan);\n}"
                                                                                 ]
                                                                    }
                                                     },
@@ -1116,7 +1116,7 @@
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
                                                                                     "const thieu = [\"baseUrl\",\"codOrderId\",\"adminToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
+                                                                                    "if (thieu.length) {\n    pm.execution.setNextRequest(null);\n    const huongDan = thieu.includes(\u0027userToken\u0027)\n        ? \u0027Mở 01 → Đăng nhập khách hàng trong CHÍNH collection này, nhập Body rồi Send. Đăng nhập ADMIN không tạo userToken.\u0027\n        : thieu.includes(\u0027adminToken\u0027)\n            ? \u0027Mở 02 → Đăng nhập ADMIN trong CHÍNH collection này, nhập Body rồi Send.\u0027\n            : \u0027Chạy request tạo dữ liệu trước; token và ID nằm ở collection → Variables.\u0027;\n    throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. \u0027+huongDan);\n}"
                                                                                 ]
                                                                    }
                                                     },
@@ -1183,7 +1183,7 @@
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
                                                                                     "const thieu = [\"baseUrl\",\"codOrderId\",\"adminToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
+                                                                                    "if (thieu.length) {\n    pm.execution.setNextRequest(null);\n    const huongDan = thieu.includes(\u0027userToken\u0027)\n        ? \u0027Mở 01 → Đăng nhập khách hàng trong CHÍNH collection này, nhập Body rồi Send. Đăng nhập ADMIN không tạo userToken.\u0027\n        : thieu.includes(\u0027adminToken\u0027)\n            ? \u0027Mở 02 → Đăng nhập ADMIN trong CHÍNH collection này, nhập Body rồi Send.\u0027\n            : \u0027Chạy request tạo dữ liệu trước; token và ID nằm ở collection → Variables.\u0027;\n    throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. \u0027+huongDan);\n}"
                                                                                 ]
                                                                    }
                                                     },
@@ -1238,7 +1238,7 @@
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
                                                                                     "const thieu = [\"baseUrl\",\"codPaymentId\",\"userToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
+                                                                                    "if (thieu.length) {\n    pm.execution.setNextRequest(null);\n    const huongDan = thieu.includes(\u0027userToken\u0027)\n        ? \u0027Mở 01 → Đăng nhập khách hàng trong CHÍNH collection này, nhập Body rồi Send. Đăng nhập ADMIN không tạo userToken.\u0027\n        : thieu.includes(\u0027adminToken\u0027)\n            ? \u0027Mở 02 → Đăng nhập ADMIN trong CHÍNH collection này, nhập Body rồi Send.\u0027\n            : \u0027Chạy request tạo dữ liệu trước; token và ID nằm ở collection → Variables.\u0027;\n    throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. \u0027+huongDan);\n}"
                                                                                 ]
                                                                    }
                                                     },
@@ -1314,7 +1314,7 @@
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
                                                                                     "const thieu = [\"baseUrl\",\"codPaymentId\",\"refundKey\",\"codOrderId\",\"adminToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
+                                                                                    "if (thieu.length) {\n    pm.execution.setNextRequest(null);\n    const huongDan = thieu.includes(\u0027userToken\u0027)\n        ? \u0027Mở 01 → Đăng nhập khách hàng trong CHÍNH collection này, nhập Body rồi Send. Đăng nhập ADMIN không tạo userToken.\u0027\n        : thieu.includes(\u0027adminToken\u0027)\n            ? \u0027Mở 02 → Đăng nhập ADMIN trong CHÍNH collection này, nhập Body rồi Send.\u0027\n            : \u0027Chạy request tạo dữ liệu trước; token và ID nằm ở collection → Variables.\u0027;\n    throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. \u0027+huongDan);\n}"
                                                                                 ]
                                                                    }
                                                     },
@@ -1370,7 +1370,7 @@
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
                                                                                     "const thieu = [\"baseUrl\",\"codOrderId\",\"userToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
+                                                                                    "if (thieu.length) {\n    pm.execution.setNextRequest(null);\n    const huongDan = thieu.includes(\u0027userToken\u0027)\n        ? \u0027Mở 01 → Đăng nhập khách hàng trong CHÍNH collection này, nhập Body rồi Send. Đăng nhập ADMIN không tạo userToken.\u0027\n        : thieu.includes(\u0027adminToken\u0027)\n            ? \u0027Mở 02 → Đăng nhập ADMIN trong CHÍNH collection này, nhập Body rồi Send.\u0027\n            : \u0027Chạy request tạo dữ liệu trước; token và ID nằm ở collection → Variables.\u0027;\n    throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. \u0027+huongDan);\n}"
                                                                                 ]
                                                                    }
                                                     },
@@ -1434,7 +1434,7 @@
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
                                                                                     "const thieu = [\"baseUrl\",\"productId\",\"userToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
+                                                                                    "if (thieu.length) {\n    pm.execution.setNextRequest(null);\n    const huongDan = thieu.includes(\u0027userToken\u0027)\n        ? \u0027Mở 01 → Đăng nhập khách hàng trong CHÍNH collection này, nhập Body rồi Send. Đăng nhập ADMIN không tạo userToken.\u0027\n        : thieu.includes(\u0027adminToken\u0027)\n            ? \u0027Mở 02 → Đăng nhập ADMIN trong CHÍNH collection này, nhập Body rồi Send.\u0027\n            : \u0027Chạy request tạo dữ liệu trước; token và ID nằm ở collection → Variables.\u0027;\n    throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. \u0027+huongDan);\n}"
                                                                                 ]
                                                                    }
                                                     },
@@ -1495,7 +1495,7 @@
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
                                                                                     "const thieu = [\"baseUrl\",\"productId\",\"userToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
+                                                                                    "if (thieu.length) {\n    pm.execution.setNextRequest(null);\n    const huongDan = thieu.includes(\u0027userToken\u0027)\n        ? \u0027Mở 01 → Đăng nhập khách hàng trong CHÍNH collection này, nhập Body rồi Send. Đăng nhập ADMIN không tạo userToken.\u0027\n        : thieu.includes(\u0027adminToken\u0027)\n            ? \u0027Mở 02 → Đăng nhập ADMIN trong CHÍNH collection này, nhập Body rồi Send.\u0027\n            : \u0027Chạy request tạo dữ liệu trước; token và ID nằm ở collection → Variables.\u0027;\n    throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. \u0027+huongDan);\n}"
                                                                                 ]
                                                                    }
                                                     },
@@ -1566,7 +1566,7 @@
                                                                                     "pm.collectionVariables.set(\u0027expiryKey\u0027, \u0027vi-\u0027+pm.variables.replaceIn(\u0027{{$randomUUID}}\u0027));",
                                                                                     "pm.collectionVariables.unset(\u0027expiryPaymentId\u0027);",
                                                                                     "const thieu = [\"baseUrl\",\"expiryKey\",\"productId\",\"userToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
+                                                                                    "if (thieu.length) {\n    pm.execution.setNextRequest(null);\n    const huongDan = thieu.includes(\u0027userToken\u0027)\n        ? \u0027Mở 01 → Đăng nhập khách hàng trong CHÍNH collection này, nhập Body rồi Send. Đăng nhập ADMIN không tạo userToken.\u0027\n        : thieu.includes(\u0027adminToken\u0027)\n            ? \u0027Mở 02 → Đăng nhập ADMIN trong CHÍNH collection này, nhập Body rồi Send.\u0027\n            : \u0027Chạy request tạo dữ liệu trước; token và ID nằm ở collection → Variables.\u0027;\n    throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. \u0027+huongDan);\n}"
                                                                                 ]
                                                                    }
                                                     },
@@ -1625,7 +1625,7 @@
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
                                                                                     "const thieu = [\"baseUrl\",\"expiryOrderId\",\"userToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
+                                                                                    "if (thieu.length) {\n    pm.execution.setNextRequest(null);\n    const huongDan = thieu.includes(\u0027userToken\u0027)\n        ? \u0027Mở 01 → Đăng nhập khách hàng trong CHÍNH collection này, nhập Body rồi Send. Đăng nhập ADMIN không tạo userToken.\u0027\n        : thieu.includes(\u0027adminToken\u0027)\n            ? \u0027Mở 02 → Đăng nhập ADMIN trong CHÍNH collection này, nhập Body rồi Send.\u0027\n            : \u0027Chạy request tạo dữ liệu trước; token và ID nằm ở collection → Variables.\u0027;\n    throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. \u0027+huongDan);\n}"
                                                                                 ]
                                                                    }
                                                     },
@@ -1692,7 +1692,7 @@
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
                                                                                     "const thieu = [\"baseUrl\",\"expiryOrderId\",\"userToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
+                                                                                    "if (thieu.length) {\n    pm.execution.setNextRequest(null);\n    const huongDan = thieu.includes(\u0027userToken\u0027)\n        ? \u0027Mở 01 → Đăng nhập khách hàng trong CHÍNH collection này, nhập Body rồi Send. Đăng nhập ADMIN không tạo userToken.\u0027\n        : thieu.includes(\u0027adminToken\u0027)\n            ? \u0027Mở 02 → Đăng nhập ADMIN trong CHÍNH collection này, nhập Body rồi Send.\u0027\n            : \u0027Chạy request tạo dữ liệu trước; token và ID nằm ở collection → Variables.\u0027;\n    throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. \u0027+huongDan);\n}"
                                                                                 ]
                                                                    }
                                                     },
@@ -1756,7 +1756,7 @@
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
                                                                                     "const thieu = [\"baseUrl\",\"expiryPaymentId\",\"userToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
+                                                                                    "if (thieu.length) {\n    pm.execution.setNextRequest(null);\n    const huongDan = thieu.includes(\u0027userToken\u0027)\n        ? \u0027Mở 01 → Đăng nhập khách hàng trong CHÍNH collection này, nhập Body rồi Send. Đăng nhập ADMIN không tạo userToken.\u0027\n        : thieu.includes(\u0027adminToken\u0027)\n            ? \u0027Mở 02 → Đăng nhập ADMIN trong CHÍNH collection này, nhập Body rồi Send.\u0027\n            : \u0027Chạy request tạo dữ liệu trước; token và ID nằm ở collection → Variables.\u0027;\n    throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. \u0027+huongDan);\n}"
                                                                                 ]
                                                                    }
                                                     },
@@ -1820,7 +1820,7 @@
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
                                                                                     "const thieu = [\"baseUrl\",\"productId\",\"userToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
+                                                                                    "if (thieu.length) {\n    pm.execution.setNextRequest(null);\n    const huongDan = thieu.includes(\u0027userToken\u0027)\n        ? \u0027Mở 01 → Đăng nhập khách hàng trong CHÍNH collection này, nhập Body rồi Send. Đăng nhập ADMIN không tạo userToken.\u0027\n        : thieu.includes(\u0027adminToken\u0027)\n            ? \u0027Mở 02 → Đăng nhập ADMIN trong CHÍNH collection này, nhập Body rồi Send.\u0027\n            : \u0027Chạy request tạo dữ liệu trước; token và ID nằm ở collection → Variables.\u0027;\n    throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. \u0027+huongDan);\n}"
                                                                                 ]
                                                                    }
                                                     },
@@ -1895,7 +1895,7 @@
                                                                                     "pm.collectionVariables.set(\u0027vnpayKey\u0027, \u0027vi-\u0027+pm.variables.replaceIn(\u0027{{$randomUUID}}\u0027));",
                                                                                     "pm.collectionVariables.unset(\u0027vnpayPaymentId\u0027);",
                                                                                     "const thieu = [\"baseUrl\",\"vnpayKey\",\"productId\",\"userToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
+                                                                                    "if (thieu.length) {\n    pm.execution.setNextRequest(null);\n    const huongDan = thieu.includes(\u0027userToken\u0027)\n        ? \u0027Mở 01 → Đăng nhập khách hàng trong CHÍNH collection này, nhập Body rồi Send. Đăng nhập ADMIN không tạo userToken.\u0027\n        : thieu.includes(\u0027adminToken\u0027)\n            ? \u0027Mở 02 → Đăng nhập ADMIN trong CHÍNH collection này, nhập Body rồi Send.\u0027\n            : \u0027Chạy request tạo dữ liệu trước; token và ID nằm ở collection → Variables.\u0027;\n    throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. \u0027+huongDan);\n}"
                                                                                 ]
                                                                    }
                                                     },
@@ -1954,7 +1954,7 @@
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
                                                                                     "const thieu = [\"baseUrl\",\"vnpayOrderId\",\"userToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
+                                                                                    "if (thieu.length) {\n    pm.execution.setNextRequest(null);\n    const huongDan = thieu.includes(\u0027userToken\u0027)\n        ? \u0027Mở 01 → Đăng nhập khách hàng trong CHÍNH collection này, nhập Body rồi Send. Đăng nhập ADMIN không tạo userToken.\u0027\n        : thieu.includes(\u0027adminToken\u0027)\n            ? \u0027Mở 02 → Đăng nhập ADMIN trong CHÍNH collection này, nhập Body rồi Send.\u0027\n            : \u0027Chạy request tạo dữ liệu trước; token và ID nằm ở collection → Variables.\u0027;\n    throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. \u0027+huongDan);\n}"
                                                                                 ]
                                                                    }
                                                     },
@@ -2021,7 +2021,7 @@
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
                                                                                     "const thieu = [\"baseUrl\",\"vnpayPaymentId\",\"userToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
+                                                                                    "if (thieu.length) {\n    pm.execution.setNextRequest(null);\n    const huongDan = thieu.includes(\u0027userToken\u0027)\n        ? \u0027Mở 01 → Đăng nhập khách hàng trong CHÍNH collection này, nhập Body rồi Send. Đăng nhập ADMIN không tạo userToken.\u0027\n        : thieu.includes(\u0027adminToken\u0027)\n            ? \u0027Mở 02 → Đăng nhập ADMIN trong CHÍNH collection này, nhập Body rồi Send.\u0027\n            : \u0027Chạy request tạo dữ liệu trước; token và ID nằm ở collection → Variables.\u0027;\n    throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. \u0027+huongDan);\n}"
                                                                                 ]
                                                                    }
                                                     },
@@ -2085,7 +2085,7 @@
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
                                                                                     "const thieu = [\"baseUrl\",\"vnpayPaymentId\",\"userToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
+                                                                                    "if (thieu.length) {\n    pm.execution.setNextRequest(null);\n    const huongDan = thieu.includes(\u0027userToken\u0027)\n        ? \u0027Mở 01 → Đăng nhập khách hàng trong CHÍNH collection này, nhập Body rồi Send. Đăng nhập ADMIN không tạo userToken.\u0027\n        : thieu.includes(\u0027adminToken\u0027)\n            ? \u0027Mở 02 → Đăng nhập ADMIN trong CHÍNH collection này, nhập Body rồi Send.\u0027\n            : \u0027Chạy request tạo dữ liệu trước; token và ID nằm ở collection → Variables.\u0027;\n    throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. \u0027+huongDan);\n}"
                                                                                 ]
                                                                    }
                                                     },
@@ -2149,7 +2149,7 @@
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
                                                                                     "const thieu = [\"baseUrl\",\"vnpayOrderId\",\"userToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
+                                                                                    "if (thieu.length) {\n    pm.execution.setNextRequest(null);\n    const huongDan = thieu.includes(\u0027userToken\u0027)\n        ? \u0027Mở 01 → Đăng nhập khách hàng trong CHÍNH collection này, nhập Body rồi Send. Đăng nhập ADMIN không tạo userToken.\u0027\n        : thieu.includes(\u0027adminToken\u0027)\n            ? \u0027Mở 02 → Đăng nhập ADMIN trong CHÍNH collection này, nhập Body rồi Send.\u0027\n            : \u0027Chạy request tạo dữ liệu trước; token và ID nằm ở collection → Variables.\u0027;\n    throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. \u0027+huongDan);\n}"
                                                                                 ]
                                                                    }
                                                     },
@@ -2225,7 +2225,7 @@
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
                                                                                     "const thieu = [\"baseUrl\",\"vnpayOrderId\",\"adminToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
+                                                                                    "if (thieu.length) {\n    pm.execution.setNextRequest(null);\n    const huongDan = thieu.includes(\u0027userToken\u0027)\n        ? \u0027Mở 01 → Đăng nhập khách hàng trong CHÍNH collection này, nhập Body rồi Send. Đăng nhập ADMIN không tạo userToken.\u0027\n        : thieu.includes(\u0027adminToken\u0027)\n            ? \u0027Mở 02 → Đăng nhập ADMIN trong CHÍNH collection này, nhập Body rồi Send.\u0027\n            : \u0027Chạy request tạo dữ liệu trước; token và ID nằm ở collection → Variables.\u0027;\n    throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. \u0027+huongDan);\n}"
                                                                                 ]
                                                                    }
                                                     },
@@ -2280,7 +2280,7 @@
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
                                                                                     "const thieu = [\"baseUrl\",\"vnpayOrderId\",\"adminToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
+                                                                                    "if (thieu.length) {\n    pm.execution.setNextRequest(null);\n    const huongDan = thieu.includes(\u0027userToken\u0027)\n        ? \u0027Mở 01 → Đăng nhập khách hàng trong CHÍNH collection này, nhập Body rồi Send. Đăng nhập ADMIN không tạo userToken.\u0027\n        : thieu.includes(\u0027adminToken\u0027)\n            ? \u0027Mở 02 → Đăng nhập ADMIN trong CHÍNH collection này, nhập Body rồi Send.\u0027\n            : \u0027Chạy request tạo dữ liệu trước; token và ID nằm ở collection → Variables.\u0027;\n    throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. \u0027+huongDan);\n}"
                                                                                 ]
                                                                    }
                                                     },
@@ -2353,7 +2353,7 @@
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
                                                                                     "pm.collectionVariables.set(\u0027vnpayReturnKey\u0027, \u0027vi-\u0027+pm.variables.replaceIn(\u0027{{$randomUUID}}\u0027));",
                                                                                     "const thieu = [\"baseUrl\",\"vnpayOrderId\",\"vnpayReturnKey\",\"userToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
+                                                                                    "if (thieu.length) {\n    pm.execution.setNextRequest(null);\n    const huongDan = thieu.includes(\u0027userToken\u0027)\n        ? \u0027Mở 01 → Đăng nhập khách hàng trong CHÍNH collection này, nhập Body rồi Send. Đăng nhập ADMIN không tạo userToken.\u0027\n        : thieu.includes(\u0027adminToken\u0027)\n            ? \u0027Mở 02 → Đăng nhập ADMIN trong CHÍNH collection này, nhập Body rồi Send.\u0027\n            : \u0027Chạy request tạo dữ liệu trước; token và ID nằm ở collection → Variables.\u0027;\n    throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. \u0027+huongDan);\n}"
                                                                                 ]
                                                                    }
                                                     },
@@ -2420,7 +2420,7 @@
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
                                                                                     "const thieu = [\"baseUrl\",\"vnpayOrderId\",\"adminToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
+                                                                                    "if (thieu.length) {\n    pm.execution.setNextRequest(null);\n    const huongDan = thieu.includes(\u0027userToken\u0027)\n        ? \u0027Mở 01 → Đăng nhập khách hàng trong CHÍNH collection này, nhập Body rồi Send. Đăng nhập ADMIN không tạo userToken.\u0027\n        : thieu.includes(\u0027adminToken\u0027)\n            ? \u0027Mở 02 → Đăng nhập ADMIN trong CHÍNH collection này, nhập Body rồi Send.\u0027\n            : \u0027Chạy request tạo dữ liệu trước; token và ID nằm ở collection → Variables.\u0027;\n    throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. \u0027+huongDan);\n}"
                                                                                 ]
                                                                    }
                                                     },
@@ -2487,7 +2487,7 @@
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
                                                                                     "const thieu = [\"baseUrl\",\"vnpayOrderId\",\"adminToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
+                                                                                    "if (thieu.length) {\n    pm.execution.setNextRequest(null);\n    const huongDan = thieu.includes(\u0027userToken\u0027)\n        ? \u0027Mở 01 → Đăng nhập khách hàng trong CHÍNH collection này, nhập Body rồi Send. Đăng nhập ADMIN không tạo userToken.\u0027\n        : thieu.includes(\u0027adminToken\u0027)\n            ? \u0027Mở 02 → Đăng nhập ADMIN trong CHÍNH collection này, nhập Body rồi Send.\u0027\n            : \u0027Chạy request tạo dữ liệu trước; token và ID nằm ở collection → Variables.\u0027;\n    throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. \u0027+huongDan);\n}"
                                                                                 ]
                                                                    }
                                                     },
@@ -2542,7 +2542,7 @@
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
                                                                                     "const thieu = [\"baseUrl\",\"vnpayPaymentId\",\"userToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
+                                                                                    "if (thieu.length) {\n    pm.execution.setNextRequest(null);\n    const huongDan = thieu.includes(\u0027userToken\u0027)\n        ? \u0027Mở 01 → Đăng nhập khách hàng trong CHÍNH collection này, nhập Body rồi Send. Đăng nhập ADMIN không tạo userToken.\u0027\n        : thieu.includes(\u0027adminToken\u0027)\n            ? \u0027Mở 02 → Đăng nhập ADMIN trong CHÍNH collection này, nhập Body rồi Send.\u0027\n            : \u0027Chạy request tạo dữ liệu trước; token và ID nằm ở collection → Variables.\u0027;\n    throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. \u0027+huongDan);\n}"
                                                                                 ]
                                                                    }
                                                     },
@@ -2606,7 +2606,7 @@
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
                                                                                     "const thieu = [\"baseUrl\",\"vnpayPaymentId\",\"adminToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
+                                                                                    "if (thieu.length) {\n    pm.execution.setNextRequest(null);\n    const huongDan = thieu.includes(\u0027userToken\u0027)\n        ? \u0027Mở 01 → Đăng nhập khách hàng trong CHÍNH collection này, nhập Body rồi Send. Đăng nhập ADMIN không tạo userToken.\u0027\n        : thieu.includes(\u0027adminToken\u0027)\n            ? \u0027Mở 02 → Đăng nhập ADMIN trong CHÍNH collection này, nhập Body rồi Send.\u0027\n            : \u0027Chạy request tạo dữ liệu trước; token và ID nằm ở collection → Variables.\u0027;\n    throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. \u0027+huongDan);\n}"
                                                                                 ]
                                                                    }
                                                     },
@@ -2661,7 +2661,7 @@
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
                                                                                     "const thieu = [\"baseUrl\",\"vnpayPaymentId\",\"userToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
+                                                                                    "if (thieu.length) {\n    pm.execution.setNextRequest(null);\n    const huongDan = thieu.includes(\u0027userToken\u0027)\n        ? \u0027Mở 01 → Đăng nhập khách hàng trong CHÍNH collection này, nhập Body rồi Send. Đăng nhập ADMIN không tạo userToken.\u0027\n        : thieu.includes(\u0027adminToken\u0027)\n            ? \u0027Mở 02 → Đăng nhập ADMIN trong CHÍNH collection này, nhập Body rồi Send.\u0027\n            : \u0027Chạy request tạo dữ liệu trước; token và ID nằm ở collection → Variables.\u0027;\n    throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. \u0027+huongDan);\n}"
                                                                                 ]
                                                                    }
                                                     },
@@ -2725,7 +2725,7 @@
                                                                        "exec":  [
                                                                                     "// Kiểm tra biến sau bước khởi tạo riêng của request.",
                                                                                     "const thieu = [\"baseUrl\",\"vnpayOrderId\",\"userToken\"].filter(key =\u003e { const value = pm.collectionVariables.get(key); return value === undefined || value === null || value === \u0027\u0027; });",
-                                                                                    "if (thieu.length) { pm.execution.setNextRequest(null); throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.\u0027); }"
+                                                                                    "if (thieu.length) {\n    pm.execution.setNextRequest(null);\n    const huongDan = thieu.includes(\u0027userToken\u0027)\n        ? \u0027Mở 01 → Đăng nhập khách hàng trong CHÍNH collection này, nhập Body rồi Send. Đăng nhập ADMIN không tạo userToken.\u0027\n        : thieu.includes(\u0027adminToken\u0027)\n            ? \u0027Mở 02 → Đăng nhập ADMIN trong CHÍNH collection này, nhập Body rồi Send.\u0027\n            : \u0027Chạy request tạo dữ liệu trước; token và ID nằm ở collection → Variables.\u0027;\n    throw new Error(\u0027Thiếu biến tiền đề: \u0027+thieu.join(\u0027, \u0027)+\u0027. \u0027+huongDan);\n}"
                                                                                 ]
                                                                    }
                                                     },

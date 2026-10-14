@@ -1,0 +1,38 @@
+{
+    "updatedAt":  "2026-10-15T01:32:55.9042745+07:00",
+    "collection":  "tests/postman/md05-luong-chinh.postman_collection.json",
+    "collectionSha256":  "338e01fe9ba0030e65b54895e698a42d638779d8cab53bf220da84481f810ef5",
+    "fix":  "Folder 02 inventory read now uses adminToken, not userToken; missing-token errors name the correct login request in the same collection",
+    "target":  "https://md05-rikkei-project.duckdns.org",
+    "productionRun":  {
+                          "requests":  2,
+                          "assertions":  12,
+                          "failures":  0,
+                          "exitCode":  0,
+                          "durationSeconds":  2.9,
+                          "environmentFile":  null,
+                          "userTokenPresent":  false,
+                          "steps":  [
+                                        "Login ADMIN via saved collection request",
+                                        "GET inventory for existing isolated fixture product #158"
+                                    ],
+                          "productId":  158,
+                          "available":  20,
+                          "reserved":  0,
+                          "businessDataMutated":  false
+                      },
+    "static":  {
+                   "requests":  42,
+                   "folders":  8,
+                   "scriptsCompiled":  85,
+                   "jsonBodies":  18,
+                   "adminInventoryWithNoUserToken":  "PASS",
+                   "missingAdminTokenNamesAdminLogin":  "PASS",
+                   "missingUserTokenNamesUserLogin":  "PASS",
+                   "generatorDeterministic":  "PASS",
+                   "powerShellSyntax":  "PASS"
+               },
+    "serviceCodeChanged":  false,
+    "deploymentPerformed":  false,
+    "scopeLimit":  "Other USER order/return/payment steps still require customer login. This focused read-only run does not reverify bank payment/IPN/refund."
+}

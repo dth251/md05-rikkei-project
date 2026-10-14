@@ -38,6 +38,21 @@ Mật khẩu không được sao chép vào Variables; bạn nhập trong Body c
 request đăng ký/đăng nhập. Bản collection trong Git để trống credentials.
 HashSecret VNPay được giữ ở backend, không nhập vào Postman.
 
+### Khi báo thiếu userToken hoặc adminToken
+
+`userToken` chỉ được lưu sau khi gửi **01 → Đăng nhập khách hàng** thành
+công; `adminToken` được lưu ở **02 → Đăng nhập ADMIN**. Phải gửi request
+đăng nhập nằm trong **chính collection đang chạy**, vì đăng nhập ở tab
+request rời hoặc collection khác không lưu token cho collection này.
+Nếu dùng Runner, bật **Keep variable values** trước khi chạy riêng từng
+nhóm để giữ các token khi Runner kết thúc.
+
+Nhóm **02 → Xem tồn kho** dùng `adminToken`, có thể chạy nhóm chuẩn bị kho
+chỉ với ADMIN. Các bước xem kho trong nhóm trả hàng/hết hạn vẫn dùng
+`userToken` của khách đang kiểm tra đơn hàng. Nếu thiếu token ở đây, gửi
+lại request đăng nhập khách hàng rồi gửi lại request lỗi, không cần tạo
+lại sản phẩm hay nhập kho lần nữa.
+
 | Nhóm | Người thực hiện và luồng | Kết quả cần thấy |
 |---|---|---|
 | 01 | Khách đăng ký → đăng nhập → xem tài khoản | USER, có userToken |
@@ -123,6 +138,11 @@ báo rõ trước khi chạy, không sao chép mật khẩu vào Variables.
 Đơn COD #164 hoàn trả REFUNDED, đơn #165 EXPIRED, đơn #166/Payment #101
 tạo link sandbox. Đối chiếu 01:15:55 +07 có 4 email SENT/attempts=1 cho
 #164/#165; chưa xác nhận inbox. [Bằng chứng bản không environment](evidence/postman-luong-chinh-khong-environment-2026-10-15.json).
+
+Sau khi sửa quyền đọc kho ở nhóm 02, chạy riêng **Đăng nhập ADMIN → Xem
+tồn kho** trên production không environment và không có `userToken`:
+**2 requests / 12 assertions**, exit 0, **2,9 giây**. Không tạo sản phẩm,
+nhập thêm hàng hoặc đặt đơn trong lượt kiểm tra sửa lỗi này.
 
 Lượt kiểm tra trước khi chuyển sang nhập Body trực tiếp đã chạy nhóm 01–06
 trên production: **31 request lưu sẵn**, thực thi

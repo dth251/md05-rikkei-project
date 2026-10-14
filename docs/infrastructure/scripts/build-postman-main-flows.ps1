@@ -69,6 +69,9 @@ $adminLogin = Copy-Request 3 0 'Đăng nhập ADMIN'
 Set-ManualLogin $adminLogin 'ADMIN'
 
 $stock = Copy-Request 4 5 'Xem tồn kho của sản phẩm'
+$stock.request.auth.bearer[0].value = '{{adminToken}}'
+$stock.request.description = 'ADMIN xem tồn kho sau khi nhập hàng. Dùng adminToken từ request Đăng nhập ADMIN trong cùng collection; không yêu cầu đăng nhập USER cho nhóm 02.'
+(Get-Hook $stock 'prerequest').script.exec = @((Get-Hook $stock 'prerequest').script.exec | ForEach-Object { $_.Replace('userToken', 'adminToken') })
 (Get-Hook $stock 'test').script.exec += "if (pm.response.code === 200) pm.environment.set('codBaseline', pm.response.json().data.available);"
 
 $cod = Copy-Request 7 1 'Khách hàng đặt đơn COD'
@@ -147,11 +150,26 @@ $source.info.description = '42 requests, 8 luồng chính; chọn No environment
 $source.variable = @(@{ key = 'baseUrl'; value = 'https://md05-rikkei-project.duckdns.org'; type = 'string' })
 $source.event[0].script.exec = @("if (!pm.collectionVariables.get('baseUrl')) { pm.execution.setNextRequest(null); throw new Error('Điền baseUrl trong Variables của collection. URL production đã có sẵn khi import.'); }")
 $source.item = $folders
+$missingVariables = @'
+if (thieu.length) {
+    pm.execution.setNextRequest(null);
+    const huongDan = thieu.includes('userToken')
+        ? 'Mở 01 → Đăng nhập khách hàng trong CHÍNH collection này, nhập Body rồi Send. Đăng nhập ADMIN không tạo userToken.'
+        : thieu.includes('adminToken')
+            ? 'Mở 02 → Đăng nhập ADMIN trong CHÍNH collection này, nhập Body rồi Send.'
+            : 'Chạy request tạo dữ liệu trước; token và ID nằm ở collection → Variables.';
+    throw new Error('Thiếu biến tiền đề: '+thieu.join(', ')+'. '+huongDan);
+}
+'@
 foreach ($folder in $source.item) {
     foreach ($request in $folder.item) {
         foreach ($hook in $request.event) {
             $hook.script.exec = @($hook.script.exec | ForEach-Object {
-                $_.Replace('pm.environment.', 'pm.collectionVariables.').Replace('pm.variables.get(', 'pm.collectionVariables.get(').Replace('Chạy folder tiền đề hoặc cấu hình environment trước.', 'Chạy request tiền đề trước. Token và ID được lưu trong Variables của collection.')
+                if ($_ -match '^if \(thieu.length\)') {
+                    $missingVariables
+                } else {
+                    $_.Replace('pm.environment.', 'pm.collectionVariables.').Replace('pm.variables.get(', 'pm.collectionVariables.get(')
+                }
             })
         }
     }
