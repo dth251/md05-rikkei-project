@@ -37,3 +37,37 @@ Không áp dụng `docker-compose.smtp-test.yml` khi chạy Notification gửi t
 5. Replay thanh toán cùng trạng thái để kiểm tra không tạo thêm delivery cùng order/stage. SMTP có thể nhận thư rồi mất kết nối; không tuyên bố email exactly-once.
 
 Chưa bật SMTP Internet hoặc xác minh inbox trong lượt bàn giao Postman. Cần thông tin dịch vụ gửi và cấu hình private của môi trường được chọn trước khi thực hiện thay đổi runtime.
+
+## Gmail trên VPS đang triển khai
+
+Google hỗ trợ `smtp.gmail.com`, xác thực và STARTTLS trên port 587;
+xem [thiết lập SMTP chính thức](https://support.google.com/mail/answer/7104828?hl=vi).
+Với cách xác thực của service hiện tại, dùng mật khẩu ứng dụng sau khi bật
+xác minh hai bước, theo [Google Account Help](https://support.google.com/accounts/answer/185833?hl=vi).
+
+1. Đăng nhập đúng Gmail dùng làm người gửi.
+2. Bật [xác minh hai bước](https://myaccount.google.com/signinoptions/two-step-verification).
+3. Mở [Mật khẩu ứng dụng](https://myaccount.google.com/apppasswords), đặt tên `MD05 VPS`, chọn Tạo.
+4. Nhập mật khẩu 16 ký tự vào prompt kín của script bên dưới. Không dùng mật khẩu đăng nhập Gmail. Một số tài khoản có chính sách không cho tạo app password; kiểm tra hướng dẫn Google nếu thiếu mục này.
+
+[Script cấu hình VPS](infrastructure/scripts/configure-gmail-vps.ps1) dùng
+SSH có kiểm tra host key, xác thực SMTP qua TLS trước khi đổi runtime,
+backup `.env` quyền 600, cập nhật riêng SMTP và giữ nguyên image Notification
+đang chạy. Chỉ recreate Notification; khi Compose/health/config không đạt,
+khôi phục cấu hình cũ. Không truyền password qua tham số dòng lệnh hoặc lưu
+vào file kết quả. File kết quả chỉ chứa trạng thái đã bỏ credentials.
+
+```powershell
+New-Item -ItemType Directory -Force .verification/smtp | Out-Null
+powershell -NoProfile -ExecutionPolicy Bypass `
+  -File docs/infrastructure/scripts/configure-gmail-vps.ps1 `
+  -Sender '<gmail-gui>@gmail.com' `
+  -SshKey '<private-key-path>' `
+  -ResultFile "$PWD/.verification/smtp/status.json"
+```
+
+Chạy từ repository này. Script phục vụ VPS `deploy@42.96.2.60`, deployment
+root `/opt/omnichannel-ecommerce`, project `omnichannel-day1`; không áp dụng
+nguyên trạng cho VPS khác. `configured` chỉ chứng minh SMTP auth/config và
+Notification healthy, chưa chứng minh khách đã nhận thư. Sau đó thực hiện
+bài đặt đơn và đối chiếu inbox ở phần trên.
