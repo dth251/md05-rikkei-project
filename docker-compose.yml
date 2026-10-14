@@ -14,7 +14,7 @@ services:
       NOTIFICATION_DB_PASSWORD: ${NOTIFICATION_DB_PASSWORD:?Set NOTIFICATION_DB_PASSWORD}
     volumes:
       - postgres-data:/var/lib/postgresql/data
-      - ./infrastructure/postgres/init-databases.sh:/docker-entrypoint-initdb.d/10-databases.sh:ro
+      - ./docs/infrastructure/postgres/init-databases.sh:/docker-entrypoint-initdb.d/10-databases.sh:ro
     healthcheck:
       test: [CMD-SHELL, 'pg_isready -U "$${POSTGRES_USER}" -d postgres']
       interval: 5s
@@ -30,7 +30,7 @@ services:
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:?Set RABBITMQ_DEFAULT_PASS}
     volumes:
       - rabbitmq-data:/var/lib/rabbitmq
-      - ./infrastructure/rabbitmq/enabled_plugins:/etc/rabbitmq/enabled_plugins:ro
+      - ./docs/infrastructure/rabbitmq/enabled_plugins:/etc/rabbitmq/enabled_plugins:ro
     healthcheck:
       test: [CMD, rabbitmq-diagnostics, -q, check_running]
       interval: 5s
@@ -47,7 +47,7 @@ services:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-commerce_app}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:?Set RABBITMQ_DEFAULT_PASS}
     volumes:
-      - ./infrastructure/rabbitmq/definitions.json:/definitions.json:ro
+      - ./docs/infrastructure/rabbitmq/definitions.json:/definitions.json:ro
     entrypoint: [/bin/sh, -ec]
     command:
       - |
@@ -109,6 +109,8 @@ services:
       DB_URL: jdbc:postgresql://postgres:5432/order_db
       DB_USERNAME: order_user
       DB_PASSWORD: ${ORDER_DB_PASSWORD:?Set ORDER_DB_PASSWORD}
+      RESERVATION_TTL: ${RESERVATION_TTL:-PT150S}
+      RESERVATION_SCAN_DELAY_MS: ${RESERVATION_SCAN_DELAY_MS:-1000}
       PRODUCT_RPC_ENABLED: ${PRODUCT_RPC_ENABLED:-true}
       PRODUCT_RPC_TOKEN: ${PRODUCT_RPC_TOKEN:?Set private PRODUCT_RPC_TOKEN}
       PRODUCT_RPC_HOST: product-service

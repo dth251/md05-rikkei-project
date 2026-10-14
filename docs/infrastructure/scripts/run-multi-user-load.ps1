@@ -6,7 +6,7 @@ param(
     [ValidateRange(10, 120)][int]$Seconds = 20
 )
 $ErrorActionPreference = 'Stop'
-$projectRoot = (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
+$projectRoot = (Resolve-Path (Join-Path $PSScriptRoot '../../..')).Path
 Set-Location -LiteralPath $projectRoot
 if (-not (Test-Path -LiteralPath $K6Path -PathType Leaf)) {throw 'Missing k6 executable'}
 $drive = [IO.DriveInfo]::new([IO.Path]::GetPathRoot($projectRoot))

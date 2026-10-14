@@ -9,7 +9,7 @@ param(
     [ValidateRange(5, 120)][int]$DurationSeconds = 20
 )
 $ErrorActionPreference = 'Stop'
-$root = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
+$root = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../../..'))
 if ($BaseUrl -notmatch '^https://[a-zA-Z0-9.-]+$' -or $VpsHost -notmatch '^[a-zA-Z0-9.-]+$' -or $VpsUser -notmatch '^[a-zA-Z0-9_-]+$') {
     throw 'Invalid HTTPS/SSH target'
 }

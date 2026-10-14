@@ -221,6 +221,14 @@
                                        }
                      },
                      {
+                         "source": "commerce.events",
+                         "vhost": "/",
+                         "destination": "notification.order.q",
+                         "destination_type": "queue",
+                         "routing_key": "order.expired",
+                         "arguments": {}
+                     },
+                     {
                          "source":  "commerce.dead-letter",
                          "vhost":  "/",
                          "destination":  "payment.order-created.q.dlq",

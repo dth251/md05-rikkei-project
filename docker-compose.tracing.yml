@@ -80,7 +80,7 @@ services:
     mem_limit: 160m
     command: [--config=/etc/otel/config.yml]
     volumes:
-      - ./infrastructure/tracing/collector.yml:/etc/otel/config.yml:ro
+      - ./docs/infrastructure/tracing/collector.yml:/etc/otel/config.yml:ro
 
   tempo:
     image: grafana/tempo:3.1.0
@@ -89,7 +89,7 @@ services:
     mem_limit: 256m
     command: [-config.file=/etc/tempo/config.yml]
     volumes:
-      - ./infrastructure/tracing/tempo.yml:/etc/tempo/config.yml:ro
+      - ./docs/infrastructure/tracing/tempo.yml:/etc/tempo/config.yml:ro
       - tempo-data:/var/tempo
     ports: [127.0.0.1:13200:3200]
 

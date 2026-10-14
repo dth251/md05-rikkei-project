@@ -2,7 +2,7 @@ param(
     [string]$Target = 'docs/openapi'
 )
 $ErrorActionPreference = 'Stop'
-$projectRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
+$projectRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../../..'))
 $targetPath = [IO.Path]::GetFullPath((Join-Path $projectRoot $Target))
 if (-not $targetPath.StartsWith($projectRoot + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) {
     throw 'OpenAPI export must remain inside the project'

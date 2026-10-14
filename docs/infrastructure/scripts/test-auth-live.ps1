@@ -1,5 +1,5 @@
 $ErrorActionPreference = 'Stop'
-$root = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
+$root = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../../..'))
 Get-Content -LiteralPath (Join-Path $root '.env') | ForEach-Object {
     if ($_ -match '^AUTH_DB_PASSWORD=(.*)$') { $env:AUTH_SMOKE_DB_PASSWORD = $matches[1] }
     if ($_ -match '^JWT_SECRET=(.*)$') { $env:JWT_SECRET = $matches[1] }

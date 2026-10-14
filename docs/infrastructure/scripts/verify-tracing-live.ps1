@@ -4,7 +4,7 @@ param(
 )
 $ErrorActionPreference = 'Stop'
 [Net.WebRequest]::DefaultWebProxy = $null
-$project = (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
+$project = (Resolve-Path (Join-Path $PSScriptRoot '../../..')).Path
 Set-Location -LiteralPath $project
 $expected = @('api-gateway','auth-service','product-service','order-service','payment-service','notification-service')
 $complete = $false

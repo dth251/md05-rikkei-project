@@ -6,7 +6,7 @@ expected_ip="${VPS_HOST:-42.96.2.60}"
 : "${TLS_EMAIL:?Set certificate contact email}"
 [[ "$domain" =~ ^[a-zA-Z0-9][a-zA-Z0-9.-]*\.[a-zA-Z]{2,}$ ]]
 [[ "$TLS_EMAIL" == *@*.* ]]
-release="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+release="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 resolved="$(getent ahostsv4 "$domain" | awk 'NR == 1 { print $1 }')"
 [[ "$resolved" == "$expected_ip" ]] || { echo 'Domain A record does not match VPS_HOST' >&2; exit 1; }
 curl --fail --silent --show-error --max-time 10 http://127.0.0.1:8081/actuator/health \
@@ -14,7 +14,7 @@ curl --fail --silent --show-error --max-time 10 http://127.0.0.1:8081/actuator/h
 destination=/etc/nginx/sites-available/omnichannel-auth.conf
 enabled=/etc/nginx/sites-enabled/omnichannel-auth.conf
 if [[ ! -e "$destination" ]]; then
-    sed "s/__DOMAIN__/$domain/g" "$release/infrastructure/nginx/auth.conf.template" > "$destination"
+    sed "s/__DOMAIN__/$domain/g" "$release/docs/infrastructure/nginx/auth.conf.template" > "$destination"
     chmod 0644 "$destination"
 fi
 if [[ -e "$enabled" || -L "$enabled" ]]; then
@@ -35,6 +35,6 @@ nginx -t
 systemctl reload nginx
 curl --fail --silent --show-error --max-time 20 "https://$domain/actuator/health" \
     | jq -e '.status == "UP"' > /dev/null
-bash "$release/infrastructure/scripts/smoke-auth.sh" "https://$domain"
+bash "$release/docs/infrastructure/scripts/smoke-auth.sh" "https://$domain"
 systemctl enable --now certbot.timer
 printf 'HTTPS Auth domain verified: https://%s\n' "$domain"

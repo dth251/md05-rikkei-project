@@ -1,7 +1,7 @@
 param([string]$EvidenceFile = '.verification/trace-privacy.json')
 $ErrorActionPreference = 'Stop'
 [Net.WebRequest]::DefaultWebProxy = $null # Tempo is queried over loopback only.
-$project = (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
+$project = (Resolve-Path (Join-Path $PSScriptRoot '../../..')).Path
 Set-Location -LiteralPath $project
 New-Item -ItemType Directory -Path .verification -Force | Out-Null
 $trace = [Guid]::NewGuid().ToString('N')

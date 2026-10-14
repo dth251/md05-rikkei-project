@@ -6,7 +6,7 @@ root="${DEPLOY_ROOT:-/opt/omnichannel-ecommerce}"
 candidate="${1:?Provide a cached known-good candidate SHA different from current Notification}"
 [[ "$root" =~ ^/[a-zA-Z0-9_-]+(/[a-zA-Z0-9_-]+)*$ && "$candidate" =~ ^[0-9a-f]{40}$ ]]
 release="${PROBE_RELEASE:-$(readlink -f "$root/current")}"
-[[ "$release" == "$root/releases/"* && -f "$release/infrastructure/scripts/deploy.sh" ]]
+[[ "$release" == "$root/releases/"* && -f "$release/docs/infrastructure/scripts/deploy.sh" ]]
 previous="$(sed -n 's/^NOTIFICATION_IMAGE_TAG=//p' "$root/.image-tags")"
 [[ "$previous" =~ ^[0-9a-f]{40}$ && "$candidate" != "$previous" ]]
 repository=ghcr.io/dth251/md05-rikkei-project/notification-service
@@ -47,7 +47,7 @@ chmod 700 "$probe/docker" "$probe/curl"
 date -u '+%Y-%m-%dT%H:%M:%SZ'
 set +e
 PATH="$probe:$PATH" IMAGE_TAG="$candidate" DEPLOY_SERVICE=notification-service DEPLOY_ROOT="$root" \
-    bash "$release/infrastructure/scripts/deploy.sh"
+    bash "$release/docs/infrastructure/scripts/deploy.sh"
 result=$?
 set -e
 [[ "$result" != 0 && ! -f "$PROBE_MARKER" ]]

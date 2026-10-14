@@ -5,7 +5,7 @@ param(
 $ErrorActionPreference = 'Stop'
 [Net.WebRequest]::DefaultWebProxy = $null # All endpoints below are fixed loopback addresses.
 if ([string]::IsNullOrEmpty($env:GRAFANA_ADMIN_PASSWORD)) {throw 'Load private GRAFANA_ADMIN_PASSWORD into the process'}
-$project = (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
+$project = (Resolve-Path (Join-Path $PSScriptRoot '../../..')).Path
 Set-Location -LiteralPath $project
 $basic = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes('ops:' + $env:GRAFANA_ADMIN_PASSWORD))
 $headers = @{Authorization = 'Basic ' + $basic}
