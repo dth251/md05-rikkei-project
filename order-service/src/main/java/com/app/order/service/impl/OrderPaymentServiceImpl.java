@@ -1,6 +1,7 @@
 package com.app.order.service.impl;
 
 import com.app.order.dto.event.CommerceEvent;
+import com.app.order.config.ReservationDeadline;
 import com.app.order.entity.OrderStatus;
 import com.app.order.entity.PurchaseOrder;
 import com.app.order.entity.PaymentMethod;
@@ -9,6 +10,8 @@ import com.app.order.repository.OrderRepository;
 import com.app.order.repository.StockRepository;
 import com.app.order.service.OrderPaymentService;
 import com.app.order.service.OutboxService;
+import com.app.order.service.ReservationExpiryService;
+import java.time.Clock;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.UUID;
@@ -22,17 +25,26 @@ public class OrderPaymentServiceImpl implements OrderPaymentService {
     private final OrderRepository orderRepository;
     private final StockRepository stockRepository;
     private final OutboxService outboxService;
+    private final ReservationExpiryService expiry;
+    private final ReservationDeadline deadline;
+    private final Clock clock;
 
     public OrderPaymentServiceImpl(
             EventInbox eventInbox,
             OrderRepository orderRepository,
             StockRepository stockRepository,
-            OutboxService outboxService
+            OutboxService outboxService,
+            ReservationExpiryService expiry,
+            ReservationDeadline deadline,
+            Clock clock
     ) {
         this.eventInbox = eventInbox;
         this.orderRepository = orderRepository;
         this.stockRepository = stockRepository;
         this.outboxService = outboxService;
+        this.expiry = expiry;
+        this.deadline = deadline;
+        this.clock = clock;
     }
 
     @Override
@@ -68,6 +80,11 @@ public class OrderPaymentServiceImpl implements OrderPaymentService {
             }
             orderRepository.flush();
             return;
+        }
+        // Check after acquiring the same row lock used by the scheduler. A delayed scan
+        // must not allow a payment result received at/after the deadline to confirm.
+        if (order.getStatus() == OrderStatus.PENDING_PAYMENT) {
+            expiry.expire(order.getId(), deadline.cutoff(clock));
         }
         if (order.getStatus() == OrderStatus.EXPIRED && "payment.succeeded".equals(event.type())) {
             // Expiration already released stock. Never confirm or reserve again after late payment.
