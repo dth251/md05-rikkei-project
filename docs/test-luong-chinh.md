@@ -99,5 +99,9 @@ và đơn hết hạn #162. Chưa xác nhận thư trong inbox. Tại thời đi
 VNPay #163 còn chờ thanh toán nên kho là 19 sản phẩm khả dụng, 1 giữ chỗ.
 Link của lượt kiểm tra này có hạn; chạy lượt mới để tự thao tác thanh toán.
 
+Đối chiếu tiếp lúc **00:57:32 +07**: đơn #163 cũng đã EXPIRED do không
+thanh toán; kho trở lại **20 khả dụng / 0 giữ chỗ**. Có thêm email hết hạn
+của #163, tổng **5 email SENT**, mỗi email một lần gửi, không lỗi.
+
 Nhóm 07–08 đã kiểm tra cấu trúc/script, **chưa xác minh thanh toán, IPN và
 hoàn tiền thực tế tại VNPay sandbox**. Xem [bằng chứng kiểm tra](evidence/postman-luong-chinh-2026-10-15.json).

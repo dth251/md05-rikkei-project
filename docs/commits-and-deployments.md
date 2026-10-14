@@ -1086,3 +1086,46 @@ toán/IPN thực hoặc hoàn tiền thực tại sandbox. Đây là bước bê
 chọn ngân hàng. [File Postman gộp](postman-mot-file.md),
 [hướng dẫn sandbox](vnpay-sandbox-browser.md),
 [bằng chứng runtime](evidence/vnpay-browser-integration-2026-10-15.json).
+
+## Bộ Postman các luồng chính ngày 15/10/2026
+
+| Mốc | SHA | Thời gian +07 | Kiểm chứng / deploy thực tế |
+|---|---|---|---|
+| 185-docs | `3fa022f65261333255b5513d6545ca4aaf50b60a` | 2026-10-15T00:39:08+07:00 | Giải thích User A/B trong bản 181 requests; bản gọn mới bên dưới chỉ dùng một USER và ADMIN. |
+| 186-api-gateway | `088745d0d84b5bb31df2d1e718a09f53c3337abb` | 2026-10-15T00:56:56+07:00 | Thêm collection 42 requests/8 nhóm, generator và hướng dẫn email/trả hàng/hết hạn 150 giây. Chạy production nhóm 01–06: 136 HTTP/145 assertions, zero failures, exit 0, 3m19.5s. Chỉ thay tài liệu/Postman, không build hoặc deploy service mới. |
+
+Kiểm tra tĩnh: 85 hooks biên dịch được, 18 JSON bodies hợp lệ, generator
+PowerShell parse đạt và sinh lại đúng nội dung. Đã kiểm tra key thu/hoàn
+COD được khởi tạo tại bước còn giữ trong bản gọn, dừng sau checkout, không
+có simulate/User B trong request. Quét secret staged và diff check đạt;
+không đưa log private, environment hoặc settings IDE vào commit.
+
+Đối chiếu runtime lúc 00:55:20: cả sáu app healthy. Order và Payment
+đang chạy image `6e2ab03183b0f1874161d72323ffb23459890104`; bốn app khác
+giữ `d2779d1595fb5541675e65604eb07ac633ccf91b`.
+[CI main 38606802592](https://github.com/dth251/md05-rikkei-project/actions/runs/38606802592)
+đã success toàn bộ, gồm publish Order/Payment và deploy, kết thúc
+00:49:58 +07. Đây là kết quả hoàn tất pipeline mốc 183, không phải deploy
+do thay đổi collection mốc 186. Các commit tài liệu 184–186 ở nhánh
+`feature/vnpay-sandbox-evidence` được lưu cục bộ, chưa push/tích hợp PR.
+
+Fixture mới chỉ một USER #228, sản phẩm #157: COD #161/Payment #96 đã
+COMPLETED và hoàn 125.000 đồng, hồ sơ trả REFUNDED. Đơn #162/Payment #97
+EXPIRED/FAILED, reservationExpired true; assertion không hết hạn trước
+150 giây và giải phóng kho đạt. Đơn mới #163/Payment #98 tạo link sandbox,
+Runner dừng; chưa thanh toán qua ngân hàng.
+
+Notification cho #161 và #162 có 4 deliveries SENT/attempts=1, không lỗi;
+SMTP Gmail 587/auth/STARTTLS bật, sandbox SMTP tắt. Chưa xác nhận inbox.
+Email hiện là text, chưa có thông báo trả/hoàn tiền riêng; mẫu hóa đơn
+HTML chưa gắn vào luồng tự động. Không gửi email tới VNPay. Nhóm 07–08
+chưa chạy giao dịch/IPN/hoàn tiền thực tế ở sandbox; đăng ký IPN vẫn chưa
+được xác nhận. [Hướng dẫn luồng chính](test-luong-chinh.md),
+[bằng chứng kiểm tra](evidence/postman-luong-chinh-2026-10-15.json).
+
+Đối chiếu tiếp 00:57:32 +07: đơn #163 tự EXPIRED vì không thao tác thanh
+toán, Payment #98 FAILED/reservationExpired true. Kho #157 trở về 20/0,
+không còn giữ hàng cho lượt chạy này. Email hết hạn #163 SENT/attempts=1,
+nâng tổng fixture lên 5 email SENT, không error_code. Bằng chứng và hướng
+dẫn lưu cả hai thời điểm để phân biệt trạng thái ngay sau checkout với
+trạng thái sau khi link hết hạn.
