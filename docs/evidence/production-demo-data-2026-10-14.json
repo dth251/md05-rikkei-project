@@ -1,0 +1,858 @@
+{
+    "runtimeSha":  "d2779d1595fb5541675e65604eb07ac633ccf91b",
+    "dataset":  {
+                    "runId":  "demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461",
+                    "baseUrl":  "https://md05-rikkei-project.duckdns.org",
+                    "verifiedAt":  "2026-10-14T11:41:37.494132Z",
+                    "accounts":  {
+                                     "admin":  {
+                                                   "id":  170,
+                                                   "email":  "demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461-admin@example.com",
+                                                   "role":  "ADMIN"
+                                               },
+                                     "userA":  {
+                                                   "id":  171,
+                                                   "email":  "demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461-usera@example.com",
+                                                   "role":  "USER"
+                                               },
+                                     "userB":  {
+                                                   "id":  172,
+                                                   "email":  "demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461-userb@example.com",
+                                                   "role":  "USER"
+                                               }
+                                 },
+                    "products":  {
+                                     "demoProduct":  {
+                                                         "id":  139,
+                                                         "sku":  "DEMO-C5C9D77E-8A2E-4B6B-DEMOPRODUCT",
+                                                         "name":  "Demo Shirt for interactive tests",
+                                                         "description":  "Synthetic MD05 demo fixture; demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461",
+                                                         "unitPrice":  125000.0,
+                                                         "category":  "Clothing",
+                                                         "brand":  "MD05Demo",
+                                                         "active":  true,
+                                                         "createdAt":  "2026-10-14T11:28:49.139995Z",
+                                                         "updatedAt":  "2026-10-14T11:28:49.139995Z",
+                                                         "parentId":  null,
+                                                         "attributes":  {
+
+                                                                        },
+                                                         "price":  "125000",
+                                                         "initialStock":  10,
+                                                         "stockProvisioned":  true,
+                                                         "available":  10,
+                                                         "reserved":  0
+                                                     },
+                                     "historyProduct":  {
+                                                            "id":  140,
+                                                            "sku":  "DEMO-C5C9D77E-8A2E-4B6B-HISTORYPRODUCT",
+                                                            "name":  "Demo history fixture",
+                                                            "description":  "Synthetic MD05 demo fixture; demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461",
+                                                            "unitPrice":  125000.0,
+                                                            "category":  "Clothing",
+                                                            "brand":  "MD05Demo",
+                                                            "active":  true,
+                                                            "createdAt":  "2026-10-14T11:28:49.979645Z",
+                                                            "updatedAt":  "2026-10-14T11:28:49.979645Z",
+                                                            "parentId":  null,
+                                                            "attributes":  {
+
+                                                                           },
+                                                            "price":  "125000",
+                                                            "initialStock":  100,
+                                                            "stockProvisioned":  true,
+                                                            "available":  89,
+                                                            "reserved":  1
+                                                        },
+                                     "parentProduct":  {
+                                                           "id":  141,
+                                                           "sku":  "DEMO-C5C9D77E-8A2E-4B6B-PARENTPRODUCT",
+                                                           "name":  "Demo Shirt variants",
+                                                           "description":  "Synthetic MD05 demo fixture; demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461",
+                                                           "unitPrice":  125000.0,
+                                                           "category":  "Clothing",
+                                                           "brand":  "MD05Demo",
+                                                           "active":  true,
+                                                           "createdAt":  "2026-10-14T11:28:50.570654Z",
+                                                           "updatedAt":  "2026-10-14T11:28:50.570654Z",
+                                                           "parentId":  null,
+                                                           "attributes":  {
+
+                                                                          },
+                                                           "price":  "125000",
+                                                           "initialStock":  20,
+                                                           "stockProvisioned":  true,
+                                                           "available":  20,
+                                                           "reserved":  0
+                                                       },
+                                     "hoodieProduct":  {
+                                                           "id":  142,
+                                                           "sku":  "DEMO-C5C9D77E-8A2E-4B6B-HOODIEPRODUCT",
+                                                           "name":  "Demo Hoodie",
+                                                           "description":  "Synthetic MD05 demo fixture; demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461",
+                                                           "unitPrice":  350000.0,
+                                                           "category":  "Clothing",
+                                                           "brand":  "MD05Demo",
+                                                           "active":  true,
+                                                           "createdAt":  "2026-10-14T11:28:51.072767Z",
+                                                           "updatedAt":  "2026-10-14T11:28:51.072767Z",
+                                                           "parentId":  null,
+                                                           "attributes":  {
+
+                                                                          },
+                                                           "price":  "350000",
+                                                           "initialStock":  50,
+                                                           "stockProvisioned":  true,
+                                                           "available":  50,
+                                                           "reserved":  0
+                                                       },
+                                     "mugProduct":  {
+                                                        "id":  143,
+                                                        "sku":  "DEMO-C5C9D77E-8A2E-4B6B-MUGPRODUCT",
+                                                        "name":  "Demo Mug",
+                                                        "description":  "Synthetic MD05 demo fixture; demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461",
+                                                        "unitPrice":  79000.0,
+                                                        "category":  "Home",
+                                                        "brand":  "MD05Demo",
+                                                        "active":  true,
+                                                        "createdAt":  "2026-10-14T11:28:51.690188Z",
+                                                        "updatedAt":  "2026-10-14T11:28:51.690188Z",
+                                                        "parentId":  null,
+                                                        "attributes":  {
+
+                                                                       },
+                                                        "price":  "79000",
+                                                        "initialStock":  30,
+                                                        "stockProvisioned":  true,
+                                                        "available":  30,
+                                                        "reserved":  0
+                                                    },
+                                     "bagProduct":  {
+                                                        "id":  144,
+                                                        "sku":  "DEMO-C5C9D77E-8A2E-4B6B-BAGPRODUCT",
+                                                        "name":  "Demo Backpack",
+                                                        "description":  "Synthetic MD05 demo fixture; demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461",
+                                                        "unitPrice":  499000.0,
+                                                        "category":  "Accessories",
+                                                        "brand":  "MD05Demo",
+                                                        "active":  true,
+                                                        "createdAt":  "2026-10-14T11:28:52.185020Z",
+                                                        "updatedAt":  "2026-10-14T11:28:52.185020Z",
+                                                        "parentId":  null,
+                                                        "attributes":  {
+
+                                                                       },
+                                                        "price":  "499000",
+                                                        "initialStock":  20,
+                                                        "stockProvisioned":  true,
+                                                        "available":  20,
+                                                        "reserved":  0
+                                                    },
+                                     "zeroStockProduct":  {
+                                                              "id":  145,
+                                                              "sku":  "DEMO-C5C9D77E-8A2E-4B6B-ZEROSTOCKPRODUCT",
+                                                              "name":  "Demo Sold Out",
+                                                              "description":  "Synthetic MD05 demo fixture; demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461",
+                                                              "unitPrice":  99000.0,
+                                                              "category":  "Home",
+                                                              "brand":  "MD05Demo",
+                                                              "active":  true,
+                                                              "createdAt":  "2026-10-14T11:28:52.648173Z",
+                                                              "updatedAt":  "2026-10-14T11:28:52.648173Z",
+                                                              "parentId":  null,
+                                                              "attributes":  {
+
+                                                                             },
+                                                              "price":  "99000",
+                                                              "initialStock":  1,
+                                                              "stockProvisioned":  true,
+                                                              "available":  0,
+                                                              "reserved":  0
+                                                          },
+                                     "deletedProduct":  {
+                                                            "sku":  "DEMO-C5C9D77E-8A2E-4B6B-DELETEDPRODUCT",
+                                                            "id":  146,
+                                                            "name":  "Demo inactive product",
+                                                            "price":  "59000",
+                                                            "initialStock":  5,
+                                                            "stockProvisioned":  true,
+                                                            "available":  5,
+                                                            "reserved":  0,
+                                                            "active":  false
+                                                        },
+                                     "blueM":  {
+                                                   "id":  147,
+                                                   "sku":  "DEMO-C5C9D77E-8A2E-4B6B-BLUEM",
+                                                   "name":  "Demo Shirt Blue M",
+                                                   "description":  "Synthetic MD05 demo fixture; demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461",
+                                                   "unitPrice":  130000.0,
+                                                   "category":  "Clothing",
+                                                   "brand":  "MD05Demo",
+                                                   "active":  true,
+                                                   "createdAt":  "2026-10-14T11:28:53.815563Z",
+                                                   "updatedAt":  "2026-10-14T11:28:53.815563Z",
+                                                   "parentId":  141,
+                                                   "attributes":  {
+                                                                      "color":  "blue",
+                                                                      "size":  "m"
+                                                                  },
+                                                   "price":  "130000",
+                                                   "initialStock":  20,
+                                                   "stockProvisioned":  true,
+                                                   "available":  20,
+                                                   "reserved":  0
+                                               },
+                                     "redL":  {
+                                                  "id":  148,
+                                                  "sku":  "DEMO-C5C9D77E-8A2E-4B6B-REDL",
+                                                  "name":  "Demo Shirt Red L",
+                                                  "description":  "Synthetic MD05 demo fixture; demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461",
+                                                  "unitPrice":  130000.0,
+                                                  "category":  "Clothing",
+                                                  "brand":  "MD05Demo",
+                                                  "active":  true,
+                                                  "createdAt":  "2026-10-14T11:28:54.517949Z",
+                                                  "updatedAt":  "2026-10-14T11:28:54.517949Z",
+                                                  "parentId":  141,
+                                                  "attributes":  {
+                                                                     "color":  "red",
+                                                                     "size":  "l"
+                                                                 },
+                                                  "price":  "130000",
+                                                  "initialStock":  15,
+                                                  "stockProvisioned":  true,
+                                                  "available":  15,
+                                                  "reserved":  0
+                                              },
+                                     "blackS":  {
+                                                    "id":  149,
+                                                    "sku":  "DEMO-C5C9D77E-8A2E-4B6B-BLACKS",
+                                                    "name":  "Demo Shirt Black S",
+                                                    "description":  "Synthetic MD05 demo fixture; demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461",
+                                                    "unitPrice":  130000.0,
+                                                    "category":  "Clothing",
+                                                    "brand":  "MD05Demo",
+                                                    "active":  true,
+                                                    "createdAt":  "2026-10-14T11:28:54.986844Z",
+                                                    "updatedAt":  "2026-10-14T11:28:54.986844Z",
+                                                    "parentId":  141,
+                                                    "attributes":  {
+                                                                       "color":  "black",
+                                                                       "size":  "s"
+                                                                   },
+                                                    "price":  "130000",
+                                                    "initialStock":  10,
+                                                    "stockProvisioned":  true,
+                                                    "available":  10,
+                                                    "reserved":  0
+                                                }
+                                 },
+                    "addresses":  {
+                                      "homeA":  {
+                                                    "id":  2,
+                                                    "recipientName":  "MD05 Synthetic Demo",
+                                                    "phone":  "0901234567",
+                                                    "street":  "123 Demo Street",
+                                                    "ward":  "Demo Ward",
+                                                    "district":  "Demo District",
+                                                    "province":  "Demo Province",
+                                                    "postalCode":  "70000",
+                                                    "defaultAddress":  true,
+                                                    "owner":  "userA"
+                                                },
+                                      "workA":  {
+                                                    "id":  3,
+                                                    "recipientName":  "MD05 Synthetic Demo",
+                                                    "phone":  "0901234567",
+                                                    "street":  "456 Demo Office",
+                                                    "ward":  "Demo Ward",
+                                                    "district":  "Demo District",
+                                                    "province":  "Demo Province",
+                                                    "postalCode":  "70000",
+                                                    "defaultAddress":  false,
+                                                    "owner":  "userA"
+                                                },
+                                      "homeB":  {
+                                                    "id":  4,
+                                                    "recipientName":  "MD05 Synthetic Demo",
+                                                    "phone":  "0901234567",
+                                                    "street":  "789 Demo Street",
+                                                    "ward":  "Demo Ward",
+                                                    "district":  "Demo District",
+                                                    "province":  "Demo Province",
+                                                    "postalCode":  "70000",
+                                                    "defaultAddress":  true,
+                                                    "owner":  "userB"
+                                                }
+                                  },
+                    "orders":  {
+                                   "zeroStockConsumed":  {
+                                                             "id":  128,
+                                                             "key":  "zeroStockConsumed",
+                                                             "owner":  "userA",
+                                                             "productKey":  "zeroStockProduct",
+                                                             "paymentMethod":  "ONLINE",
+                                                             "channel":  "WEB",
+                                                             "paymentId":  65,
+                                                             "status":  "CONFIRMED",
+                                                             "createdAt":  "2026-10-14T11:28:55.567209Z",
+                                                             "totalAmount":  99000.0,
+                                                             "codPaid":  false,
+                                                             "paymentStatus":  "SUCCESS",
+                                                             "refundStatus":  "NONE",
+                                                             "reservationExpired":  false
+                                                         },
+                                   "onlineConfirmed":  {
+                                                           "id":  129,
+                                                           "key":  "onlineConfirmed",
+                                                           "owner":  "userA",
+                                                           "productKey":  "historyProduct",
+                                                           "paymentMethod":  "ONLINE",
+                                                           "channel":  "WEB",
+                                                           "paymentId":  66,
+                                                           "status":  "CONFIRMED",
+                                                           "createdAt":  "2026-10-14T11:28:58.586477Z",
+                                                           "totalAmount":  125000.0,
+                                                           "codPaid":  false,
+                                                           "paymentStatus":  "SUCCESS",
+                                                           "refundStatus":  "NONE",
+                                                           "reservationExpired":  false
+                                                       },
+                                   "onlineShipping":  {
+                                                          "id":  130,
+                                                          "key":  "onlineShipping",
+                                                          "owner":  "userA",
+                                                          "productKey":  "historyProduct",
+                                                          "paymentMethod":  "ONLINE",
+                                                          "channel":  "WEB",
+                                                          "paymentId":  67,
+                                                          "status":  "SHIPPING",
+                                                          "createdAt":  "2026-10-14T11:29:01.997730Z",
+                                                          "totalAmount":  125000.0,
+                                                          "codPaid":  false,
+                                                          "paymentStatus":  "SUCCESS",
+                                                          "refundStatus":  "NONE",
+                                                          "reservationExpired":  false
+                                                      },
+                                   "onlineCompleted":  {
+                                                           "id":  131,
+                                                           "key":  "onlineCompleted",
+                                                           "owner":  "userA",
+                                                           "productKey":  "historyProduct",
+                                                           "paymentMethod":  "ONLINE",
+                                                           "channel":  "WEB",
+                                                           "paymentId":  68,
+                                                           "status":  "COMPLETED",
+                                                           "createdAt":  "2026-10-14T11:29:05.701909Z",
+                                                           "totalAmount":  125000.0,
+                                                           "codPaid":  false,
+                                                           "paymentStatus":  "SUCCESS",
+                                                           "refundStatus":  "NONE",
+                                                           "reservationExpired":  false
+                                                       },
+                                   "posCompleted":  {
+                                                        "id":  132,
+                                                        "key":  "posCompleted",
+                                                        "owner":  "userA",
+                                                        "productKey":  "historyProduct",
+                                                        "paymentMethod":  "ONLINE",
+                                                        "channel":  "POS",
+                                                        "paymentId":  69,
+                                                        "status":  "COMPLETED",
+                                                        "createdAt":  "2026-10-14T11:29:08.536489Z",
+                                                        "totalAmount":  125000.0,
+                                                        "codPaid":  false,
+                                                        "paymentStatus":  "SUCCESS",
+                                                        "refundStatus":  "NONE",
+                                                        "reservationExpired":  false
+                                                    },
+                                   "onlineCancelled":  {
+                                                           "id":  133,
+                                                           "key":  "onlineCancelled",
+                                                           "owner":  "userA",
+                                                           "productKey":  "historyProduct",
+                                                           "paymentMethod":  "ONLINE",
+                                                           "channel":  "WEB",
+                                                           "paymentId":  70,
+                                                           "status":  "CANCELLED",
+                                                           "createdAt":  "2026-10-14T11:29:12.235013Z",
+                                                           "totalAmount":  125000.0,
+                                                           "codPaid":  false,
+                                                           "paymentStatus":  "FAILED",
+                                                           "refundStatus":  "NONE",
+                                                           "reservationExpired":  false
+                                                       },
+                                   "codConfirmed":  {
+                                                        "id":  134,
+                                                        "key":  "codConfirmed",
+                                                        "owner":  "userA",
+                                                        "productKey":  "historyProduct",
+                                                        "paymentMethod":  "COD",
+                                                        "channel":  "WEB",
+                                                        "paymentId":  71,
+                                                        "status":  "CONFIRMED",
+                                                        "createdAt":  "2026-10-14T11:29:14.440630Z",
+                                                        "totalAmount":  125000.0,
+                                                        "codPaid":  false,
+                                                        "paymentStatus":  "PENDING",
+                                                        "refundStatus":  "NONE",
+                                                        "reservationExpired":  false
+                                                    },
+                                   "codShipping":  {
+                                                       "id":  135,
+                                                       "key":  "codShipping",
+                                                       "owner":  "userA",
+                                                       "productKey":  "historyProduct",
+                                                       "paymentMethod":  "COD",
+                                                       "channel":  "WEB",
+                                                       "paymentId":  72,
+                                                       "status":  "SHIPPING",
+                                                       "createdAt":  "2026-10-14T11:29:16.476685Z",
+                                                       "totalAmount":  125000.0,
+                                                       "codPaid":  false,
+                                                       "paymentStatus":  "PENDING",
+                                                       "refundStatus":  "NONE",
+                                                       "reservationExpired":  false
+                                                   },
+                                   "codShippingPaid":  {
+                                                           "id":  136,
+                                                           "key":  "codShippingPaid",
+                                                           "owner":  "userA",
+                                                           "productKey":  "historyProduct",
+                                                           "paymentMethod":  "COD",
+                                                           "channel":  "WEB",
+                                                           "paymentId":  73,
+                                                           "status":  "SHIPPING",
+                                                           "createdAt":  "2026-10-14T11:29:18.269365Z",
+                                                           "totalAmount":  125000.0,
+                                                           "codPaid":  true,
+                                                           "paymentStatus":  "SUCCESS",
+                                                           "refundStatus":  "NONE",
+                                                           "reservationExpired":  false
+                                                       },
+                                   "codCompleted":  {
+                                                        "id":  137,
+                                                        "key":  "codCompleted",
+                                                        "owner":  "userA",
+                                                        "productKey":  "historyProduct",
+                                                        "paymentMethod":  "COD",
+                                                        "channel":  "WEB",
+                                                        "paymentId":  74,
+                                                        "status":  "COMPLETED",
+                                                        "createdAt":  "2026-10-14T11:29:22.182423Z",
+                                                        "totalAmount":  125000.0,
+                                                        "codPaid":  true,
+                                                        "paymentStatus":  "SUCCESS",
+                                                        "refundStatus":  "NONE",
+                                                        "reservationExpired":  false
+                                                    },
+                                   "codCancelled":  {
+                                                        "id":  138,
+                                                        "key":  "codCancelled",
+                                                        "owner":  "userA",
+                                                        "productKey":  "historyProduct",
+                                                        "paymentMethod":  "COD",
+                                                        "channel":  "WEB",
+                                                        "paymentId":  75,
+                                                        "status":  "CANCELLED",
+                                                        "createdAt":  "2026-10-14T11:29:27.352597Z",
+                                                        "totalAmount":  125000.0,
+                                                        "codPaid":  false,
+                                                        "paymentStatus":  "FAILED",
+                                                        "refundStatus":  "NONE",
+                                                        "reservationExpired":  false
+                                                    },
+                                   "returnRequested":  {
+                                                           "id":  139,
+                                                           "key":  "returnRequested",
+                                                           "owner":  "userA",
+                                                           "productKey":  "historyProduct",
+                                                           "paymentMethod":  "COD",
+                                                           "channel":  "WEB",
+                                                           "paymentId":  76,
+                                                           "expectedReturnStatus":  "REQUESTED",
+                                                           "status":  "COMPLETED",
+                                                           "createdAt":  "2026-10-14T11:29:29.604249Z",
+                                                           "totalAmount":  125000.0,
+                                                           "codPaid":  true,
+                                                           "paymentStatus":  "SUCCESS",
+                                                           "refundStatus":  "NONE",
+                                                           "reservationExpired":  false,
+                                                           "returnStatus":  "REQUESTED"
+                                                       },
+                                   "returnApproved":  {
+                                                          "id":  140,
+                                                          "key":  "returnApproved",
+                                                          "owner":  "userA",
+                                                          "productKey":  "historyProduct",
+                                                          "paymentMethod":  "COD",
+                                                          "channel":  "WEB",
+                                                          "paymentId":  77,
+                                                          "expectedReturnStatus":  "APPROVED",
+                                                          "status":  "COMPLETED",
+                                                          "createdAt":  "2026-10-14T11:29:34.180879Z",
+                                                          "totalAmount":  125000.0,
+                                                          "codPaid":  true,
+                                                          "paymentStatus":  "SUCCESS",
+                                                          "refundStatus":  "NONE",
+                                                          "reservationExpired":  false,
+                                                          "returnStatus":  "APPROVED"
+                                                      },
+                                   "returnRefundPending":  {
+                                                               "id":  141,
+                                                               "key":  "returnRefundPending",
+                                                               "owner":  "userA",
+                                                               "productKey":  "historyProduct",
+                                                               "paymentMethod":  "COD",
+                                                               "channel":  "WEB",
+                                                               "paymentId":  78,
+                                                               "expectedReturnStatus":  "REFUND_PENDING",
+                                                               "status":  "COMPLETED",
+                                                               "createdAt":  "2026-10-14T11:29:39.909440Z",
+                                                               "totalAmount":  125000.0,
+                                                               "codPaid":  true,
+                                                               "paymentStatus":  "SUCCESS",
+                                                               "refundStatus":  "REQUIRED",
+                                                               "reservationExpired":  false,
+                                                               "returnStatus":  "REFUND_PENDING"
+                                                           },
+                                   "returnRefunded":  {
+                                                          "id":  142,
+                                                          "key":  "returnRefunded",
+                                                          "owner":  "userA",
+                                                          "productKey":  "historyProduct",
+                                                          "paymentMethod":  "COD",
+                                                          "channel":  "WEB",
+                                                          "paymentId":  79,
+                                                          "expectedReturnStatus":  "REFUNDED",
+                                                          "status":  "COMPLETED",
+                                                          "createdAt":  "2026-10-14T11:29:47.456461Z",
+                                                          "totalAmount":  125000.0,
+                                                          "codPaid":  true,
+                                                          "paymentStatus":  "SUCCESS",
+                                                          "refundStatus":  "REFUNDED",
+                                                          "reservationExpired":  false,
+                                                          "returnStatus":  "REFUNDED"
+                                                      },
+                                   "foreignOwnedOrder":  {
+                                                             "id":  143,
+                                                             "key":  "foreignOwnedOrder",
+                                                             "owner":  "userB",
+                                                             "productKey":  "historyProduct",
+                                                             "paymentMethod":  "ONLINE",
+                                                             "channel":  "WEB",
+                                                             "paymentId":  80,
+                                                             "status":  "CONFIRMED",
+                                                             "createdAt":  "2026-10-14T11:30:00.329365Z",
+                                                             "totalAmount":  125000.0,
+                                                             "codPaid":  false,
+                                                             "paymentStatus":  "SUCCESS",
+                                                             "refundStatus":  "NONE",
+                                                             "reservationExpired":  false
+                                                         },
+                                   "onlineExpired":  {
+                                                         "id":  144,
+                                                         "key":  "onlineExpired",
+                                                         "owner":  "userA",
+                                                         "productKey":  "historyProduct",
+                                                         "paymentMethod":  "ONLINE",
+                                                         "channel":  "WEB",
+                                                         "paymentId":  81,
+                                                         "status":  "EXPIRED",
+                                                         "createdAt":  "2026-10-14T11:30:03.258402Z",
+                                                         "totalAmount":  125000.0,
+                                                         "codPaid":  false,
+                                                         "paymentStatus":  "FAILED",
+                                                         "refundStatus":  "NONE",
+                                                         "reservationExpired":  true
+                                                     }
+                               }
+                },
+    "capacity":  {
+                     "runId":  "demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461",
+                     "accounts":  50,
+                     "verifiedAt":  "2026-10-14T11:38:18.367845200Z",
+                     "identities":  [
+                                        {
+                                            "id":  173,
+                                            "email":  "demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461-load0@example.com",
+                                            "role":  "USER"
+                                        },
+                                        {
+                                            "id":  174,
+                                            "email":  "demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461-load1@example.com",
+                                            "role":  "USER"
+                                        },
+                                        {
+                                            "id":  175,
+                                            "email":  "demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461-load2@example.com",
+                                            "role":  "USER"
+                                        },
+                                        {
+                                            "id":  176,
+                                            "email":  "demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461-load3@example.com",
+                                            "role":  "USER"
+                                        },
+                                        {
+                                            "id":  177,
+                                            "email":  "demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461-load4@example.com",
+                                            "role":  "USER"
+                                        },
+                                        {
+                                            "id":  178,
+                                            "email":  "demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461-load5@example.com",
+                                            "role":  "USER"
+                                        },
+                                        {
+                                            "id":  179,
+                                            "email":  "demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461-load6@example.com",
+                                            "role":  "USER"
+                                        },
+                                        {
+                                            "id":  180,
+                                            "email":  "demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461-load7@example.com",
+                                            "role":  "USER"
+                                        },
+                                        {
+                                            "id":  181,
+                                            "email":  "demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461-load8@example.com",
+                                            "role":  "USER"
+                                        },
+                                        {
+                                            "id":  182,
+                                            "email":  "demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461-load9@example.com",
+                                            "role":  "USER"
+                                        },
+                                        {
+                                            "id":  183,
+                                            "email":  "demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461-load10@example.com",
+                                            "role":  "USER"
+                                        },
+                                        {
+                                            "id":  184,
+                                            "email":  "demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461-load11@example.com",
+                                            "role":  "USER"
+                                        },
+                                        {
+                                            "id":  185,
+                                            "email":  "demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461-load12@example.com",
+                                            "role":  "USER"
+                                        },
+                                        {
+                                            "id":  186,
+                                            "email":  "demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461-load13@example.com",
+                                            "role":  "USER"
+                                        },
+                                        {
+                                            "id":  187,
+                                            "email":  "demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461-load14@example.com",
+                                            "role":  "USER"
+                                        },
+                                        {
+                                            "id":  188,
+                                            "email":  "demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461-load15@example.com",
+                                            "role":  "USER"
+                                        },
+                                        {
+                                            "id":  189,
+                                            "email":  "demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461-load16@example.com",
+                                            "role":  "USER"
+                                        },
+                                        {
+                                            "id":  190,
+                                            "email":  "demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461-load17@example.com",
+                                            "role":  "USER"
+                                        },
+                                        {
+                                            "id":  191,
+                                            "email":  "demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461-load18@example.com",
+                                            "role":  "USER"
+                                        },
+                                        {
+                                            "id":  192,
+                                            "email":  "demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461-load19@example.com",
+                                            "role":  "USER"
+                                        },
+                                        {
+                                            "id":  193,
+                                            "email":  "demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461-load20@example.com",
+                                            "role":  "USER"
+                                        },
+                                        {
+                                            "id":  194,
+                                            "email":  "demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461-load21@example.com",
+                                            "role":  "USER"
+                                        },
+                                        {
+                                            "id":  195,
+                                            "email":  "demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461-load22@example.com",
+                                            "role":  "USER"
+                                        },
+                                        {
+                                            "id":  196,
+                                            "email":  "demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461-load23@example.com",
+                                            "role":  "USER"
+                                        },
+                                        {
+                                            "id":  197,
+                                            "email":  "demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461-load24@example.com",
+                                            "role":  "USER"
+                                        },
+                                        {
+                                            "id":  198,
+                                            "email":  "demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461-load25@example.com",
+                                            "role":  "USER"
+                                        },
+                                        {
+                                            "id":  199,
+                                            "email":  "demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461-load26@example.com",
+                                            "role":  "USER"
+                                        },
+                                        {
+                                            "id":  200,
+                                            "email":  "demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461-load27@example.com",
+                                            "role":  "USER"
+                                        },
+                                        {
+                                            "id":  201,
+                                            "email":  "demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461-load28@example.com",
+                                            "role":  "USER"
+                                        },
+                                        {
+                                            "id":  202,
+                                            "email":  "demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461-load29@example.com",
+                                            "role":  "USER"
+                                        },
+                                        {
+                                            "id":  203,
+                                            "email":  "demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461-load30@example.com",
+                                            "role":  "USER"
+                                        },
+                                        {
+                                            "id":  204,
+                                            "email":  "demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461-load31@example.com",
+                                            "role":  "USER"
+                                        },
+                                        {
+                                            "id":  205,
+                                            "email":  "demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461-load32@example.com",
+                                            "role":  "USER"
+                                        },
+                                        {
+                                            "id":  206,
+                                            "email":  "demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461-load33@example.com",
+                                            "role":  "USER"
+                                        },
+                                        {
+                                            "id":  207,
+                                            "email":  "demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461-load34@example.com",
+                                            "role":  "USER"
+                                        },
+                                        {
+                                            "id":  208,
+                                            "email":  "demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461-load35@example.com",
+                                            "role":  "USER"
+                                        },
+                                        {
+                                            "id":  209,
+                                            "email":  "demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461-load36@example.com",
+                                            "role":  "USER"
+                                        },
+                                        {
+                                            "id":  210,
+                                            "email":  "demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461-load37@example.com",
+                                            "role":  "USER"
+                                        },
+                                        {
+                                            "id":  211,
+                                            "email":  "demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461-load38@example.com",
+                                            "role":  "USER"
+                                        },
+                                        {
+                                            "id":  212,
+                                            "email":  "demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461-load39@example.com",
+                                            "role":  "USER"
+                                        },
+                                        {
+                                            "id":  213,
+                                            "email":  "demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461-load40@example.com",
+                                            "role":  "USER"
+                                        },
+                                        {
+                                            "id":  214,
+                                            "email":  "demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461-load41@example.com",
+                                            "role":  "USER"
+                                        },
+                                        {
+                                            "id":  215,
+                                            "email":  "demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461-load42@example.com",
+                                            "role":  "USER"
+                                        },
+                                        {
+                                            "id":  216,
+                                            "email":  "demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461-load43@example.com",
+                                            "role":  "USER"
+                                        },
+                                        {
+                                            "id":  217,
+                                            "email":  "demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461-load44@example.com",
+                                            "role":  "USER"
+                                        },
+                                        {
+                                            "id":  218,
+                                            "email":  "demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461-load45@example.com",
+                                            "role":  "USER"
+                                        },
+                                        {
+                                            "id":  219,
+                                            "email":  "demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461-load46@example.com",
+                                            "role":  "USER"
+                                        },
+                                        {
+                                            "id":  220,
+                                            "email":  "demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461-load47@example.com",
+                                            "role":  "USER"
+                                        },
+                                        {
+                                            "id":  221,
+                                            "email":  "demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461-load48@example.com",
+                                            "role":  "USER"
+                                        },
+                                        {
+                                            "id":  222,
+                                            "email":  "demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461-load49@example.com",
+                                            "role":  "USER"
+                                        }
+                                    ]
+                 },
+    "emailEvidence":  {
+                          "stages":  {
+                                         "shipped":  10,
+                                         "cancelled":  2,
+                                         "expired":  1,
+                                         "completed":  7,
+                                         "confirmed":  12
+                                     },
+                          "deliveryStates":  {
+                                                 "SENT":  32,
+                                                 "FAILED":  0,
+                                                 "UNKNOWN":  0
+                                             },
+                          "mailpitMessages":  32
+                      },
+    "monitoring":  {
+                       "serviceTargetsUp":  6,
+                       "dashboardPanels":  22,
+                       "verifier":  "PASS",
+                       "dependencyTargetsUp":  5
+                   },
+    "javaTests":  {
+                      "service":  "order-service",
+                      "errors":  0,
+                      "tests":  61,
+                      "failures":  0,
+                      "bootJar":  "PASS",
+                      "skipped":  0
+                  },
+    "note":  "Synthetic fixtures created on production through HTTPS; credentials excluded; no new app deployment or capacity load in this preparation turn"
+}

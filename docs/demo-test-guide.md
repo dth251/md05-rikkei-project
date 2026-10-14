@@ -5,6 +5,10 @@ Grafana; không cần frontend. Runtime VPS đã được kiểm chứng ở m�
 `d2779d1595fb5541675e65604eb07ac633ccf91b`, deadline ONLINE 150 giây.
 Các bước dưới đây là kịch bản để chạy mới, không phải kết quả PASS của bạn.
 
+Đã chuẩn bị [dữ liệu mẫu thật trên production](production-demo-data.md):
+tài khoản private, sản phẩm/kho/địa chỉ, 17 đơn nhiều trạng thái và collection
+Postman có ID sẵn. Dùng bộ đó để bỏ qua bước tạo dữ liệu từ đầu.
+
 ## 1. Chuẩn bị trước khi trình bày
 
 - Postman; import [collection hiện có](../tests/postman/md05.postman_collection.json).

@@ -879,3 +879,43 @@ cho một phiên demo chưa chạy. Kiểm tra links, JSON mẫu và hợp đồ
 trước commit tài liệu: 25 local links và 16 JSON examples hợp lệ; collection
 đúng 38 requests/19 core requests, `git diff --check` đạt. Không rollout hay
 chạy tải lớn lên VPS trong lượt này.
+
+## Dữ liệu demo production ngày 14/10/2026
+
+| Mốc | SHA | Thời gian +07 | Kiểm tra / deploy thực tế |
+|---|---|---|---|
+| 171-docs | `337604cd656e8f994314abf680caa7162cbc4a35` | 2026-10-14T16:55:02+07:00 | Kịch bản demo và Postman cập nhật; 25 links/16 JSON mẫu đạt. Không rollout ứng dụng. |
+| 172-order-service | `10da7c4132cd291d47796cf4930d59197b3f8d9b` | 2026-10-14T18:43:38+07:00 | Java CLI fixture + wrapper PowerShell chỉ chạy explicit. Production HTTPS tạo/verify 3 tài khoản nghiệp vụ, 3 địa chỉ, 11 Product/variant, 17 Order/Payment, 4 return stages; Order 61/61 tests và bootJar đạt 18:35:28. Capacity chuẩn bị/login 50 USER thật lúc 18:38:18, catalog HTTPS 200; không phát tải. Verify dataset lần cuối 18:41:37, IDE 0 errors 18:42:38. Runtime vẫn main 168, không rollout thêm. |
+
+Dataset `demo-c5c9d77e-8a2e-4b6b-9a68-6dc486ea6461`: ADMIN/A/B IDs
+170–172; capacity USER IDs 173–222. Product IDs 139–149; Order IDs
+128–144; Payment IDs 65–81; addresses 2–4. Đều là tài khoản/dữ liệu giả
+được tạo riêng. Chỉ UPDATE role đúng tài khoản admin mới theo id/email/
+fullName, rồi login; không thay quyền tài khoản khác.
+
+Deadline 150 giây được chờ thật cho Order 144: EXPIRED, Payment FAILED /
+reservationExpired=true, simulate SUCCESS muộn 409. Inventory Product 139
+10/0 dành test mới; Product 140 89/1, reserved=1 của COD 134 chưa giao.
+Return REFUND_PENDING/REFUNDED đã restock một lần; ownership sai 404, USER
+tạo Product 403, anonymous 401. Các thu/hoàn tiền là biên nhận demo,
+không có chuyển tiền ngân hàng/VNPay thật.
+
+SQL scoped theo đúng 17 order IDs và Mailpit API đối chiếu **32 SENT /
+32 messages**, đúng hai recipient demo: confirmed=12, cancelled=2,
+shipped=10, completed=7, expired=1; không có FAILED/UNKNOWN trong dataset.
+Verifier monitoring đạt sáu app/năm dependency UP, history, datasource,
+22 panel/query/unit. Không recreate container hoặc xóa volume/dữ liệu.
+
+[Hướng dẫn dữ liệu](production-demo-data.md), [manifest đã bỏ credentials](evidence/production-demo-data-2026-10-14.json)
+và [collection Postman](../tests/postman/md05-production-fixtures.postman_collection.json)
+có 99 requests/102 scripts: JSON bodies, cú pháp scripts, references tới
+environment và 50 capacity users duy nhất được kiểm tra. Chưa chạy cả
+collection trong Postman Runner; Java live fixture/API đối chiếu production
+là bằng chứng riêng, không thay kết quả Runner.
+
+Environment/fixture chứa passwords/tokens giữ ngoài Git tại thư mục
+private `.md05-demo/production-20261014-182534` của Windows user hiện tại,
+ACL owner-only. Kiểm tra source candidates không chứa các giá trị
+credentials thật. Không commit `.verification`, private files hoặc thay
+đổi `.vscode/settings.json` có sẵn của người dùng. Muốn test PENDING ONLINE,
+tạo đơn mới qua folder 05–07 vì đơn chờ sẽ tự hết hạn sau 150 giây.
