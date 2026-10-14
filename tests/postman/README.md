@@ -1,11 +1,17 @@
 # Kiểm thử Postman bằng tiếng Việt — production
 
+**Theo nhu cầu chỉ test luồng chính:** dùng [bản 42 requests / 8 nhóm](md05-luong-chinh.postman_collection.json),
+xem [hướng dẫn gọn](../../docs/test-luong-chinh.md). Có COD, VNPay sandbox,
+trả/hoàn tiền, chờ thanh toán 150 giây và hướng dẫn đối chiếu email;
+chỉ khách hàng và ADMIN.
+
 **Bản gộp một file:** [181 requests cho tất cả API](md05-tat-ca-api.postman_collection.json),
 xem [cách chạy theo giai đoạn và mở sandbox](../../docs/postman-mot-file.md).
 
-Hướng dẫn chính theo yêu cầu hiện tại: **[test toàn bộ trên production](../../docs/test-production.md)**.
-Domain API: **https://md05-rikkei-project.duckdns.org**. Thanh toán dùng mô
-phỏng SUCCESS/FAILED/hết hạn trên VPS; không cần merchant hoặc tiền thật.
+Bộ kiểm thử nghiệp vụ đầy đủ bên dưới dùng **[hướng dẫn production](../../docs/test-production.md)**.
+Domain API: **https://md05-rikkei-project.duckdns.org**. Bản 162 requests
+có bài mô phỏng SUCCESS/FAILED; bản luồng chính ở đầu trang dùng VNPay
+sandbox đã cấu hình trên VPS. Cả hai không dùng thanh toán thật.
 
 Import hai file vào Postman:
 

@@ -1,5 +1,8 @@
 # Một file Postman cho toàn bộ API
 
+Nếu chỉ cần các luồng nghiệp vụ chính, dùng **[bản gọn 42 requests](test-luong-chinh.md)**.
+Bản dưới đây giữ toàn bộ bài kiểm thử kỹ thuật trước đó.
+
 Import **[md05-tat-ca-api.postman_collection.json](../tests/postman/md05-tat-ca-api.postman_collection.json)**:
 181 requests, 19 folders, tiếng Việt, bao phủ toàn bộ method/path API hiện có.
 Chọn environment production private đã chuẩn bị theo
