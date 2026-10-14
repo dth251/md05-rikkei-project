@@ -943,3 +943,31 @@ Notification local vẫn gửi vào Mailpit, chưa xác minh email Internet.
 Mã nguồn lấy recipient từ email tài khoản Auth đã đăng ký; đã thêm
 [hướng dẫn SMTP thật](email-thuc.md). Chờ người dùng chọn môi trường/dịch
 vụ SMTP và cấu hình private trước khi bật gửi tới hộp thư thật.
+
+## Gmail SMTP VPS và mẫu hóa đơn HTML ngày 14/10/2026
+
+| Mốc | SHA | Thời gian +07 | Kiểm tra / deploy thực tế |
+|---|---|---|---|
+| 175-docs | `d14360b` | 2026-10-14T22:48:08+07:00 | Ghi checkpoint 174/Postman local, chưa thay runtime. |
+| 176-notification-service | `9f9f3b5fa40ab48bb53adcab1b223a8430744ac9` | 2026-10-14T22:56:29+07:00 | Script nhập app password kín và hướng dẫn Gmail; PowerShell parser/Bash syntax đạt. SMTP probe ban đầu bị 451, chưa thay runtime ở mốc này. |
+| 177-notification-service | `31b7d207b8ba4643fdbe99b179cde10dfc3e9bd4` | 2026-10-14T23:15:27+07:00 | Sửa AUTH thành challenge/response tuần tự; probe không credentials 250/334/501/221 đạt, sau đó SMTP auth thật đạt. VPS cập nhật SMTP/recreate riêng Notification 23:02:42, giữ binary d2779d1; sáu app healthy. Render hóa đơn HTML desktop 820px/mobile 390px không tràn ngang, kiểm tra sum/escaping đạt; gửi mẫu đúng địa chỉ được yêu cầu lúc 23:13:29, SMTP 250. Chưa xác nhận inbox, chưa áp dụng template vào mapper tự động, không CI/binary rollout mới. |
+
+Gmail cấu hình private trong `.env` VPS quyền 600, sandbox flag false;
+SMTP host smtp.gmail.com, port 587, auth/STARTTLS true. Giữ nguyên
+recipient credential Auth–Notification và image
+`d2779d1595fb5541675e65604eb07ac633ccf91b`; không pull/build app, không
+restart các app khác hoặc xóa volume. Backup environment quyền 600 giữ
+trên VPS. Không lưu app password vào Git, command arguments hoặc báo cáo.
+
+Đơn thử mới #145 (USER 223, Product 150, Payment 82), ONLINE mô phỏng,
+125.000 đồng, CONFIRMED. Notification ghi order.confirmed/SENT/attempts=1
+lúc 23:03:27 +07 qua Gmail. Người nhận lần đầu là alias Gmail của người
+dùng. Khi người dùng yêu cầu mẫu hóa đơn có giao diện trước khi gửi đúng
+địa chỉ chính, đã render/QA rồi gửi bản multipart text/HTML; mã SMTP 250,
+message id `e4035283-b60e-4bcc-b9ff-8cb0f9455892`. Không thay tài khoản
+ADMIN có email chính, không tạo giao dịch ngân hàng thật.
+
+[Mẫu và ảnh QA](email/README.md), [bằng chứng đã bỏ credentials](evidence/gmail-smtp-2026-10-14.json).
+Template là bản gửi thử; email tự động hiện vẫn dùng EmailMapper text,
+không gắn dữ liệu demo cố định vào thông báo của khách. Xác nhận inbox
+cần người nhận kiểm tra; SENT/250 chỉ là chứng cứ SMTP chấp nhận.

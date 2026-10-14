@@ -10,6 +10,12 @@ Kịch bản ngày 14/10/2026, dùng [bộ Postman tiếng Việt](../tests/post
 4. Kiểm tra thời hạn ONLINE đang là 150 giây; login lại khi token sắp hết hạn. Demo đầy đủ dài hơn TTL token mặc định, nên chạy lại **riêng request login A/B/ADMIN** trước folder 11 nếu cần, giữ các ID/key hiện có. Không chạy lại request đăng ký đầu tiên giữa phiên vì nó khởi tạo dữ liệu mới.
 5. Để nguyên body/key ở các request replay. Một lần bấm create mới là một đơn mới. Chỉ ghi nhận biên nhận COD trên dữ liệu demo; API không tự chuyển tiền mặt.
 
+VPS chuyển sang Gmail SMTP từ 23:02 ngày 14/10/2026; demo nhận email mới
+trên VPS dùng tài khoản đăng ký với hộp thư thật. Mailpit trong các bước
+dưới áp dụng stack local/sandbox. Bộ Postman tự sinh địa chỉ `example.com`
+để test API, không dùng chúng để chứng minh nhận thư Internet. Xem
+[trạng thái Gmail và mẫu hóa đơn](email/README.md).
+
 Lời mở đầu: “Hệ thống có sáu ứng dụng Spring Boot. Gateway xác thực và định tuyến; Product giữ danh mục; Order giữ đơn và kho; Payment xử lý thanh toán; Notification nhận sự kiện để gửi thông báo. Tôi sẽ đi từ tài khoản đến mua hàng, giao hàng và trả hàng, đồng thời kiểm tra kho và email.”
 
 ```mermaid

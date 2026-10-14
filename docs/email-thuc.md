@@ -36,7 +36,12 @@ Không áp dụng `docker-compose.smtp-test.yml` khi chạy Notification gửi t
 4. Kiểm tra hộp thư và thư rác của email nhận thử, đối chiếu mã đơn và tổng tiền. SMTP chấp nhận hoặc SENT chưa tự chứng minh thư đã vào inbox; chỉ ghi nhận nhận thành công khi đã thấy thư ở hộp thư thật.
 5. Replay thanh toán cùng trạng thái để kiểm tra không tạo thêm delivery cùng order/stage. SMTP có thể nhận thư rồi mất kết nối; không tuyên bố email exactly-once.
 
-Chưa bật SMTP Internet hoặc xác minh inbox trong lượt bàn giao Postman. Cần thông tin dịch vụ gửi và cấu hình private của môi trường được chọn trước khi thực hiện thay đổi runtime.
+VPS đã bật Gmail SMTP lúc **23:02:42 +07 ngày 14/10/2026**, giữ nguyên image
+Notification mốc 168. Đơn #145 được Notification gửi tự động với trạng thái
+SENT ngay lần đầu. Sau khi render/kiểm tra [mẫu hóa đơn HTML](email/README.md),
+đã gửi bản mẫu tới đúng địa chỉ người dùng chỉ định lúc **23:13:29 +07**,
+SMTP trả 250. Chưa xác nhận inbox tại thời điểm ghi tài liệu. Local vẫn
+dùng Mailpit. [Bằng chứng cấu hình và gửi mẫu](evidence/gmail-smtp-2026-10-14.json).
 
 ## Gmail trên VPS đang triển khai
 

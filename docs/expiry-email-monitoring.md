@@ -1,5 +1,10 @@
 # Đơn hết hạn 150 giây, email và monitoring
 
+Cập nhật cuối ngày 14/10/2026: VPS đã chuyển Notification sang Gmail SMTP
+lúc 23:02:42 +07; binary vẫn mốc 168, local giữ Mailpit. Phần sandbox bên
+dưới mô tả checkpoint trước thay đổi. Xem [cấu hình SMTP thật](email-thuc.md)
+và [bằng chứng mới](evidence/gmail-smtp-2026-10-14.json).
+
 Ngày 14/10/2026, nhánh `feature/expiry-150s-email-monitoring` tiếp nối
 worktree đêm trước và đổi thời hạn 5 phút thành 150 giây. Hạ tầng runtime
 nằm trong `docs/infrastructure/`; Compose, CI, release và scripts đều dùng
