@@ -1,5 +1,10 @@
 # Kịch bản demo và tự kiểm thử MD05
 
+Để trình bày với collection tiếng Việt tự tạo dữ liệu từng phiên, dùng
+[kịch bản demo theo luồng](demo-luong-hoat-dong.md) và
+[bộ Postman tiếng Việt](../tests/postman/README.md). Hướng dẫn dưới đây vẫn
+phục vụ collection cũ và dữ liệu production đã chuẩn bị.
+
 Cập nhật 14/10/2026. Demo chính khoảng 20–25 phút, qua Postman, Mailpit và
 Grafana; không cần frontend. Runtime VPS đã được kiểm chứng ở mốc 168
 `d2779d1595fb5541675e65604eb07ac633ccf91b`, deadline ONLINE 150 giây.

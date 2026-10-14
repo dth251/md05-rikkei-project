@@ -1,5 +1,10 @@
 # Hướng dẫn kiểm thử API bằng Postman và đối chiếu yêu cầu dự án
 
+Bộ mới có tên request/assertion bằng tiếng Việt, tự tạo fixture và chạy theo
+luồng: [hướng dẫn import và chạy](../tests/postman/README.md),
+[kịch bản demo có lời dẫn](demo-luong-hoat-dong.md),
+[kết quả kiểm chứng](postman-tieng-viet-results.md).
+
 Cập nhật **14/10/2026 (+07:00)**. Hướng dẫn này mô tả request và kết quả cần
 kiểm tra; không tự coi các bước chưa chạy là kết quả PASS.
 
