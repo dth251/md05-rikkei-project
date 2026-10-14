@@ -53,9 +53,9 @@ snapshot SKU/name/price đã chốt; request mua dùng productId của biến th
 
 ## Schema và kiểm chứng
 
-Migration `infrastructure/postgres/migrations/product-service/001-product-variants.sql`
+Migration `docs/infrastructure/postgres/migrations/product-service/001-product-variants.sql`
 thêm parent/key, self foreign key, unique/check và index vào bảng hiện có.
-Chạy bằng `bash infrastructure/scripts/apply-schema.sh product-service` trước
+Chạy bằng `bash docs/infrastructure/scripts/apply-schema.sh product-service` trước
 image mới. Runner ghi checksum/version trong DB của Product, khóa transaction
 và không áp dụng lại migration đã ghi. Bảng `product_attributes` được Hibernate
 tạo khi khởi động. Dữ liệu root cũ giữ parent/key null.

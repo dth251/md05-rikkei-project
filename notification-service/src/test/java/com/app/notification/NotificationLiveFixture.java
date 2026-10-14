@@ -43,9 +43,7 @@ abstract class NotificationLiveFixture {
         return fixture;
     }
 
-    protected Fixture finalized(
-            String outcome,
-            String expected,
+    protected Fixture pending(
             String channel
     ) throws Exception {
         String email = "day2-e2e-" + UUID.randomUUID() + "@example.com";
@@ -75,18 +73,22 @@ abstract class NotificationLiveFixture {
         JsonNode order = json.readTree(created.body()).path("data");
         long orderId = order.path("id").asLong();
         JsonNode payment = awaitPayment(orderId, userToken);
-        if ("EXPIRED".equals(outcome)) {
-            try (var connection = DriverManager.getConnection(System.getenv().getOrDefault("ORDER_LIVE_DB_URL",
-                    "jdbc:postgresql://localhost:15432/order_db"), "order_user", System.getenv("ORDER_LIVE_DB_PASSWORD"));
-                 var statement = connection.prepareStatement(
-                         "UPDATE orders SET created_at=CURRENT_TIMESTAMP - INTERVAL '149 seconds' WHERE id=? AND status='PENDING_PAYMENT'")) {
-                statement.setLong(1, orderId);
-                assertEquals(1, statement.executeUpdate());
-            }
-        } else {
-            assertEquals(200, send("POST", "/api/payments/" + payment.path("id").asLong() + "/simulate",
-                    Map.of("status", outcome), adminToken()).statusCode());
-        }
+        return new Fixture(order, payment, email, userToken);
+    }
+
+    protected Fixture finalized(
+            String outcome,
+            String expected,
+            String channel
+    ) throws Exception {
+        Fixture fixture = pending(channel);
+        JsonNode order = fixture.order();
+        JsonNode payment = fixture.payment();
+        long orderId = order.path("id").asLong();
+        long productId = order.path("items").get(0).path("productId").asLong();
+        String userToken = fixture.userToken();
+        assertEquals(200, send("POST", "/api/payments/" + payment.path("id").asLong() + "/simulate",
+                Map.of("status", outcome), adminToken()).statusCode());
         Instant deadline = Instant.now().plusSeconds(45);
         while (Instant.now().isBefore(deadline)) {
             var response = send("GET", "/api/orders/" + orderId, null, userToken);
@@ -96,9 +98,9 @@ abstract class NotificationLiveFixture {
                 var inventory = send("GET", "/api/inventory/" + productId, null, userToken);
                 assertEquals(200, inventory.statusCode());
                 JsonNode stock = json.readTree(inventory.body()).path("data");
-                assertEquals(outcome.equals("SUCCESS") ? 0 : 1, stock.path("available").asInt());
+                assertEquals(outcome.equals("FAILED") ? 1 : 0, stock.path("available").asInt());
                 assertEquals(0, stock.path("reserved").asInt());
-                return new Fixture(order, payment, email);
+                return fixture;
             }
             Thread.sleep(300);
         }
@@ -222,7 +224,8 @@ abstract class NotificationLiveFixture {
     protected record Fixture(
             JsonNode order,
             JsonNode payment,
-            String email
+            String email,
+            String userToken
     ) {
     }
 }

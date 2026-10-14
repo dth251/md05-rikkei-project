@@ -58,7 +58,7 @@ class ReservationExpiryTests {
     @BeforeEach
     void acceptEvents() {
         when(inbox.claim(anyString(), anyString())).thenReturn(true);
-        now = Instant.now();
+        now = Instant.now().truncatedTo(java.time.temporal.ChronoUnit.MILLIS);
         when(clock.instant()).thenReturn(now);
     }
 

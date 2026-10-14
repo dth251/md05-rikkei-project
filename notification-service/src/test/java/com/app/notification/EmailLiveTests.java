@@ -60,6 +60,75 @@ class EmailLiveTests extends NotificationLiveFixture {
     }
 
     @Test
+    void cancellationSendsRealEmailToRegisteredOrderOwner() throws Exception {
+        var fixture = scenario("FAILED", "CANCELLED", "order.cancelled", "WEB");
+        awaitSent(fixture);
+        assertMailbox(fixture, "đã hủy");
+    }
+
+    @Test
+    void unpaid150SecondDeadlineReleasesStockAndSendsExpiryEmail() throws Exception {
+        var fixture = pending("WEB");
+        long orderId = fixture.order().path("id").asLong();
+        long productId = fixture.order().path("items").get(0).path("productId").asLong();
+        Instant created = Instant.parse(fixture.order().path("createdAt").asText());
+        boolean actualWait = "true".equals(System.getenv("SMTP_EXPIRY_REAL_WAIT"));
+        if (!actualWait) {
+            try (var connection = java.sql.DriverManager.getConnection(
+                    System.getenv().getOrDefault("ORDER_LIVE_DB_URL", "jdbc:postgresql://localhost:15432/order_db"),
+                    "order_user", System.getenv("ORDER_LIVE_DB_PASSWORD"));
+                 var statement = connection.prepareStatement("UPDATE orders SET created_at=? WHERE id=? AND status='PENDING_PAYMENT'")) {
+                statement.setTimestamp(1, java.sql.Timestamp.from(Instant.now().minusSeconds(151)));
+                statement.setLong(2, orderId);
+                assertEquals(1, statement.executeUpdate());
+            }
+        } else {
+            while (Instant.now().isBefore(created.plusSeconds(149))) {
+                var response = send("GET", "/api/orders/" + orderId, null, fixture.userToken());
+                assertEquals(200, response.statusCode());
+                assertEquals("PENDING_PAYMENT", json.readTree(response.body()).path("data").path("status").asText());
+                Thread.sleep(1000);
+            }
+        }
+        Instant deadline = actualWait ? created.plusSeconds(170) : Instant.now().plusSeconds(30);
+        String status;
+        do {
+            var response = send("GET", "/api/orders/" + orderId, null, fixture.userToken());
+            assertEquals(200, response.statusCode());
+            status = json.readTree(response.body()).path("data").path("status").asText();
+            if ("EXPIRED".equals(status)) {
+                break;
+            }
+            Thread.sleep(500);
+        } while (Instant.now().isBefore(deadline));
+        assertEquals("EXPIRED", status);
+        if (actualWait) {
+            assertFalse(Instant.now().isBefore(created.plusSeconds(150)), "Order must not expire before 150 seconds");
+        }
+        awaitNotification(orderId, "order.expired");
+        awaitSent(fixture);
+        var stock = send("GET", "/api/inventory/" + productId, null, adminToken());
+        assertEquals(200, stock.statusCode());
+        assertEquals(1, json.readTree(stock.body()).path("data").path("available").asInt());
+        assertEquals(0, json.readTree(stock.body()).path("data").path("reserved").asInt());
+        assertMailbox(fixture, "đã hủy do quá hạn thanh toán");
+        assertEquals(1, scalar("SELECT count(*) FROM notification_logs WHERE order_id=? AND payment_id IS NULL", orderId));
+        String replay = UUID.randomUUID().toString();
+        publish(replay, fixture, "order.expired");
+        publish(replay, fixture, "order.expired");
+        Instant replayDeadline = Instant.now().plusSeconds(20);
+        while (Instant.now().isBefore(replayDeadline)
+                && scalar("SELECT count(*) FROM processed_events WHERE event_id=?", replay) != 1) {
+            Thread.sleep(200);
+        }
+        assertEquals(1, scalar("SELECT count(*) FROM processed_events WHERE event_id=?", replay));
+        assertEquals(1, scalar("SELECT count(*) FROM email_deliveries WHERE order_id=?", orderId));
+        assertEquals(409, send("POST", "/api/payments/" + fixture.payment().path("id").asLong() + "/simulate",
+                java.util.Map.of("status", "SUCCESS"), adminToken()).statusCode());
+        assertMailbox(fixture, "đã hủy do quá hạn thanh toán");
+    }
+
+    @Test
     void notificationRestartConsumesDurableEventAndSendsOnce() throws Exception {
         Fixture fixture;
         try {
@@ -73,34 +142,6 @@ class EmailLiveTests extends NotificationLiveFixture {
         awaitNotification(fixture.order().path("id").asLong(), "order.confirmed");
         awaitSent(fixture);
         assertMailbox(fixture);
-    }
-
-    @Test
-    void cancelledOrderSendsCancellationEmail() throws Exception {
-        var fixture = scenario("FAILED", "CANCELLED", "order.cancelled", "WEB");
-        awaitSent(fixture);
-        assertMailbox(fixture, "đã hủy");
-    }
-
-    @Test
-    void expiryAt150SecondsSendsOneEmailAndRejectsLatePayment() throws Exception {
-        var fixture = scenario("EXPIRED", "EXPIRED", "order.expired", "WEB");
-        long orderId = fixture.order().path("id").asLong();
-        awaitSent(fixture);
-        assertEquals(1, scalar("SELECT count(*) FROM notification_logs WHERE order_id=? AND payment_id IS NULL", orderId));
-        String replay = UUID.randomUUID().toString();
-        publish(replay, fixture, "order.expired");
-        publish(replay, fixture, "order.expired");
-        Instant deadline = Instant.now().plusSeconds(20);
-        while (Instant.now().isBefore(deadline)
-                && scalar("SELECT count(*) FROM processed_events WHERE event_id=?", replay) != 1) {
-            Thread.sleep(200);
-        }
-        assertEquals(1, scalar("SELECT count(*) FROM processed_events WHERE event_id=?", replay));
-        assertEquals(1, scalar("SELECT count(*) FROM email_deliveries WHERE order_id=?", orderId));
-        assertEquals(409, send("POST", "/api/payments/" + fixture.payment().path("id").asLong() + "/simulate",
-                java.util.Map.of("status", "SUCCESS"), adminToken()).statusCode());
-        assertMailbox(fixture, "đã hủy do quá hạn thanh toán");
     }
 
     private void awaitSent(

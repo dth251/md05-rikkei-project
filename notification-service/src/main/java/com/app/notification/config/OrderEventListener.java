@@ -23,7 +23,7 @@ public class OrderEventListener {
         this.notificationService = notificationService;
     }
 
-    @RabbitListener(queues = "notification.order.q")
+    @RabbitListener(queues = {"notification.order.q", "notification.expiry.q"})
     public void receive(Message message) {
         try {
             CommerceEvent event = objectMapper.readValue(message.getBody(), CommerceEvent.class);

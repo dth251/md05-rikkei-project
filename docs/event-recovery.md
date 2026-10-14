@@ -21,13 +21,13 @@ Queue hợp lệ: `payment.order-created.q`, `order.payment-result.q`, `notifica
 
 ## Hết hạn reservation
 
-Mặc định giữ kho 30 phút, quét 50 đơn mỗi 10 giây; `commerce.reservation.ttl`, `scan-delay-ms`, `expiry-enabled` điều chỉnh riêng Order. Chỉ đơn PENDING_PAYMENT đủ tuổi mới đổi EXPIRED. Quét và payment consumer khóa cùng row, hoàn stock và ghi Outbox cùng transaction; không hoàn hai lần. Sai reserved stock rollback để điều tra, không tự sửa số kho.
+Mặc định giữ kho 150 giây, quét 50 đơn mỗi giây; `commerce.reservation.ttl`, `scan-delay-ms`, `expiry-enabled` điều chỉnh riêng Order. Chỉ đơn ONLINE PENDING_PAYMENT đủ tuổi mới đổi EXPIRED. Scheduler và payment consumer khóa cùng row; consumer kiểm tra deadline sau khi khóa, kể cả scheduler chưa quét. Hoàn stock và ghi Outbox cùng transaction, không hoàn hai lần. Sai reserved stock rollback để điều tra, không tự sửa số kho. COD không chịu timeout ONLINE. Email hủy do hết hạn đi qua queue riêng `notification.expiry.q`; xem [expiry/email/monitoring](expiry-email-monitoring.md).
 
 `order.expired` gửi tới `payment.order-expired.q`. Payment lưu marker trước khi payment tồn tại và khóa advisory theo order trong transaction để xử lý event đảo thứ tự. Payment pending đổi FAILED/`reservationExpired=true`; không được simulate SUCCESS sau đó. Payment đã SUCCESS giữ nguyên chứng cứ tiền đã nhận và chuyển `refundStatus=REQUIRED`. SUCCESS đến Order đã EXPIRED tạo `order.refund-requested`, không xác nhận đơn hoặc giữ kho lại. Chưa được coi REQUIRED là đã hoàn tiền; cần tích hợp provider/đối soát trước khi xác nhận REFUNDED.
 
 ## Schema và rollback
 
-`infrastructure/scripts/apply-schema.sh <service>` áp dụng SQL có số phiên bản, checksum và khóa transaction riêng DB, dùng đúng owner. Chạy lại là idempotent; sửa nội dung migration đã áp dụng bị từ chối. Không dùng Flyway/Liquibase. Deploy chạy migration trước đổi image, CI kiểm tra trên PostgreSQL thật. Không in SQL chứa credential.
+`docs/infrastructure/scripts/apply-schema.sh <service>` áp dụng SQL có số phiên bản, checksum và khóa transaction riêng DB, dùng đúng owner. Chạy lại là idempotent; sửa nội dung migration đã áp dụng bị từ chối. Không dùng Flyway/Liquibase. Deploy chạy migration trước đổi image, CI kiểm tra trên PostgreSQL thật. Không in SQL chứa credential.
 
 Constraint enum cũ cần mở rộng trước khi ghi EXPIRED; Hibernate `update` không đủ. Migration không xóa row/volume. Sau khi đã có row EXPIRED, image Order trước tính năng này không đọc được enum mới: rollback image không tự hoàn tác trạng thái hay schema. Khi cần rollback phải dùng image tương thích hoặc sửa lỗi tiến tiếp; không biến EXPIRED thành CONFIRMED để né lỗi. Deploy các consumer/topology cùng release trước khi bật tác vụ hết hạn nếu triển khai thủ công từng app.
 
