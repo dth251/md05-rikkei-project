@@ -1,5 +1,10 @@
 # Đơn hết hạn 150 giây, email và monitoring
 
+Ngày 14/10/2026, nhánh `feature/expiry-150s-email-monitoring` tiếp nối
+worktree đêm trước và đổi thời hạn 5 phút thành 150 giây. Hạ tầng runtime
+nằm trong `docs/infrastructure/`; Compose, CI, release và scripts đều dùng
+đường dẫn này. SHA/deploy theo từng checkpoint ở `commits-and-deployments.md`.
+
 ## Thời hạn thanh toán
 
 Order ONLINE ở PENDING_PAYMENT có thời hạn 150 giây kể từ createdAt.
@@ -62,6 +67,11 @@ UTC đúng. Khi NTP chưa đồng bộ, đối chiếu hai HTTPS Date độc l�
 lệch tối đa 5 giây; không ghi rằng NTP đã đồng bộ. verify-vps-monitoring.sh
 kiểm tra sáu service/five dependency targets, dashboard và datasource
 Prometheus thực tế. Metric rate/quantile cần nhiều scrape.
+
+Verifier đối chiếu từng panel theo id/title/query/unit với file provisioning,
+đọc history hai phút với step 15 giây và ít nhất ba mẫu cho mỗi service.
+CI cũng so sánh cùng projection trước/sau restart Grafana/Prometheus;
+không chỉ kiểm tra số panel. Không có dữ liệu không được thay bằng số 0.
 
 ~~~~powershell
 ssh -i <private-key-path> -o StrictHostKeyChecking=yes -N -L 13001:127.0.0.1:13000 -L 19091:127.0.0.1:19090 -L 18825:127.0.0.1:18025 deploy@42.96.2.60

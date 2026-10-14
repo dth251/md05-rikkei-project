@@ -782,3 +782,37 @@ Phát triển/kiểm thử trong worktree feature/expiry-email-monitoring để 
 thay đổi có sẵn ở workspace gốc: `.vscode/settings.json` và việc di
 chuyển infrastructure sang docs/infrastructure. Không stage/khôi phục
 những thay đổi đó. Không thêm frontend/shared/Maven hoặc Python source.
+
+## Tiếp nối ưu tiên expiry, SMTP và monitoring ngày 14/10/2026
+
+Nhánh `feature/expiry-150s-email-monitoring` tích hợp lịch sử worktree
+`feature/expiry-email-monitoring` mốc 160. Giữ nguyên thay đổi IDE của
+người dùng; hoàn tất chuyển thư mục hạ tầng sang `docs/infrastructure/`
+và cập nhật Compose/CI/scripts/release tương ứng. Không sửa checksum SQL
+đã áp dụng: Notification 004 giữ nguyên bytes; thêm 005 cho ràng buộc.
+
+| Mốc | SHA | Thời gian +07 | Kiểm tra / deploy thực tế |
+|---|---|---|---|
+| 161-order-service | `cbc38d6883ff19c552ef33666abb659fea94a056` | 2026-10-14T09:21:51+07:00 | Deadline mặc định 150 giây, consumer kiểm tra sau row lock; 60 Java tests và bootJar đạt. Chưa deploy VPS. |
+| 162-notification-service | `e42eb61914d29b65bbea0bf67ec2804bb7699321` | 2026-10-14T09:26:23+07:00 | Email expiry, nullable payment ID chỉ cho expiry, listener validation/SMTP UTF-8; 20 Java tests đạt trước tích hợp. |
+| 163-infrastructure | `f97c9fd34ccace99bf5f7d71e9f0efb3f934c8f3` | 2026-10-14T09:26:36+07:00 | Compose/Bash/PowerShell syntax, Prometheus 11 rules/fixtures, Collector/Alloy/Loki/Alertmanager config đạt. Runner checksum được thử trên schema PostgreSQL riêng: apply/replay đạt, mismatch trả nonzero trước DDL. |
+| 164-infrastructure | `1ccf6ebb0bdd2e2f55018b2d483d65e756055ad7` | 2026-10-14T09:38:18+07:00 | Tích hợp mốc 160, queue expiry riêng/DLQ và scripts VPS. Order 60 hồi quy + 1 policy test, Notification 21 Java tests và bootJar đạt; schema/topology/replay đạt local. |
+| 165-infrastructure | `341c17eb0e10855278d1ca0c24ec76281457bf83` | 2026-10-14T09:45:26+07:00 | SSH chạy verifier mới bằng stdin: sáu service/năm dependency UP, history hai phút, 22 panel/query/unit khớp file đang deploy, datasource/resource/business metrics đạt. Không đổi bản ứng dụng trên VPS. |
+| 166-infrastructure | `0b9f51e39c761b23bdb4cd2fab744ed791e3593b` | 2026-10-14T09:48:06+07:00 | CI đối chiếu projection dashboard trước/sau restart; syntax/projection 22 panel đạt. Live SMTP JVM giới hạn heap 128 MiB. |
+
+VPS kiểm tra lại 09:29–09:44 +07: sáu app mốc 157 healthy, monitoring/Mailpit
+healthy; khoảng 2.146 MiB RAM available và 14 GiB disk trống. Private
+`RESERVATION_TTL=PT5M` vẫn còn tại checkpoint; cần đổi PT150S khi rollout
+code mới. Không coi kiểm tra verifier bằng stdin là deploy bản 150 giây.
+
+Lần SMTP local đầu 5/5 thất bại với 503/504 và timeout khôi phục; Windows
+có lúc chỉ còn khoảng 15 MiB RAM available. Sau đó app và Mailpit được
+khôi phục healthy, test worker giảm heap 128 MiB; lần chạy lại đang chờ
+đủ 150 giây thực tế tại checkpoint. Không nâng timeout/threshold nghiệp vụ
+để biến kết quả thất bại thành đạt. Một ca boundary H2 ban đầu lệch do
+round nanosecond theo precision database; clock fixture đã chuẩn hóa
+millisecond và toàn bộ 60 ca hồi quy chạy lại đạt.
+
+CI/PR và deploy của nhánh mới chưa hoàn tất tại checkpoint này. Mức tải
+500/1.000 requests/s trước đó vẫn không đạt; không chạy tải lớn lại để
+khẳng định capacity. Xem báo cáo tải/monitoring và runbook tương ứng.

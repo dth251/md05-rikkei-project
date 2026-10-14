@@ -3,6 +3,15 @@
 Cập nhật: **13/10/2026, múi giờ +07:00**. Đây là checklist công việc còn lại,
 không phải xác nhận dự án đã đáp ứng đầy đủ đề bài.
 
+Checkpoint mới **14/10/2026, 09:48 +07**: Prometheus/Grafana đã chạy trên
+VPS cùng bản ứng dụng mốc 157. Sáu service và năm dependency targets UP;
+dashboard 22 panel, datasource, history và query/unit khớp provisioning
+đã kiểm chứng lại qua SSH. Nhánh `feature/expiry-150s-email-monitoring`
+tích hợp mốc 160, chuyển đường dẫn runtime sang `docs/infrastructure/`
+và đổi deadline từ 5 phút sang 150 giây. Bản 150 giây chưa deploy tại
+checkpoint này. Các đoạn bên dưới ghi ngày 13/10 là lịch sử;
+xem [nhật ký](commits-and-deployments.md) để đối chiếu SHA mới.
+
 ## 1. Mốc đối chiếu và trạng thái hiện tại
 
 Checkpoint bổ sung 13/10: nhánh `feature/remaining-work-implementation`, các mốc
@@ -58,8 +67,8 @@ Các mức ưu tiên này dùng cho checklist này.
 |---|---|---|---|
 | R01 | Hoàn tất tích hợp VNPay | 12 live fixture/PG/Gateway tests và head CI đạt, đã merge; còn deploy/merchant thật | P0 |
 | R02 | Gửi email SMTP | Code, 3 PG/Mailpit tests và head CI đạt, đã merge; còn deploy/SMTP ngoài | P0 |
-| R03 | Prometheus server | Targets/history/restart đạt local; chưa deploy VPS | P0 |
-| R04 | Grafana dashboard | 3 datasource, 21 panels/provisioning/restart đạt local; cần ảnh và deploy | P0 |
+| R03 | Prometheus server | Đã deploy VPS; sáu service/năm dependency UP, history đã kiểm chứng | P0 |
+| R04 | Grafana dashboard | VPS 22 panel; datasource/query/unit khớp nguồn; còn ảnh/video demo | P0 |
 | R05 | Distributed tracing | Trace sáu service/durable context/privacy/exporter outage đạt CI; chưa VPS | P0 |
 | R06 | Profiling và k6 nhiều tài khoản | Tải nhỏ/đối chiếu SQL/API đạt CI; local từng fail, chưa xác nhận capacity VPS | P0 |
 | R07 | Demo sự cố nghiệp vụ trên VPS | Recovery local/CI đã có; demo dependency VPS còn thiếu | P0 |
