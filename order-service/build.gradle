@@ -102,6 +102,16 @@ tasks.register('multiUserLoadFixture', JavaExec) {
     args providers.gradleProperty('fixtureAction').getOrElse('prepare')
 }
 
+tasks.register('productionDemoFixture', JavaExec) {
+    description = 'Explicitly prepare isolated demo accounts, catalog and workflows through the deployed APIs'
+    group = 'verification'
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'com.app.order.ProductionDemoFixture'
+    jvmArgs '-Xmx128m', '-XX:MaxMetaspaceSize=128m'
+    args providers.gradleProperty('fixtureAction').getOrElse('verify')
+}
+
 tasks.named('jar') {
     enabled = false
 }
