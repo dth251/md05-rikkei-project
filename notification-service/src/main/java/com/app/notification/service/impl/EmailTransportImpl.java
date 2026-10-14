@@ -6,6 +6,8 @@ import com.app.notification.service.EmailTransport;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.internet.MimeBodyPart;
+import jakarta.mail.internet.MimeMultipart;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.mail.MailPreparationException;
@@ -52,7 +54,14 @@ public class EmailTransportImpl implements EmailTransport {
             helper.setFrom(from);
             helper.setTo(recipient);
             helper.setSubject(content.subject());
-            helper.setText(content.text(), false);
+            var alternative = new MimeMultipart("alternative");
+            var plain = new MimeBodyPart();
+            plain.setText(content.text(), "UTF-8");
+            var html = new MimeBodyPart();
+            html.setText(content.html(), "UTF-8", "html");
+            alternative.addBodyPart(plain);
+            alternative.addBodyPart(html);
+            message.setContent(alternative);
             sender.send(message);
         } catch (MessagingException exception) {
             throw new MailPreparationException("Email preparation unavailable");

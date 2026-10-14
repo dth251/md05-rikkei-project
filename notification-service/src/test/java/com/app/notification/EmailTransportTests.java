@@ -27,9 +27,20 @@ class EmailTransportTests {
             var messages = smtp.getReceivedMessages();
             assertEquals("recipient@example.com", messages[0].getAllRecipients()[0].toString());
             assertEquals("Đơn hàng #123 đang giao hàng", messages[0].getSubject());
-            assertTrue(messages[0].getContent().toString().contains("Vui lòng đăng nhập"));
+            assertTrue(messages[0].isMimeType("multipart/alternative"));
+            var body = (jakarta.mail.Multipart) messages[0].getContent();
+            assertEquals(2, body.getCount());
+            assertTrue(body.getBodyPart(0).isMimeType("text/plain"));
+            assertTrue(body.getBodyPart(1).isMimeType("text/html"));
+            String text = body.getBodyPart(0).getContent().toString();
+            String html = body.getBodyPart(1).getContent().toString();
+            assertTrue(text.contains("Vui lòng đăng nhập"));
+            assertTrue(html.contains("MD05"));
+            assertTrue(html.contains("#123"));
+            assertTrue(html.contains("style=\""));
+            assertFalse(html.contains("{{"));
             assertEquals(messages[0].getMessageID(), messages[1].getMessageID());
-            assertFalse(messages[0].getContent().toString().contains("recipient@example.com"));
+            assertFalse(html.contains("recipient@example.com"));
         } finally {
             smtp.stop();
         }
@@ -61,7 +72,14 @@ class EmailTransportTests {
             for (int index = 0; index < types.size(); index++) {
                 assertEquals("Đơn hàng #123 " + statuses.get(index), messages[index].getSubject());
                 assertEquals("recipient@example.com", messages[index].getAllRecipients()[0].toString());
-                assertTrue(messages[index].getContent().toString().contains(statuses.get(index)));
+                assertTrue(messages[index].isMimeType("multipart/alternative"));
+                var body = (jakarta.mail.Multipart) messages[index].getContent();
+                assertTrue(body.getBodyPart(0).getContent().toString().contains(statuses.get(index)));
+                assertTrue(body.getBodyPart(1).isMimeType("text/html"));
+                String html = body.getBodyPart(1).getContent().toString();
+                assertTrue(html.contains(statuses.get(index)));
+                assertTrue(html.contains("#123"));
+                assertFalse(html.contains("{{"));
             }
         } finally {
             smtp.stop();

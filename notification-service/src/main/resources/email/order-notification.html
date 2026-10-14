@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>{{subject}}</title>
+  <style>
+    @media only screen and (max-width: 620px) {
+      .outer { padding: 16px 8px !important; }
+      .section { padding-left: 22px !important; padding-right: 22px !important; }
+      .title { font-size: 27px !important; }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background:#eef2f1;color:#202c29;font-family:Arial,Helvetica,sans-serif;-webkit-text-size-adjust:100%;">
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;">{{subject}}</div>
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#eef2f1;table-layout:fixed;">
+    <tr><td class="outer" align="center" style="padding:36px 16px;">
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;max-width:600px;table-layout:fixed;">
+        <tr><td style="padding:0 6px 20px;font-size:23px;font-weight:bold;letter-spacing:-1px;color:#173c31;">MD05<span style="color:#5e7c72;font-weight:normal;font-size:13px;letter-spacing:0;"> &nbsp; COMMERCE</span></td></tr>
+        <tr><td style="background:#ffffff;border:1px solid #dfe7e3;border-radius:16px;overflow:hidden;">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+            <tr><td style="height:5px;background:#23684e;font-size:0;line-height:0;">&nbsp;</td></tr>
+            <tr><td class="section" style="padding:32px 36px 26px;">
+              <span style="display:inline-block;padding:7px 11px;background:{{badgeBackground}};color:{{badgeColor}};border-radius:20px;font-size:11px;font-weight:bold;letter-spacing:0.5px;">{{badge}}</span>
+              <h1 class="title" style="margin:20px 0 12px;font-size:31px;line-height:1.25;letter-spacing:-1px;color:#172b23;">{{title}}</h1>
+              <p style="margin:0;color:#68776f;font-size:14px;line-height:1.8;">{{message}}</p>
+            </td></tr>
+            <tr><td class="section" style="padding:0 36px 28px;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-top:1px solid #e8edea;border-bottom:1px solid #e8edea;table-layout:fixed;">
+                <tr>
+                  <td style="padding:22px 0;color:#87958e;font-size:11px;font-weight:bold;letter-spacing:1px;">MÃ ĐƠN HÀNG</td>
+                  <td align="right" style="padding:22px 0;color:#223e31;font-size:23px;font-weight:bold;word-break:break-word;">{{order}}</td>
+                </tr>
+                <tr>
+                  <td valign="top" style="padding:0 0 22px;color:#87958e;font-size:11px;font-weight:bold;letter-spacing:1px;">TRẠNG THÁI</td>
+                  <td align="right" style="padding:0 0 22px;color:{{badgeColor}};font-size:14px;line-height:1.6;">{{status}}</td>
+                </tr>
+              </table>
+            </td></tr>
+            <tr><td class="section" style="padding:18px 36px;background:#f7f9f7;border-top:1px solid #e8edea;">
+              <p style="margin:0;font-size:12px;line-height:1.8;color:#7b897e;">Vui lòng đăng nhập để xem thông tin đơn hàng. Đây là thông báo tự động cho đơn hàng của bạn.</p>
+            </td></tr>
+          </table>
+        </td></tr>
+        <tr><td align="center" style="padding:22px 14px 8px;color:#91a096;font-size:11px;line-height:1.8;">MD05 COMMERCE<br>Cập nhật đơn hàng của bạn</td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>
