@@ -919,3 +919,27 @@ ACL owner-only. Kiểm tra source candidates không chứa các giá trị
 credentials thật. Không commit `.verification`, private files hoặc thay
 đổi `.vscode/settings.json` có sẵn của người dùng. Muốn test PENDING ONLINE,
 tạo đơn mới qua folder 05–07 vì đơn chờ sẽ tự hết hạn sau 150 giây.
+
+## Bộ Postman tiếng Việt và demo theo luồng ngày 14/10/2026
+
+| Mốc | SHA | Thời gian +07 | Kiểm tra / deploy thực tế |
+|---|---|---|---|
+| 174-api-gateway | `9834545700050f162498bf63d22ed5d6398d44e5` | 2026-10-14T22:47:50+07:00 | 162 requests/14 folders nghiệp vụ và 19 requests VNPay tùy chọn, environment mẫu không credentials; bao phủ method/path 41/41 operations OpenAPI. Local Runner cuối 281 HTTP executions (gồm polling), 659 assertions, zero failures, exit 0, 5m52.8s; deadline PT150S chờ thật, SUCCESS muộn 409. Sáu app local healthy. Không rollout, không CI mới, chưa chạy bộ mới trên VPS hoặc merchant VNPay. |
+
+Nhánh `feature/postman-tieng-viet-demo`. Kiểm tra tĩnh 364 hooks JavaScript,
+80 JSON bodies và 18 links nội bộ đạt; `git diff --check` và quét giá trị
+credential fixture trong 10 file staged đạt. Test thiếu ADMIN dừng trước
+HTTP, báo đúng biến còn thiếu. Hai kỳ vọng test ban đầu được sửa (SKU
+chuẩn hóa chữ hoa, lượng vượt kho phải trong giới hạn DTO) rồi chạy lại
+toàn bộ đạt; không sửa nghiệp vụ Java. Ảnh local không có revision label,
+không coi HEAD tài liệu là runtime SHA. Không stage thay đổi settings IDE
+có sẵn của người dùng hoặc `.verification` chứa environment private.
+
+[Hướng dẫn Postman](../tests/postman/README.md),
+[kịch bản demo](demo-luong-hoat-dong.md),
+[kết quả chi tiết](postman-tieng-viet-results.md) và
+[JSON bằng chứng](evidence/postman-tieng-viet-2026-10-14.json).
+Notification local vẫn gửi vào Mailpit, chưa xác minh email Internet.
+Mã nguồn lấy recipient từ email tài khoản Auth đã đăng ký; đã thêm
+[hướng dẫn SMTP thật](email-thuc.md). Chờ người dùng chọn môi trường/dịch
+vụ SMTP và cấu hình private trước khi bật gửi tới hộp thư thật.
