@@ -971,3 +971,43 @@ ADMIN có email chính, không tạo giao dịch ngân hàng thật.
 Template là bản gửi thử; email tự động hiện vẫn dùng EmailMapper text,
 không gắn dữ liệu demo cố định vào thông báo của khách. Xác nhận inbox
 cần người nhận kiểm tra; SENT/250 chỉ là chứng cứ SMTP chấp nhận.
+
+## Kiểm thử production và thanh toán mô phỏng ngày 14/10/2026
+
+| Mốc | SHA | Thời gian +07 | Kiểm tra / deploy thực tế |
+|---|---|---|---|
+| 178-docs | `9d2011a` | 2026-10-14T23:16 | Ghi kết quả Gmail VPS và mẫu hóa đơn gửi riêng; chưa tích hợp HTML vào mapper tự động. |
+| 179-api-gateway | `56370ec5cc787b3081c6499975917b575a70a0ef` | 2026-10-14T23:38:50+07:00 | Main Postman đủ 14 folders trên HTTPS production: 280 HTTP executions/659 assertions, zero failures, exit 0, 5m58.5s. Bộ VNPay provider tắt: 6 HTTP/21 assertions, zero failures, exit 0, 8.1s. Tổng 680 assertions; quan sát đủ 41/41 operations. Không CI, push/PR hoặc rollout binary mới. |
+
+Đã chuyển hướng dẫn/environment mặc định sang production. Credentials và
+Gmail nhận thử nằm trong environment private ngoài Git, ACL chỉ user hiện
+tại. USER A #224, sản phẩm mới #151/#153, đơn #146–151 và payment #83–88;
+đối chiếu read-only trên VPS lúc 23:35:22 +07. Kho cuối cha 20/0, biến thể
+4/0; hai hồ sơ trả REFUNDED; hai sản phẩm xóa mềm đúng lượt thử. Không
+thay đơn khách hàng sẵn có hoặc xóa dữ liệu/volume.
+
+Mô phỏng SUCCESS tự phát payment.succeeded → Order CONFIRMED →
+order.confirmed → Notification gửi email qua RabbitMQ/Outbox, không gọi
+POST xác nhận/đặt lại đơn. API simulate hiện trả JSON, **chưa có link
+thanh toán giả lập**. Provider VNPay giữ tắt: IPN HTTP 200/RspCode 99,
+checkout/return/refund/reconcile 503. Không merchant, chữ ký/IPN thành công
+hoặc giao dịch ngân hàng thật được kiểm chứng trong lượt này.
+
+Đối chiếu 10 email deliveries của sáu đơn: tất cả SENT/attempts=1,
+error_code=null; 3 confirmed, 2 shipped, 2 completed, 2 cancelled, 1
+expired. Gmail alias lấy từ email đăng ký mới, chưa xác nhận inbox từ
+người nhận. Mẫu HTML vẫn gửi riêng, thông báo tự động là text. Monitoring
+preflight 23:25:44 +07 PASS; sáu service healthy sau chạy, giữ revision
+`d2779d1595fb5541675e65604eb07ac633ccf91b`.
+
+Kiểm tra tĩnh 376 hooks/81 JSON bodies, 33 links nội bộ, khởi tạo Gmail
+alias/đổi ID-token/missing mailbox/local fallback, PowerShell parser,
+`git diff --check` và quét credentials fixture trong 11 file staged đều
+đạt. Sau lượt live chỉ sửa mô tả collection/request; evidence giữ hash
+artifact đã chạy và hash hiện tại. Không sửa Java, không chạy tải/race.
+Settings IDE thay đổi sẵn của người dùng giữ nguyên ngoài commit.
+
+[Hướng dẫn production](test-production.md),
+[kịch bản demo](demo-luong-hoat-dong.md),
+[kết quả chi tiết](postman-production-results.md),
+[JSON bằng chứng](evidence/postman-production-2026-10-14.json).
