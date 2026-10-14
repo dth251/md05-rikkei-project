@@ -1189,3 +1189,25 @@ PowerShell parse, generator sinh lại nội dung, staged credential scan và
 diff check đạt. Commit nằm ở feature cục bộ, chưa push/PR; không rollout.
 [Hướng dẫn thiếu productId](test-luong-chinh.md#khi-báo-thiếu-productid),
 [bằng chứng kiểm tra](evidence/postman-product-id-url-2026-10-15.json).
+
+## Sửa VNPay PENDING và giữ hàng 200 giây
+
+| Mốc | SHA | Thời gian +07 | Kiểm chứng / deploy thực tế |
+|---|---|---|---|
+| 194-payment-service | `4bfed7a` | 2026-10-15T02:42:21.6878611+07:00 | 70/70 Java tests, zero fail/error/skip; bootJar đạt. Return hợp lệ tự querydr khi thiếu capture; chỉ kết quả provider đã xác minh merchant/reference/amount/type/transaction/date mới dùng transaction capture chung với IPN. Refresh/callback đồng thời chỉ phát một payment.succeeded; reply sai hoặc timeout không xác nhận đơn. Chưa deploy tại checkpoint. |
+| 195-order-service | `e6d2691` | 2026-10-15T02:42:21.6878611+07:00 | 61/61 Java tests, zero fail/error/skip; bootJar đạt. Default TTL 200 giây, boundary tại 200 và trước 200 đạt. Tạo đơn chờ giảm available/tăng reserved; confirm không trừ available lần nữa; expiry trả kho một lần. Postman/generator cập nhật 200 giây/240 lượt; 42 requests/85 hooks/18 Body JSON kiểm tra đạt. Chưa deploy tại checkpoint. |
+
+Querydr HTTPS thực tế trên VPS trả kết quả có chữ ký hợp lệ: đơn #174
+và #175 thành công ở VNPay, nhưng database chưa có capture và đơn đã
+EXPIRED. #175 thanh toán khoảng 31 giây sau khi tạo đơn. Đây là bằng
+chứng giao dịch thành công bị thiếu xác nhận backend, không phải yêu
+cầu người dùng duyệt thanh toán. Capture phục hồi sau expiry cần hoàn
+tiền; không hồi sinh đơn đã giải phóng kho. Không sửa dữ liệu các đơn cũ
+trong bước chẩn đoán. IPN registration/delivery chưa được xác minh.
+
+OpenAPI và hướng dẫn cập nhật cơ chế querydr; không đổi DTO public hay
+bỏ kiểm tra chữ ký. Query mạng ngoài transaction, timeout/body/concurrency
+của ledger client giữ nguyên; throttle một lần/reference/phút/instance,
+bộ nhớ tối đa 256 references. Không tạo frontend/module chung, không
+commit credentials hoặc .verification. Thay đổi .vscode sẵn có giữ nguyên.
+[Bằng chứng](evidence/vnpay-pending-recovery-2026-10-15.json).

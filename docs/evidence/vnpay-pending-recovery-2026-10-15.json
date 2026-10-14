@@ -1,0 +1,43 @@
+{
+    "checkedAt":  "2026-10-15T02:42:21.6878611+07:00",
+    "stage":  "local-tests-passed-awaiting-ci-deploy",
+    "paymentCommit":  "4bfed7a32c34e47b03a61f6b55f967066f14352e",
+    "orderCommit":  "e6d269196ed805fd89bfece1e49666901e10368c",
+    "paymentTests":  70,
+    "orderTests":  61,
+    "failures":  0,
+    "errors":  0,
+    "skipped":  0,
+    "bootJar":  "PASS both services",
+    "providerQuery":  [
+                          {
+                              "storedOrderStatus":  "EXPIRED",
+                              "signatureValid":  true,
+                              "transactionType":  "01",
+                              "orderId":  175,
+                              "transactionStatus":  "00",
+                              "paymentId":  106,
+                              "storedCapture":  false,
+                              "responseCode":  "00"
+                          },
+                          {
+                              "storedOrderStatus":  "EXPIRED",
+                              "signatureValid":  true,
+                              "transactionType":  "01",
+                              "orderId":  174,
+                              "transactionStatus":  "00",
+                              "paymentId":  105,
+                              "storedCapture":  false,
+                              "responseCode":  "00"
+                          }
+                      ],
+    "fix":  "Signed browser return triggers bounded server querydr; verified payment capture uses the existing idempotent transaction and outbox",
+    "reservationTtlSeconds":  200,
+    "inventory":  "Pending order atomically moves available to reserved; payment success consumes reserved without subtracting available again; expiry/failure releases reservation once",
+    "limitations":  [
+                        "No new browser sandbox transaction verified after fix yet",
+                        "VPS still runs previous image and 150-second policy at this checkpoint",
+                        "Previously expired orders cannot be revived because stock was released",
+                        "IPN registration/delivery remains unverified"
+                    ]
+}
