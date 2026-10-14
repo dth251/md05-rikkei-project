@@ -82,7 +82,7 @@ request. Đây là biến của collection, không cần tạo/chọn environmen
 | 02 | ADMIN đăng nhập → tạo/xem sản phẩm → nhập kho | Sản phẩm 125.000 đồng, kho 20/0 |
 | 03 | Khách đặt COD → ADMIN giao → thu đủ tiền → hoàn tất | CONFIRMED → SHIPPING → COMPLETED; Payment SUCCESS |
 | 04 | Khách yêu cầu trả COD → ADMIN duyệt → nhận hàng → hoàn tiền | Hàng nhập lại kho; hồ sơ trả REFUNDED |
-| 05 | Khách đặt ONLINE, không thanh toán, chờ thật 150 giây | Đơn EXPIRED; Payment FAILED/reservationExpired; kho được giải phóng |
+| 05 | Khách đặt ONLINE, không thanh toán, chờ thật 200 giây | Đơn EXPIRED; Payment FAILED/reservationExpired; kho được giải phóng |
 | 06 | Khách tạo một đơn mới → lấy Payment → tạo link sandbox | Có vnpayCheckoutUrl; Runner dừng |
 | 07 | Sau khi khách thanh toán sandbox: IPN → xác nhận → giao → hoàn tất | Payment SUCCESS, Order CONFIRMED rồi COMPLETED |
 | 08 | Khách yêu cầu trả VNPay → ADMIN duyệt → nhận hàng → hoàn tiền sandbox | Payment refundStatus và hồ sơ trả đều REFUNDED |
@@ -93,15 +93,15 @@ Iterations **1**, Delay **1100 ms**, dừng khi assertion/script lỗi.
 chọn request đăng ký và bắt đầu bằng đăng nhập. Khi tiếp tục Runner,
 bật [**Keep variable values**](https://learning.postman.com/docs/tests-and-scripts/running-collections/intro-to-collection-runs)
 để giữ token/ID trong collection Variables.
-Phần này có chờ thật 150 giây nên mất vài phút;
+Phần này có chờ thật 200 giây nên mất vài phút;
 để Runner tiếp tục gửi GET chờ, không bấm thanh toán đơn của nhóm 05.
 
 Runner dừng ở cuối nhóm 06. Mở collection → **Variables**, lấy giá trị
 **`vnpayCheckoutUrl`** rồi mở trên trình duyệt,
 thanh toán bằng [thẻ test VNPay](vnpay-sandbox-browser.md#tạo-link-cho-đúng-đơn).
 Đơn VNPay này là đơn mới, tách khỏi đơn cố tình hết hạn ở nhóm 05.
-Cũng cần thanh toán trong **150 giây từ lúc tạo đơn VNPay**; không chờ
-hết 150 giây rồi mới thanh toán.
+Cũng cần thanh toán trong **200 giây từ lúc tạo đơn VNPay**; không chờ
+hết 200 giây rồi mới thanh toán.
 
 Sau khi quay về trang kết quả, chạy **riêng nhóm 07**, rồi **08** nếu muốn
 test hoàn trả đơn VNPay. Không chạy lại 01 vì sẽ khởi tạo ID/tài khoản
@@ -126,7 +126,7 @@ Sau khi chạy, mở hộp thư của tài khoản khách hàng đó và đối 
 |---|---|---|
 | Nhóm 03, sau thu COD | `codOrderId` | Đơn hàng #ID đã xác nhận |
 | Nhóm 03, khi giao/hoàn tất COD | `codOrderId` | Đơn hàng #ID đang giao hàng / đã hoàn tất |
-| Nhóm 05, sau 150 giây | `expiryOrderId` | Đơn hàng #ID đã hủy do quá hạn thanh toán |
+| Nhóm 05, sau 200 giây | `expiryOrderId` | Đơn hàng #ID đã hủy do quá hạn thanh toán |
 | Nhóm 07, sau IPN và giao/hoàn tất VNPay | `vnpayOrderId` | Đã xác nhận / đang giao hàng / đã hoàn tất |
 | Nhóm 04 và 08, trả/hoàn tiền | Mã đơn tương ứng | Hiện chưa có email trả/hoàn tiền riêng; kiểm tra Payment và hồ sơ trả REFUNDED |
 

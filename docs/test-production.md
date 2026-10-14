@@ -58,7 +58,7 @@ Trong Collection Runner, chọn cả **01–14**, theo thứ tự có sẵn:
 | 08 | COD giao, thu đủ tiền, hoàn tất | COMPLETED, có biên nhận/codPaidAt, parent 17/0 |
 | 09 | Hủy một đơn COD khác trước giao | CANCELLED/FAILED; parent vẫn 17/0 |
 | 10 | Trả toàn bộ COD, nhập lại, hoàn tiền | Return REFUNDED; parent 18/0 |
-| 11 | Chờ thật 150 giây, thanh toán muộn | EXPIRED; muộn 409; parent 18/0, email quá hạn |
+| 11 | Chờ thật 200 giây, thanh toán muộn | EXPIRED; muộn 409; parent 18/0, email quá hạn |
 | 12 | POS mua variant, đặt vượt tồn | Variant 4/0; parent 18/0; vượt tồn 409 |
 | 13 | Trả ONLINE và hoàn tiền mô phỏng | Return REFUNDED; parent 20/0 |
 | 14 | Xóa mềm parent/variant vừa tạo | Public GET 404; đơn cũ giữ snapshot |

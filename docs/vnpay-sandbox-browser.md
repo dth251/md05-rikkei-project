@@ -61,7 +61,7 @@ VNPay cấu hình. Trang kết quả mới cần được triển khai qua PR/CI
    thành công”. Payment phát sự kiện để Order xác nhận đơn và Notification
    gửi email đã đăng ký. Không POST tạo hoặc xác nhận đơn lần nữa.
 
-**Deadline đơn ONLINE hiện là 150 giây từ khi tạo đơn**, dù link VNPay có
+**Deadline đơn ONLINE hiện là 200 giây từ khi tạo đơn**, dù link VNPay có
 hạn tối đa 15 phút. Cần thao tác ngay sau tạo đơn. Nếu đơn đã hết hạn,
 capture đến muộn không làm sống lại đơn; trang thông báo đơn không còn
 hiệu lực và khoản tiền cần được xử lý hoàn. Không kéo dài TTL hoặc ép
@@ -95,9 +95,8 @@ Trang không khẳng định Order đã CONFIRMED chỉ từ Payment SUCCESS: Or
 xử lý bất đồng bộ, xác nhận bằng GET Order trong V02. Email SENT chỉ xác
 nhận SMTP chấp nhận, cần đối chiếu inbox để xác nhận thư đã tới.
 
-Return chỉ đọc, không cập nhật Payment. Mọi lần refresh đều kiểm tra chữ
-ký, merchant, reference, amount và capture đã lưu. IPN có chữ ký hợp lệ
-mới cập nhật thanh toán. Thiếu/sai chữ ký không được xác nhận đơn. Không
+Return xác minh chữ ký rồi tự truy vấn `querydr` nếu capture chưa được ghi nhận. Mọi lần refresh đều kiểm tra chữ
+ký, merchant, reference, amount và capture đã lưu. IPN hoặc kết quả querydr có chữ ký hợp lệ mới cập nhật thanh toán. Thiếu/sai chữ ký không được xác nhận đơn. Không
 đưa HashSecret vào Postman hoặc script trình duyệt.
 
 ## Trạng thái triển khai

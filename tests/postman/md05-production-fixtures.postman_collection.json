@@ -2602,8 +2602,8 @@
       ]
     },
     {
-      "name": "07 New ONLINE expiry 150 seconds",
-      "description": "Run this folder only with Runner delay 1000ms, iterations 1. Waits for real expiration, maximum 190 polls; no timestamps or TTL are modified.",
+      "name": "07 New ONLINE expiry 200 seconds",
+      "description": "Run this folder only with Runner delay 1000ms, iterations 1. Waits for real expiration, maximum 240 polls; no timestamps or TTL are modified.",
       "item": [
         {
           "name": "Read isolated interactive stock",
@@ -2744,7 +2744,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "const n=Number(pm.environment.get('newExpiryPoll')||0)+1;",
-                  "if(pm.response.code===200){const d=pm.response.json().data;if(d.status==='PENDING_PAYMENT'&&n<190){pm.environment.set('newExpiryPoll',n);pm.execution.setNextRequest(pm.info.requestId);}else{pm.environment.unset('newExpiryPoll');pm.test('Final EXPIRED',()=>pm.expect(d.status).to.eql('EXPIRED'));if(d.status!=='EXPIRED'){pm.execution.setNextRequest(null);}}}else{pm.test('Order HTTP 200',()=>pm.response.to.have.status(200));pm.execution.setNextRequest(null);}"
+                  "if(pm.response.code===200){const d=pm.response.json().data;if(d.status==='PENDING_PAYMENT'&&n<240){pm.environment.set('newExpiryPoll',n);pm.execution.setNextRequest(pm.info.requestId);}else{pm.environment.unset('newExpiryPoll');pm.test('Final EXPIRED',()=>pm.expect(d.status).to.eql('EXPIRED'));if(d.status!=='EXPIRED'){pm.execution.setNextRequest(null);}}}else{pm.test('Order HTTP 200',()=>pm.response.to.have.status(200));pm.execution.setNextRequest(null);}"
                 ]
               }
             }

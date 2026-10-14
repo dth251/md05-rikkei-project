@@ -147,11 +147,11 @@ $folders = @(
         (Copy-Request 9 15 'Chờ hồ sơ trả hàng REFUNDED')
         (Copy-Request 9 18 'Kiểm tra kho sau trả hàng COD')
     ) }
-    @{ name = '05 - Chờ thanh toán 150 giây rồi hết hạn'; item = @(
+    @{ name = '05 - Chờ thanh toán 200 giây rồi hết hạn'; item = @(
         (Copy-Request 10 0 'Đọc tồn kho trước khi đặt đơn chờ thanh toán')
         (Copy-Request 10 1 'Tạo đơn ONLINE để chờ hết hạn')
         (Copy-Request 10 2 'Chờ tạo thanh toán của đơn quá hạn')
-        (Copy-Request 10 4 'Chờ đủ 150 giây và kiểm tra đơn EXPIRED')
+        (Copy-Request 10 4 'Chờ đủ 200 giây và kiểm tra đơn EXPIRED')
         (Copy-Request 10 5 'Chờ Payment ghi nhận hết hạn')
         (Copy-Request 10 7 'Kiểm tra đã giải phóng hàng giữ chỗ')
     ) }
@@ -177,7 +177,7 @@ $folders = @(
     ) }
 )
 $source.info.name = 'MD05 - Các luồng nghiệp vụ chính - Tiếng Việt'
-$source.info.description = '42 requests, 8 luồng chính; chọn No environment. URL production có sẵn. Nhập email/password trực tiếp trong Body của Đăng ký/Đăng nhập khách hàng và Đăng nhập ADMIN. Nếu đã có USER, bỏ qua đăng ký. Token và ID tự lưu vào Variables của collection; không lưu mật khẩu vào biến. Sản phẩm/kho; COD; trả/hoàn COD; chờ 150 giây; VNPay sandbox; giao/hoàn tất; trả/hoàn VNPay. Chạy 01–06 rồi mở vnpayCheckoutUrl trong collection Variables; sau thanh toán chạy riêng 07–08. Xem docs/test-luong-chinh.md.'
+$source.info.description = '42 requests, 8 luồng chính; chọn No environment. URL production có sẵn. Nhập email/password trực tiếp trong Body của Đăng ký/Đăng nhập khách hàng và Đăng nhập ADMIN. Nếu đã có USER, bỏ qua đăng ký. Token và ID tự lưu vào Variables của collection; không lưu mật khẩu vào biến. Sản phẩm/kho; COD; trả/hoàn COD; chờ 200 giây; VNPay sandbox; giao/hoàn tất; trả/hoàn VNPay. Chạy 01–06 rồi mở vnpayCheckoutUrl trong collection Variables; sau thanh toán chạy riêng 07–08. Xem docs/test-luong-chinh.md.'
 $source.variable = @(@{ key = 'baseUrl'; value = 'https://md05-rikkei-project.duckdns.org'; type = 'string' })
 $source.event[0].script.exec = @("if (!pm.collectionVariables.get('baseUrl')) { pm.execution.setNextRequest(null); throw new Error('Điền baseUrl trong Variables của collection. URL production đã có sẵn khi import.'); }")
 $source.item = $folders

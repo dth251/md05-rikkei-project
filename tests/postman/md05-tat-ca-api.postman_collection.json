@@ -7940,8 +7940,8 @@
                               ]
                  },
                  {
-                     "name":  "P1 - 11 - ONLINE hết hạn thật 150 giây",
-                     "description":  "Chạy sau 01–05 bằng Runner delay 1000 ms, tối đa 190 lượt chờ. Không sửa thời gian/TTL. Nếu runtime dùng TTL khác, kiểm tra cấu hình trước khi chạy.",
+                     "name":  "P1 - 11 - ONLINE hết hạn thật 200 giây",
+                     "description":  "Chạy sau 01–05 bằng Runner delay 1000 ms, tối đa 240 lượt chờ. Không sửa thời gian/TTL. Nếu runtime dùng TTL khác, kiểm tra cấu hình trước khi chạy.",
                      "item":  [
                                   {
                                       "name":  "Đọc kho đầu luồng expiry",
@@ -8197,7 +8197,7 @@
                                                 ]
                                   },
                                   {
-                                      "name":  "Chờ EXPIRED sau hạn 150 giây",
+                                      "name":  "Chờ EXPIRED sau hạn 200 giây",
                                       "request":  {
                                                       "method":  "GET",
                                                       "header":  [
@@ -8214,7 +8214,7 @@
                                                                                   }
                                                                               ]
                                                                },
-                                                      "description":  "Chạy bằng Runner, delay 1000 ms. Chờ tối đa 190 lượt; hết lượt hoặc lỗi ngoài dự kiến là FAIL và dừng. Send thủ công cần tự gửi lại."
+                                                      "description":  "Chạy bằng Runner, delay 1000 ms. Chờ tối đa 240 lượt; hết lượt hoặc lỗi ngoài dự kiến là FAIL và dừng. Send thủ công cần tự gửi lại."
                                                   },
                                       "event":  [
                                                     {
@@ -8245,14 +8245,14 @@
                                                                                     "let d = null;",
                                                                                     "if (pm.response.code === 200) { d = pm.response.json().data; }",
                                                                                     "const xong = pm.response.code === 200 \u0026\u0026 (d.status === \u0027EXPIRED\u0027);",
-                                                                                    "if (hopLe \u0026\u0026 !xong \u0026\u0026 lan \u003c 190) {",
+                                                                                    "if (hopLe \u0026\u0026 !xong \u0026\u0026 lan \u003c 240) {",
                                                                                     "    pm.environment.set(maCho, lan);",
                                                                                     "    pm.execution.setNextRequest(pm.info.requestId);",
                                                                                     "} else {",
                                                                                     "    pm.environment.unset(maCho);",
-                                                                                    "    kiemTra(\u0027Xử lý bất đồng bộ hoàn tất trong giới hạn 190 lượt\u0027, () =\u003e pm.expect(xong).to.eql(true));",
+                                                                                    "    kiemTra(\u0027Xử lý bất đồng bộ hoàn tất trong giới hạn 240 lượt\u0027, () =\u003e pm.expect(xong).to.eql(true));",
                                                                                     "    kiemTra(\u0027Phản hồi đi qua API Gateway\u0027, () =\u003e pm.expect(pm.response.headers.get(\u0027X-Gateway\u0027)).to.eql(\u0027api-gateway\u0027));",
-                                                                                    "    if (xong) { kiemTra(\u0027Phản hồi thành công\u0027, () =\u003e pm.expect(pm.response.json().success).to.eql(true)); kiemTra(\u0027Không hết hạn trước 150 giây\u0027,()=\u003epm.expect(Date.now()-Date.parse(d.createdAt)).to.be.at.least(150000)); }",
+                                                                                    "    if (xong) { kiemTra(\u0027Phản hồi thành công\u0027, () =\u003e pm.expect(pm.response.json().success).to.eql(true)); kiemTra(\u0027Không hết hạn trước 200 giây\u0027,()=\u003epm.expect(Date.now()-Date.parse(d.createdAt)).to.be.at.least(200000)); }",
                                                                                     "}",
                                                                                     ""
                                                                                 ]

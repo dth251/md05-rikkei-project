@@ -13,7 +13,7 @@ public class ReservationDeadline {
     private final Duration ttl;
 
     public ReservationDeadline(
-            @Value("${commerce.reservation.ttl:PT150S}") Duration ttl
+            @Value("${commerce.reservation.ttl:PT200S}") Duration ttl
     ) {
         if (ttl.compareTo(Duration.ofMinutes(1)) < 0 || ttl.compareTo(Duration.ofDays(1)) > 0) {
             throw new IllegalArgumentException("Reservation TTL must be between one minute and one day");

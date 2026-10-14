@@ -148,8 +148,8 @@ public final class ProductionDemoFixture {
         awaitOrder(foreign, "CONFIRMED");
 
         var expired = order("onlineExpired", "ONLINE", "WEB", "userA", "historyProduct");
-        System.out.println("Waiting for the real 150-second deadline; no timestamp or runtime TTL changes");
-        poll(orderRoute(expired), owner(expired), o -> "EXPIRED".equals(o.path("status").asText()), 190);
+        System.out.println("Waiting for the real 200-second deadline; no timestamp or runtime TTL changes");
+        poll(orderRoute(expired), owner(expired), o -> "EXPIRED".equals(o.path("status").asText()), 240);
         awaitPayment(expired, p -> p.path("reservationExpired").asBoolean());
         expect(send("POST", paymentRoute(expired) + "/simulate", Map.of("status", "SUCCESS"), admin()), 409);
         fixture.put("seededAt", Instant.now().toString());

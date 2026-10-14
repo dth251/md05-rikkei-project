@@ -112,7 +112,7 @@ class ReservationExpiryTests {
     @Test
     void successBeforeDeadlineWinsAndLaterScanCannotReleaseConsumedStock() {
         PurchaseOrder order = reserved(false, 3);
-        createdAt(order, now.minusSeconds(150).plusMillis(1));
+        createdAt(order, now.minusSeconds(200).plusMillis(1));
         payments.accept(paid(order));
         assertFalse(expiry.expire(order.getId(), now.plusSeconds(1)));
         assertEquals(OrderStatus.CONFIRMED, orders.findById(order.getId()).orElseThrow().getStatus());
@@ -124,7 +124,7 @@ class ReservationExpiryTests {
     @Test
     void successAtDeadlineExpiresEvenWhenSchedulerHasNotRun() {
         PurchaseOrder order = reserved(false, 3);
-        createdAt(order, now.minusSeconds(150));
+        createdAt(order, now.minusSeconds(200));
         CommerceEvent paid = new CommerceEvent(UUID.randomUUID().toString(), "payment.succeeded",
                 order.getId(), 801L, new BigDecimal("30.00"), 77L, now.minusSeconds(30));
         payments.accept(paid);
@@ -138,8 +138,8 @@ class ReservationExpiryTests {
     @Test
     void freshScanAndLateFailedPaymentEachReleaseStockAtMostOnce() {
         PurchaseOrder order = reserved(false, 3);
-        createdAt(order, now.minusSeconds(150).plusMillis(1));
-        assertFalse(expiry.expire(order.getId(), now.minusSeconds(150)));
+        createdAt(order, now.minusSeconds(200).plusMillis(1));
+        assertFalse(expiry.expire(order.getId(), now.minusSeconds(200)));
         when(clock.instant()).thenReturn(now.plusMillis(2));
         payments.accept(new CommerceEvent(UUID.randomUUID().toString(), "payment.failed",
                 order.getId(), 801L, new BigDecimal("30.00"), 77L, now));
@@ -163,12 +163,12 @@ class ReservationExpiryTests {
         order = orders.saveAndFlush(order);
         if (old) {
             jdbc.update("UPDATE orders SET created_at=? WHERE id=?",
-                    Timestamp.from(now.minusSeconds(151)), order.getId());
+                    Timestamp.from(now.minusSeconds(201)), order.getId());
         }
         return order;
     }
 
-    private Instant cutoff() { return now.minusSeconds(150); }
+    private Instant cutoff() { return now.minusSeconds(200); }
 
     private CommerceEvent paid(PurchaseOrder order) {
         return new CommerceEvent(UUID.randomUUID().toString(), "payment.succeeded", order.getId(), 801L,

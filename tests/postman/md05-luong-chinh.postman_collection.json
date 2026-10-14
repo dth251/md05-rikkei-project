@@ -2,7 +2,7 @@
     "info":  {
                  "name":  "MD05 - Các luồng nghiệp vụ chính - Tiếng Việt",
                  "schema":  "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-                 "description":  "42 requests, 8 luồng chính; chọn No environment. URL production có sẵn. Nhập email/password trực tiếp trong Body của Đăng ký/Đăng nhập khách hàng và Đăng nhập ADMIN. Nếu đã có USER, bỏ qua đăng ký. Token và ID tự lưu vào Variables của collection; không lưu mật khẩu vào biến. Sản phẩm/kho; COD; trả/hoàn COD; chờ 150 giây; VNPay sandbox; giao/hoàn tất; trả/hoàn VNPay. Chạy 01–06 rồi mở vnpayCheckoutUrl trong collection Variables; sau thanh toán chạy riêng 07–08. Xem docs/test-luong-chinh.md."
+                 "description":  "42 requests, 8 luồng chính; chọn No environment. URL production có sẵn. Nhập email/password trực tiếp trong Body của Đăng ký/Đăng nhập khách hàng và Đăng nhập ADMIN. Nếu đã có USER, bỏ qua đăng ký. Token và ID tự lưu vào Variables của collection; không lưu mật khẩu vào biến. Sản phẩm/kho; COD; trả/hoàn COD; chờ 200 giây; VNPay sandbox; giao/hoàn tất; trả/hoàn VNPay. Chạy 01–06 rồi mở vnpayCheckoutUrl trong collection Variables; sau thanh toán chạy riêng 07–08. Xem docs/test-luong-chinh.md."
              },
     "variable":  [
                      {
@@ -1478,7 +1478,7 @@
                               ]
                  },
                  {
-                     "name":  "05 - Chờ thanh toán 150 giây rồi hết hạn",
+                     "name":  "05 - Chờ thanh toán 200 giây rồi hết hạn",
                      "item":  [
                                   {
                                       "name":  "Đọc tồn kho trước khi đặt đơn chờ thanh toán",
@@ -1678,7 +1678,7 @@
                                                 ]
                                   },
                                   {
-                                      "name":  "Chờ đủ 150 giây và kiểm tra đơn EXPIRED",
+                                      "name":  "Chờ đủ 200 giây và kiểm tra đơn EXPIRED",
                                       "request":  {
                                                       "method":  "GET",
                                                       "header":  [
@@ -1695,7 +1695,7 @@
                                                                                   }
                                                                               ]
                                                                },
-                                                      "description":  "Chạy bằng Runner, delay 1000 ms. Chờ tối đa 190 lượt; hết lượt hoặc lỗi ngoài dự kiến là FAIL và dừng. Send thủ công cần tự gửi lại."
+                                                      "description":  "Chạy bằng Runner, delay 1000 ms. Chờ tối đa 240 lượt; hết lượt hoặc lỗi ngoài dự kiến là FAIL và dừng. Send thủ công cần tự gửi lại."
                                                   },
                                       "event":  [
                                                     {
@@ -1726,14 +1726,14 @@
                                                                                     "let d = null;",
                                                                                     "if (pm.response.code === 200) { d = pm.response.json().data; }",
                                                                                     "const xong = pm.response.code === 200 \u0026\u0026 (d.status === \u0027EXPIRED\u0027);",
-                                                                                    "if (hopLe \u0026\u0026 !xong \u0026\u0026 lan \u003c 190) {",
+                                                                                    "if (hopLe \u0026\u0026 !xong \u0026\u0026 lan \u003c 240) {",
                                                                                     "    pm.collectionVariables.set(maCho, lan);",
                                                                                     "    pm.execution.setNextRequest(pm.info.requestId);",
                                                                                     "} else {",
                                                                                     "    pm.collectionVariables.unset(maCho);",
-                                                                                    "    kiemTra(\u0027Xử lý bất đồng bộ hoàn tất trong giới hạn 190 lượt\u0027, () =\u003e pm.expect(xong).to.eql(true));",
+                                                                                    "    kiemTra(\u0027Xử lý bất đồng bộ hoàn tất trong giới hạn 240 lượt\u0027, () =\u003e pm.expect(xong).to.eql(true));",
                                                                                     "    kiemTra(\u0027Phản hồi đi qua API Gateway\u0027, () =\u003e pm.expect(pm.response.headers.get(\u0027X-Gateway\u0027)).to.eql(\u0027api-gateway\u0027));",
-                                                                                    "    if (xong) { kiemTra(\u0027Phản hồi thành công\u0027, () =\u003e pm.expect(pm.response.json().success).to.eql(true)); kiemTra(\u0027Không hết hạn trước 150 giây\u0027,()=\u003epm.expect(Date.now()-Date.parse(d.createdAt)).to.be.at.least(150000)); }",
+                                                                                    "    if (xong) { kiemTra(\u0027Phản hồi thành công\u0027, () =\u003e pm.expect(pm.response.json().success).to.eql(true)); kiemTra(\u0027Không hết hạn trước 200 giây\u0027,()=\u003epm.expect(Date.now()-Date.parse(d.createdAt)).to.be.at.least(200000)); }",
                                                                                     "}",
                                                                                     ""
                                                                                 ]
