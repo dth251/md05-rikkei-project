@@ -1170,3 +1170,22 @@ phẩm, kho, đơn, thanh toán hoặc gửi email. Các bước trả hàng/h�
 khách vẫn dùng userToken. Chưa push/PR các thay đổi feature cục bộ.
 [Bằng chứng kiểm tra](evidence/postman-inventory-admin-token-2026-10-15.json),
 [hướng dẫn xử lý thiếu token](test-luong-chinh.md#khi-báo-thiếu-usertoken-hoặc-admintoken).
+
+## Nhập ID sản phẩm trực tiếp khi đọc bằng Postman
+
+| Mốc | SHA | Thời gian +07 | Kiểm chứng / deploy thực tế |
+|---|---|---|---|
+| 192-api-gateway | `4ca946da8ceecb33b7dfb2afc3241d419e266502` | 2026-10-15T01:40:16+07:00 | Hai GET chi tiết sản phẩm/tồn kho của nhóm 02 nhận ID thật trên URL hoặc productId tự lưu. Production ADMIN không environment: 6 requests/31 assertions, exit 0, 9.7s. Không thay Java, không build/deploy service. |
+
+Kiểm tra live ID #159 trực tiếp khi không có biến productId; ID #158
+qua biến; đọc #159 khi biến vẫn là #158. ID và COD baseline của luồng
+#158 được giữ nguyên. Bài đọc kho kiểm tra đúng productId và số nguyên
+không âm; nhập kho 20, trả hàng và hết hạn vẫn giữ kiểm tra nghiệp vụ
+riêng. Không ghi dữ liệu kinh doanh, đặt đơn hay gửi email trong lượt này.
+
+Kiểm tra tĩnh 42 requests/85 hooks/18 JSON bodies; token USER/ADMIN,
+URL có ID/biến, ID chưa resolve/0, không ghi đè ID của luồng đều đạt.
+PowerShell parse, generator sinh lại nội dung, staged credential scan và
+diff check đạt. Commit nằm ở feature cục bộ, chưa push/PR; không rollout.
+[Hướng dẫn thiếu productId](test-luong-chinh.md#khi-báo-thiếu-productid),
+[bằng chứng kiểm tra](evidence/postman-product-id-url-2026-10-15.json).
