@@ -2,7 +2,7 @@
   "info": {
     "name": "MD05 - VNPay sandbox - Tiếng Việt",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "description": "Bộ tùy chọn, chỉ chạy từng folder khi đủ tiền đề trong docs/demo-luong-hoat-dong.md. Dùng cùng environment với bộ chính. Không chứa hash secret, không tạo callback giả."
+    "description": "VNPay SANDBOX thử nghiệm: V00 → V01, mở vnpayCheckoutUrl trên trình duyệt và thanh toán bằng thẻ test, sau đó V02 đối chiếu IPN/đơn/kho. Trang return tiếng Việt cập nhật theo trạng thái lưu; xem docs/vnpay-sandbox-browser.md. V03/V04 là bài trả/hoàn riêng. Cần merchant sandbox private; không chứa HashSecret hoặc tạo callback giả."
   },
   "event": [
     {
@@ -353,7 +353,9 @@
                   "kiemTra('Cờ success đúng kết quả', () => pm.expect(json.success).to.eql(true));",
                   "const d = json.data;",
                   "pm.environment.set('vnpayCheckoutUrl', d.checkoutUrl);",
-                  "kiemTra('URL checkout là HTTPS',()=>pm.expect(d.checkoutUrl.startsWith('https://')).to.eql(true));",
+                  "kiemTra('Link chỉ dẫn tới VNPay SANDBOX',()=>pm.expect(d.checkoutUrl.startsWith('https://sandbox.vnpayment.vn/paymentv2/vpcpay.html?')).to.eql(true));",
+                  "kiemTra('Payment trả về đúng đơn đang test',()=>pm.expect(d.paymentId).to.eql(Number(pm.environment.get('vnpayPaymentId'))));",
+                  "kiemTra('Link có return URL về dự án',()=>pm.expect(d.checkoutUrl).to.include('vnp_ReturnUrl='+encodeURIComponent(pm.environment.get('baseUrl').replace(/\\/$/,'')+'/api/payments/vnpay/return')));",
                   "}"
                 ]
               }

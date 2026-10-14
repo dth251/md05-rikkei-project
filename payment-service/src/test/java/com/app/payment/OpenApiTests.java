@@ -58,6 +58,12 @@ class OpenApiTests {
         assertEquals("USER", contract.path("paths").path("/api/payments/{id}/cod/refund").path("get").path("x-required-role").asText());
         assertEquals("ADMIN", contract.path("paths").path("/api/payments/{id}/simulate-refund").path("post").path("x-required-role").asText());
         assertTrue(contract.path("components").path("schemas").has("CollectCodRequest"));
+        var returnContent = contract.path("paths").path("/api/payments/vnpay/return")
+                .path("get").path("responses").path("200").path("content");
+        assertTrue(returnContent.has("text/html"));
+        assertTrue(returnContent.path("application/json").path("schema").has("$ref"));
+        assertTrue(contract.path("components").path("schemas").path("VnpayReturnResponse")
+                .path("properties").has("paymentStatus"));
         mvc.perform(get("/swagger-ui/index.html").header("Authorization", "Bearer " + token("ADMIN")))
                 .andExpect(status().isNotFound());
         mvc.perform(get("/v3/api-docs.yaml")).andExpect(status().isUnauthorized());

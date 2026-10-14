@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>{{title}} · MD05</title>
+  <style nonce="{{nonce}}">
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #f3f6fa; color: #17243b; font: 16px/1.6 system-ui, sans-serif; }
+    main { width: min(100% - 32px, 660px); margin: 48px auto; }
+    .brand { font-size: 14px; font-weight: 750; letter-spacing: .14em; color: #38506c; }
+    .card { margin-top: 18px; background: white; border: 1px solid #dfe6ee; border-radius: 20px; padding: 32px; }
+    .badge { display: inline-block; padding: 5px 12px; border-radius: 20px; font-size: 13px; background: #e9eff7; }
+    .success .badge { background: #e3f6eb; color: #13683d; }
+    .warning .badge { background: #fff0db; color: #85510b; }
+    h1 { font-size: clamp(24px, 5vw, 32px); line-height: 1.25; margin: 20px 0 12px; }
+    p { color: #52637a; margin: 0 0 24px; }
+    dl { border-top: 1px solid #e5ebf2; margin: 24px 0; padding-top: 8px; }
+    dl div { display: flex; justify-content: space-between; gap: 20px; padding-top: 12px; }
+    dt { color: #52637a; } dd { margin: 0; text-align: right; overflow-wrap: anywhere; min-width: 0; }
+    .total { font-weight: 750; font-size: 20px; }
+    .reference { font-size: 12px; }
+    button { width: 100%; border: 0; border-radius: 10px; background: #173b68; color: white; padding: 13px; font: inherit; cursor: pointer; }
+    .note { font-size: 13px; margin: 20px 0 0; }
+    #poll-note { font-size: 13px; margin: 16px 0; }
+    @media (max-width: 420px) { main { margin-top: 24px; } .card { padding: 24px 20px; } }
+  </style>
+</head>
+<body>
+<main>
+  <div class="brand">MD05 / KẾT QUẢ THANH TOÁN</div>
+  <section id="payment-result" class="card {{tone}}" data-pending="{{pending}}" aria-live="polite">
+    <span class="badge">VNPay Sandbox · Môi trường thử nghiệm</span>
+    <h1>{{title}}</h1>
+    <p>{{message}}</p>
+    <dl>
+      <div><dt>Đơn hàng</dt><dd>#{{order}}</dd></div>
+      <div><dt>Mã thanh toán</dt><dd>#{{payment}}</dd></div>
+      <div><dt>Phương thức</dt><dd>VNPay Sandbox</dd></div>
+      <div class="total"><dt>Tổng tiền</dt><dd>{{amount}}</dd></div>
+      <div class="reference"><dt>Mã tham chiếu</dt><dd>{{reference}}</dd></div>
+    </dl>
+    <p class="note">Kết quả được đối chiếu với trạng thái thanh toán đã lưu. Đây là giao dịch thử nghiệm trên sandbox VNPay.</p>
+  </section>
+  <p id="poll-note" role="status"></p>
+  <button id="refresh" type="button">Kiểm tra lại trạng thái</button>
+</main>
+<script nonce="{{nonce}}">
+  const button = document.getElementById('refresh');
+  const note = document.getElementById('poll-note');
+  let remaining = 24;
+  let timer;
+  let busy = false;
+  async function update() {
+    if (busy) return;
+    busy = true;
+    clearTimeout(timer);
+    try {
+      const response = await fetch(location.href, {
+        headers: { Accept: 'text/html' }, cache: 'no-store', redirect: 'error',
+        signal: AbortSignal.timeout(8000)
+      });
+      if (!response.ok) throw new Error('unavailable');
+      const page = new DOMParser().parseFromString(await response.text(), 'text/html');
+      const result = page.getElementById('payment-result');
+      if (!result) throw new Error('unavailable');
+      document.getElementById('payment-result').replaceWith(result);
+      document.title = page.title;
+      note.textContent = '';
+    } catch {
+      note.textContent = 'Chưa đọc được trạng thái mới. Bạn có thể bấm kiểm tra lại.';
+    } finally {
+      busy = false;
+      schedule();
+    }
+  }
+  function schedule() {
+    if (document.getElementById('payment-result').dataset.pending !== 'true') return;
+    if (remaining-- > 0) timer = setTimeout(update, 2500);
+    else note.textContent = 'Vẫn đang chờ xác nhận. Bạn có thể kiểm tra lại sau hoặc xem đơn trong tài khoản.';
+  }
+  button.addEventListener('click', () => { remaining = 24; update(); });
+  schedule();
+</script>
+</body>
+</html>

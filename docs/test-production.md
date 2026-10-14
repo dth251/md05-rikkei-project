@@ -1,5 +1,11 @@
 # Hướng dẫn test toàn bộ API trên production
 
+Yêu cầu mới: thanh toán qua **VNPay sandbox trên trình duyệt** rồi quay về
+dự án, xem [hướng dẫn riêng](vnpay-sandbox-browser.md). Luồng này cần
+merchant sandbox private và bản Payment có trang kết quả đã triển khai.
+Các kết quả 680 assertions bên dưới là checkpoint mô phỏng trước đó;
+không phải bằng chứng đã giao dịch trên VNPay sandbox.
+
 Môi trường của hướng dẫn này là **https://md05-rikkei-project.duckdns.org**.
 Thanh toán dùng API mô phỏng, không giao dịch ngân hàng thật và không cần
 merchant VNPay. Các bước vẫn tạo dữ liệu thật trên production, riêng cho

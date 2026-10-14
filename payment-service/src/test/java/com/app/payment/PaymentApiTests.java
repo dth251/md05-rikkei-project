@@ -53,6 +53,16 @@ class PaymentApiTests {
     private SecretKey key;
 
     @Test
+    void disabledSandboxReturnsSafeBrowserPage() throws Exception {
+        mvc.perform(get("/api/payments/vnpay/return").accept(MediaType.TEXT_HTML))
+                .andExpect(status().isServiceUnavailable())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.content()
+                        .contentTypeCompatibleWith(MediaType.TEXT_HTML))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.content()
+                        .string(org.hamcrest.Matchers.containsString("Chưa thể xác minh kết quả")));
+    }
+
+    @Test
     void privatePrometheusExportsJvmMetricsWhileSensitiveEndpointsStayProtected() throws Exception {
         mvc.perform(get("/actuator/prometheus")).andExpect(status().isOk())
                 .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.content()

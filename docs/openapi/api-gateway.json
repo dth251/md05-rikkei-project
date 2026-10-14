@@ -3687,6 +3687,7 @@
                                                                  "tags":  [
                                                                               "vnpay-controller"
                                                                           ],
+                                                                 "description":  "Signed sandbox return, read-only. Accept text/html for the browser result page; application/json or default for ApiResponse. Persisted payment status comes from IPN, not the return outcome. Browser polls for up to 24 attempts; order confirmation is asynchronous.",
                                                                  "operationId":  "payment-service_returnResult",
                                                                  "parameters":  [
                                                                                     {
@@ -3696,27 +3697,31 @@
                                                                                         "schema":  {
                                                                                                        "$ref":  "#/components/schemas/MultiValueMapStringString"
                                                                                                    }
+                                                                                    },
+                                                                                    {
+                                                                                        "name":  "Accept",
+                                                                                        "in":  "header",
+                                                                                        "required":  false,
+                                                                                        "schema":  {
+                                                                                                       "type":  "string",
+                                                                                                       "default":  "application/json"
+                                                                                                   }
                                                                                     }
                                                                                 ],
                                                                  "responses":  {
                                                                                    "200":  {
-                                                                                               "description":  "OK",
-                                                                                               "content":  {
-                                                                                                               "*/*":  {
-                                                                                                                           "schema":  {
-                                                                                                                                          "$ref":  "#/components/schemas/ApiResponseVnpayReturnResponse"
-                                                                                                                                      }
-                                                                                                                       }
-                                                                                                           }
-                                                                                           },
-                                                                                   "409":  {
-                                                                                               "description":  "Conflict",
+                                                                                               "description":  "Verified payment result",
                                                                                                "content":  {
                                                                                                                "application/json":  {
                                                                                                                                         "schema":  {
-                                                                                                                                                       "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                                       "$ref":  "#/components/schemas/ApiResponseVnpayReturnResponse"
                                                                                                                                                    }
-                                                                                                                                    }
+                                                                                                                                    },
+                                                                                                               "text/html":  {
+                                                                                                                                 "schema":  {
+                                                                                                                                                "type":  "string"
+                                                                                                                                            }
+                                                                                                                             }
                                                                                                            }
                                                                                            },
                                                                                    "503":  {
@@ -3729,8 +3734,8 @@
                                                                                                                                     }
                                                                                                            }
                                                                                            },
-                                                                                   "404":  {
-                                                                                               "description":  "Not found",
+                                                                                   "409":  {
+                                                                                               "description":  "Conflict",
                                                                                                "content":  {
                                                                                                                "application/json":  {
                                                                                                                                         "schema":  {
@@ -3739,8 +3744,8 @@
                                                                                                                                     }
                                                                                                            }
                                                                                            },
-                                                                                   "403":  {
-                                                                                               "description":  "Access denied",
+                                                                                   "400":  {
+                                                                                               "description":  "Invalid request",
                                                                                                "content":  {
                                                                                                                "application/json":  {
                                                                                                                                         "schema":  {
@@ -3759,8 +3764,18 @@
                                                                                                                                     }
                                                                                                            }
                                                                                            },
-                                                                                   "400":  {
-                                                                                               "description":  "Invalid request",
+                                                                                   "403":  {
+                                                                                               "description":  "Access denied",
+                                                                                               "content":  {
+                                                                                                               "application/json":  {
+                                                                                                                                        "schema":  {
+                                                                                                                                                       "$ref":  "#/components/schemas/ApiError"
+                                                                                                                                                   }
+                                                                                                                                    }
+                                                                                                           }
+                                                                                           },
+                                                                                   "404":  {
+                                                                                               "description":  "Not found",
                                                                                                "content":  {
                                                                                                                "application/json":  {
                                                                                                                                         "schema":  {
@@ -5270,7 +5285,37 @@
                                                                                                           },
                                                                                       "message":  {
                                                                                                       "type":  "string"
-                                                                                                  }
+                                                                                                  },
+                                                                                      "paymentId":  {
+                                                                                                        "type":  "integer",
+                                                                                                        "format":  "int64"
+                                                                                                    },
+                                                                                      "orderId":  {
+                                                                                                      "type":  "integer",
+                                                                                                      "format":  "int64"
+                                                                                                  },
+                                                                                      "amount":  {
+                                                                                                     "type":  "number"
+                                                                                                 },
+                                                                                      "paymentStatus":  {
+                                                                                                            "type":  "string",
+                                                                                                            "enum":  [
+                                                                                                                         "PENDING",
+                                                                                                                         "SUCCESS",
+                                                                                                                         "FAILED"
+                                                                                                                     ]
+                                                                                                        },
+                                                                                      "reservationExpired":  {
+                                                                                                                 "type":  "boolean"
+                                                                                                             },
+                                                                                      "refundStatus":  {
+                                                                                                           "type":  "string",
+                                                                                                           "enum":  [
+                                                                                                                        "NONE",
+                                                                                                                        "REQUIRED",
+                                                                                                                        "REFUNDED"
+                                                                                                                    ]
+                                                                                                       }
                                                                                   }
                                                                },
                                        "VnpayIpnResponse":  {

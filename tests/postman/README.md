@@ -1,5 +1,8 @@
 # Kiểm thử Postman bằng tiếng Việt — production
 
+**Bản gộp một file:** [181 requests cho tất cả API](md05-tat-ca-api.postman_collection.json),
+xem [cách chạy theo giai đoạn và mở sandbox](../../docs/postman-mot-file.md).
+
 Hướng dẫn chính theo yêu cầu hiện tại: **[test toàn bộ trên production](../../docs/test-production.md)**.
 Domain API: **https://md05-rikkei-project.duckdns.org**. Thanh toán dùng mô
 phỏng SUCCESS/FAILED/hết hạn trên VPS; không cần merchant hoặc tiền thật.
@@ -57,7 +60,11 @@ kiểm chứng callback/chữ ký nhà cung cấp. Khi VNPay trên VPS đang t�
 [bộ kiểm tra phản hồi feature tắt](md05-production-vnpay-disabled.postman_collection.json)
 riêng; xem thứ tự trong hướng dẫn production.
 
-## VNPay sandbox có merchant — ngoài bài mô phỏng hiện tại
+## VNPay sandbox có merchant và trang kết quả
+
+Theo yêu cầu mới, xem [hướng dẫn thanh toán trên sandbox rồi quay về dự án](../../docs/vnpay-sandbox-browser.md).
+Sandbox dùng merchant/thẻ test, không dùng tài khoản production. Cần cấu
+hình private và triển khai trang kết quả trước khi ghi nhận bài này đạt.
 
 Import [collection VNPay tiếng Việt](md05-tieng-viet-vnpay.postman_collection.json), dùng cùng environment. Chạy 01–05 của collection nghiệp vụ trước, chưa chạy 14. Cần merchant sandbox đã cấu hình, không đưa hash secret vào Postman.
 

@@ -1,6 +1,10 @@
 package com.app.payment.config;
 
 import io.swagger.v3.oas.models.Components;
+import com.app.payment.dto.response.VnpayReturnResponse;
+import io.swagger.v3.core.converter.AnnotatedType;
+import io.swagger.v3.core.converter.ModelConverters;
+import org.springframework.core.ParameterizedTypeReference;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.media.BooleanSchema;
@@ -57,6 +61,18 @@ public class OpenApiConfig {
                 operation.addExtension("x-required-role", anonymous ? "PUBLIC" : admin ? "ADMIN" : "USER");
                 if (path.equals("/api/payments/vnpay/ipn")) {
                     return;
+                }
+                if (path.equals("/api/payments/vnpay/return")) {
+                    var type = new ParameterizedTypeReference<com.app.payment.dto.response.ApiResponse<VnpayReturnResponse>>() { };
+                    var model = ModelConverters.getInstance(true).resolveAsResolvedSchema(
+                            new AnnotatedType(type.getType()).resolveAsRef(true));
+                    model.referencedSchemas.forEach(api.getComponents()::addSchemas);
+                    operation.setDescription("Signed sandbox return, read-only. Accept text/html for the browser result page; "
+                            + "application/json or default for ApiResponse. Persisted payment status comes from IPN, "
+                            + "not the return outcome. Browser polls for up to 24 attempts; order confirmation is asynchronous.");
+                    operation.getResponses().addApiResponse("200", new ApiResponse().description("Verified payment result")
+                            .content(new Content().addMediaType("application/json", new MediaType().schema(model.schema))
+                                    .addMediaType("text/html", new MediaType().schema(new StringSchema()))));
                 }
                 for (var status : Map.of("400", "Invalid request", "401", "Authentication required",
                         "403", "Access denied", "404", "Not found", "409", "Conflict",
