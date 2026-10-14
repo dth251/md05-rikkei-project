@@ -1129,3 +1129,29 @@ không còn giữ hàng cho lượt chạy này. Email hết hạn #163 SENT/att
 nâng tổng fixture lên 5 email SENT, không error_code. Bằng chứng và hướng
 dẫn lưu cả hai thời điểm để phân biệt trạng thái ngay sau checkout với
 trạng thái sau khi link hết hạn.
+
+## Nhập Body Postman trực tiếp, không environment
+
+| Mốc | SHA | Thời gian +07 | Kiểm chứng / deploy thực tế |
+|---|---|---|---|
+| 187-docs | `8626630` | 2026-10-15T00:58:01+07:00 | Lưu kết quả luồng chính và email của lượt trước. |
+| 188-api-gateway | `76eec49e51ac57ec081818f84c2f1aaf0f809add` | 2026-10-15T01:16:27+07:00 | Bỏ phụ thuộc environment khỏi collection 42 requests; nhập email/password trong Body, giữ baseUrl production và lưu token/ID trong collection Variables. Production không `-e`: nhóm 01–06 đạt 140 HTTP/145 assertions, exit 0, 3m10.9s; đăng nhập USER có sẵn → GET me → ADMIN đạt thêm 3 HTTP/16 assertions, exit 0. Không đổi Java/build/deploy service. |
+
+85 hooks biên dịch được, 18 Body JSON hợp lệ, kiểm tra Body trống/JSON sai
+và đăng nhập lại giữ ID đạt. Generator PowerShell parse và sinh lại đúng
+nội dung; quét credentials staged, link hướng dẫn và diff check đạt.
+Ba Body đăng ký/đăng nhập trong Git để trống credentials; lượt live dùng
+bản private ngoài Git chỉ điền Body, không có file environment hay `-e`.
+Mật khẩu không được sao chép thành biến; token/ID tự lưu ở collection.
+
+Đối chiếu 01:15:55 +07: USER #229, sản phẩm #158, COD #164/Payment #99
+COMPLETED/SUCCESS và return/refund REFUNDED đủ 125.000 đồng. Đơn #165 /
+Payment #100 EXPIRED/FAILED, reservationExpired true. Đơn #166/Payment
+#101 PENDING_PAYMENT/PENDING đã tạo link VNPay sandbox; kho 19/1 đang giữ
+một sản phẩm cho đơn này, chưa thanh toán trên ngân hàng. Có 4 email SENT,
+attempts=1, không lỗi cho #164/#165; chưa kiểm tra inbox. Nhóm 07–08 và
+đăng ký IPN vẫn chưa được xác minh thực tế. Không gửi thư tới VNPay.
+
+Commit ở nhánh feature cục bộ, chưa push/PR; không có rollout mới trong
+lượt này. [Hướng dẫn nhập Body](test-luong-chinh.md),
+[bằng chứng không environment](evidence/postman-luong-chinh-khong-environment-2026-10-15.json).
