@@ -45,6 +45,8 @@ tasks.named('test') {
 
 tasks.register('liveTest', Test) {
     group = 'verification'
+    maxHeapSize = '128m'
+    jvmArgs '-XX:MaxMetaspaceSize=128m', '-XX:ReservedCodeCacheSize=32m'
     testClassesDirs = sourceSets.test.output.classesDirs
     classpath = sourceSets.test.runtimeClasspath
     useJUnitPlatform {

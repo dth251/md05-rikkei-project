@@ -41,7 +41,16 @@ foreach ($uid in @('prometheus','tempo','loki')) {
     if (@($sources | Where-Object {$_.uid -eq $uid}).Count -ne 1) {throw "Missing Grafana datasource $uid"}
 }
 $dashboard = Invoke-RestMethod http://127.0.0.1:13000/api/dashboards/uid/commerce-overview -Headers $headers -TimeoutSec 15
-if (@($dashboard.dashboard.panels).Count -lt 21) {throw 'Dashboard provisioning is incomplete'}
+function Get-DashboardProjection($Value) {
+    return @($Value.panels | Sort-Object id | ForEach-Object {
+        [ordered]@{id=$_.id;title=$_.title;unit=$_.fieldConfig.defaults.unit;queries=@($_.targets.expr)}
+    }) | ConvertTo-Json -Depth 10 -Compress
+}
+$expectedDashboard = Get-Content -Raw (Join-Path $project 'docs/infrastructure/monitoring/grafana/dashboards/commerce.json') | ConvertFrom-Json
+$expectedProjection = Get-DashboardProjection $expectedDashboard
+if (@($dashboard.dashboard.panels).Count -lt 22 -or (Get-DashboardProjection $dashboard.dashboard) -cne $expectedProjection) {
+    throw 'Dashboard queries/units do not match provisioned source'
+}
 # A fresh CI TSDB needs two more scrape intervals after its first UP sample.
 # Advance the query end while waiting; keep the passing window fixed across restart.
 for ($retry=0; $retry -lt 30; $retry++) {
@@ -73,12 +82,13 @@ if (-not $SkipRestart) {
     }
     if (-not $ready) {throw 'Monitoring history/database did not recover after restart'}
     $dashboard = Invoke-RestMethod http://127.0.0.1:13000/api/dashboards/uid/commerce-overview -Headers $headers -TimeoutSec 5
-    if (@($dashboard.dashboard.panels).Count -lt 21) {throw 'Dashboard missing after restart'}
+    if ((Get-DashboardProjection $dashboard.dashboard) -cne $expectedProjection) {throw 'Dashboard changed after restart'}
 }
 $report = @{timeUtc=[DateTime]::UtcNow.ToString('o'); services=@($targets | ForEach-Object {$_.metric.service});
     dependencyJobs=@($dependencies | ForEach-Object {$_.metric.job}); historySeries=@($history).Count;
     dashboardPanels=@($dashboard.dashboard.panels).Count; datasources=@('prometheus','tempo','loki');
     restartVerified=(-not $SkipRestart); note='Docker Desktop host exporter measures Linux VM; no capacity claim'}
+$report.dashboardSourceMatched = $true
 $path = [IO.Path]::GetFullPath((Join-Path $project $EvidenceFile))
 if (-not $path.StartsWith($project+[IO.Path]::DirectorySeparatorChar,[StringComparison]::OrdinalIgnoreCase)) {throw 'Evidence must stay inside project'}
 [IO.File]::WriteAllText($path,($report | ConvertTo-Json -Depth 10),(New-Object Text.UTF8Encoding $false))
