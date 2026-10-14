@@ -1155,3 +1155,18 @@ attempts=1, không lỗi cho #164/#165; chưa kiểm tra inbox. Nhóm 07–08 v�
 Commit ở nhánh feature cục bộ, chưa push/PR; không có rollout mới trong
 lượt này. [Hướng dẫn nhập Body](test-luong-chinh.md),
 [bằng chứng không environment](evidence/postman-luong-chinh-khong-environment-2026-10-15.json).
+
+## Sửa token đọc kho trong nhóm ADMIN
+
+| Mốc | SHA | Thời gian +07 | Kiểm chứng / deploy thực tế |
+|---|---|---|---|
+| 190-api-gateway | `91249c3dfd757ef6494e9158e361a5399fbc27b4` | 2026-10-15T01:32:56+07:00 | Request Xem tồn kho của nhóm 02 chuyển từ userToken sang adminToken. Thông báo thiếu token chỉ rõ request đăng nhập tương ứng trong cùng collection. Production không environment: ADMIN login → GET kho #158 đạt 2 requests/12 assertions, exit 0, 2.9s; xác nhận không có userToken. Không đổi Java, không build/deploy service. |
+
+Kiểm tra tĩnh 42 requests/85 hooks/18 JSON bodies đạt; guard ADMIN không
+phụ thuộc USER, guard thiếu token chỉ đúng bước đăng nhập; generator
+PowerShell parse/sinh lại nội dung, staged credential scan và diff check
+đạt. Lượt live chỉ đăng nhập và đọc fixture có sẵn, không tạo/đổi sản
+phẩm, kho, đơn, thanh toán hoặc gửi email. Các bước trả hàng/hết hạn của
+khách vẫn dùng userToken. Chưa push/PR các thay đổi feature cục bộ.
+[Bằng chứng kiểm tra](evidence/postman-inventory-admin-token-2026-10-15.json),
+[hướng dẫn xử lý thiếu token](test-luong-chinh.md#khi-báo-thiếu-usertoken-hoặc-admintoken).
