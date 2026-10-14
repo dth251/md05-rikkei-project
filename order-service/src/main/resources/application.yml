@@ -4,6 +4,11 @@ server:
     include-message: never
     include-stacktrace: never
 
+commerce:
+  reservation:
+    ttl: ${RESERVATION_TTL:PT150S}
+    scan-delay-ms: ${RESERVATION_SCAN_DELAY_MS:1000}
+
 spring:
   application:
     name: order-service
@@ -81,8 +86,3 @@ springdoc:
   override-with-generic-response: false
   swagger-ui:
     enabled: false
-
-commerce:
-  reservation:
-    ttl: ${RESERVATION_TTL:PT5M}
-    scan-delay-ms: 1000

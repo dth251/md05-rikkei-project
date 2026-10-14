@@ -37,7 +37,7 @@ security, controller/schema, toàn bộ references và export file
 `<service>/build/openapi/<service>.json`. Sau đó chạy:
 
 ```powershell
-pwsh -File infrastructure/scripts/export-openapi.ps1
+pwsh -File docs/infrastructure/scripts/export-openapi.ps1
 ```
 
 Script chỉ ghi trong repository, từ chối hợp đồng/schema/path xung đột

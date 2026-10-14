@@ -1,6 +1,7 @@
 package com.app.order.service.impl;
 
 import com.app.order.dto.event.CommerceEvent;
+import com.app.order.config.ReservationDeadline;
 import com.app.order.entity.OrderStatus;
 import com.app.order.entity.PurchaseOrder;
 import com.app.order.entity.PaymentMethod;
@@ -10,7 +11,7 @@ import com.app.order.repository.StockRepository;
 import com.app.order.service.OrderPaymentService;
 import com.app.order.service.OutboxService;
 import com.app.order.service.ReservationExpiryService;
-import com.app.order.config.ReservationPolicy;
+import java.time.Clock;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.UUID;
@@ -25,7 +26,8 @@ public class OrderPaymentServiceImpl implements OrderPaymentService {
     private final StockRepository stockRepository;
     private final OutboxService outboxService;
     private final ReservationExpiryService expiry;
-    private final ReservationPolicy reservationPolicy;
+    private final ReservationDeadline deadline;
+    private final Clock clock;
 
     public OrderPaymentServiceImpl(
             EventInbox eventInbox,
@@ -33,14 +35,16 @@ public class OrderPaymentServiceImpl implements OrderPaymentService {
             StockRepository stockRepository,
             OutboxService outboxService,
             ReservationExpiryService expiry,
-            ReservationPolicy reservationPolicy
+            ReservationDeadline deadline,
+            Clock clock
     ) {
         this.eventInbox = eventInbox;
         this.orderRepository = orderRepository;
         this.stockRepository = stockRepository;
         this.outboxService = outboxService;
         this.expiry = expiry;
-        this.reservationPolicy = reservationPolicy;
+        this.deadline = deadline;
+        this.clock = clock;
     }
 
     @Override
@@ -77,10 +81,10 @@ public class OrderPaymentServiceImpl implements OrderPaymentService {
             orderRepository.flush();
             return;
         }
-        // Check the deadline after acquiring the same row lock as the scheduler.
-        // A delayed scan cannot let a late capture confirm an overdue reservation.
+        // Check after acquiring the same row lock used by the scheduler. A delayed scan
+        // must not allow a payment result received at/after the deadline to confirm.
         if (order.getStatus() == OrderStatus.PENDING_PAYMENT) {
-            expiry.expire(order.getId(), reservationPolicy.cutoff(Instant.now()));
+            expiry.expire(order.getId(), deadline.cutoff(clock));
         }
         if (order.getStatus() == OrderStatus.EXPIRED && "payment.succeeded".equals(event.type())) {
             // Expiration already released stock. Never confirm or reserve again after late payment.

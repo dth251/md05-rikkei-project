@@ -1,8 +1,13 @@
-# Đơn hết hạn 5 phút, email và monitoring
+# Đơn hết hạn 150 giây, email và monitoring
+
+Ngày 14/10/2026, nhánh `feature/expiry-150s-email-monitoring` tiếp nối
+worktree đêm trước và đổi thời hạn 5 phút thành 150 giây. Hạ tầng runtime
+nằm trong `docs/infrastructure/`; Compose, CI, release và scripts đều dùng
+đường dẫn này. SHA/deploy theo từng checkpoint ở `commits-and-deployments.md`.
 
 ## Thời hạn thanh toán
 
-Order ONLINE ở PENDING_PAYMENT có thời hạn 5 phút kể từ createdAt.
+Order ONLINE ở PENDING_PAYMENT có thời hạn 150 giây kể từ createdAt.
 Đúng hạn hoặc quá hạn, đơn chuyển EXPIRED (hủy vì chưa thanh toán), hoàn
 reserved về available và ghi order.expired trong cùng transaction.
 Scheduler quét mỗi giây, tối đa 50 đơn/lượt; backlog hoặc service downtime
@@ -63,6 +68,11 @@ lệch tối đa 5 giây; không ghi rằng NTP đã đồng bộ. verify-vps-mo
 kiểm tra sáu service/five dependency targets, dashboard và datasource
 Prometheus thực tế. Metric rate/quantile cần nhiều scrape.
 
+Verifier đối chiếu từng panel theo id/title/query/unit với file provisioning,
+đọc history hai phút với step 15 giây và ít nhất ba mẫu cho mỗi service.
+CI cũng so sánh cùng projection trước/sau restart Grafana/Prometheus;
+không chỉ kiểm tra số panel. Không có dữ liệu không được thay bằng số 0.
+
 ~~~~powershell
 ssh -i <private-key-path> -o StrictHostKeyChecking=yes -N -L 13001:127.0.0.1:13000 -L 19091:127.0.0.1:19090 -L 18825:127.0.0.1:18025 deploy@42.96.2.60
 ~~~~
@@ -89,7 +99,12 @@ iterations, CPU/RAM/swap và health sau tải. Target chưa chạy không coi l�
 
 VPS hiện có 1 CPU và khoảng 4,9 GiB RAM. Kịch bản đo không phải cam kết
 capacity 1.000 successful requests/s. So sánh k6/Grafana trên cùng cửa
-sổ; panel rate dùng cửa sổ 2–5 phút nên khác summary k6 10 giây.
+sổ; panel rate dùng cửa sổ 2–150 giây nên khác summary k6 10 giây.
+
+Access token Auth có hạn 1150 giây: chuẩn bị fixture sát lúc đo, xác minh
+token còn hạn đủ cho cả hai mức tải và thử một request HTTPS trả 200 qua
+Gateway trước khi chạy. Kết quả thực tế, gồm threshold fail và giới hạn
+diễn giải, trong [báo cáo monitoring/tải VPS](capacity-monitoring-report.md).
 
 ## Kiểm thử
 
@@ -98,5 +113,5 @@ hoàn kho một lần và rollback khi reserved không khớp. Notification ki�
 tra envelope/schema và SMTP UTF-8 thật. Live tests dùng Gateway,
 RabbitMQ/PostgreSQL và Mailpit: recipient Auth thật, replay, SMTP outage,
 restart Notification, email hủy và email hết hạn. CI rút ngắn tuổi fixture
-qua SQL; SMTP_EXPIRY_REAL_WAIT=true chờ đủ 5 phút, không sửa timestamp khi
+qua SQL; SMTP_EXPIRY_REAL_WAIT=true chờ đủ 150 giây, không sửa timestamp khi
 xác minh VPS. Xem kết quả deploy thực tế trong commits-and-deployments.md.

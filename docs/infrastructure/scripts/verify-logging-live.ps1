@@ -1,7 +1,7 @@
 param([string]$EvidenceFile = '.verification/logging-live.json')
 $ErrorActionPreference = 'Stop'
 [Net.WebRequest]::DefaultWebProxy = $null
-$project = (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
+$project = (Resolve-Path (Join-Path $PSScriptRoot '../../..')).Path
 Set-Location -LiteralPath $project
 $trace = [Guid]::NewGuid().ToString('N')
 $span = [Guid]::NewGuid().ToString('N').Substring(0,16)

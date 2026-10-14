@@ -3,7 +3,7 @@ name: Services CI/CD
 on:
   push:
     branches: [main, 'feature/**']
-    paths: ['*-service/**', 'api-gateway/**', 'infrastructure/**', 'tests/**', 'docker-compose*.yml', '.github/workflows/ci.yml']
+    paths: ['*-service/**', 'api-gateway/**', 'docs/infrastructure/**', 'tests/**', 'docker-compose*.yml', '.github/workflows/ci.yml']
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -42,8 +42,8 @@ jobs:
           for service in auth-service api-gateway product-service payment-service order-service notification-service; do
             [[ -f "$service/build.gradle" ]] || continue
             # Test/load/observation tools still run verification, but do not recreate every VPS app.
-            # Runtime infrastructure/Compose changes affect all services; module changes select that app.
-            if grep -Eq "^($service/|infrastructure/(postgres/|rabbitmq/|scripts/(deploy|verify-infrastructure|smoke-auth)\.sh$)|docker-compose[^/]*\.yml$)" <<< "$paths"; then
+            # Runtime docs/infrastructure/Compose changes affect all services; module changes select that app.
+            if grep -Eq "^($service/|docs/infrastructure/(postgres/|rabbitmq/|scripts/(deploy|verify-infrastructure|smoke-auth)\.sh$)|docker-compose[^/]*\.yml$)" <<< "$paths"; then
               services+=("$service")
             fi
           done
@@ -69,17 +69,17 @@ jobs:
             [[ -f "$service/build.gradle" ]] || continue
             (cd "$service" && ./gradlew clean test bootJar --no-daemon)
           done
-          for script in infrastructure/scripts/*.sh infrastructure/postgres/*.sh; do bash -n "$script"; done
-          bash infrastructure/scripts/verify-rpc-contract.sh
-          pwsh -File infrastructure/scripts/export-openapi.ps1
+          for script in docs/infrastructure/scripts/*.sh docs/infrastructure/postgres/*.sh; do bash -n "$script"; done
+          bash docs/infrastructure/scripts/verify-rpc-contract.sh
+          pwsh -File docs/infrastructure/scripts/export-openapi.ps1
       - name: Verify infrastructure and real service integration
         id: live
         run: |
           set -euo pipefail
-          bash infrastructure/scripts/generate-env.sh
+          bash docs/infrastructure/scripts/generate-env.sh
           docker compose up -d --wait --wait-timeout 180 postgres rabbitmq
           docker compose run --rm --no-deps rabbitmq-topology
-          bash infrastructure/scripts/verify-infrastructure.sh
+          bash docs/infrastructure/scripts/verify-infrastructure.sh
           services=(auth-service)
           for service in api-gateway product-service order-service payment-service notification-service; do
             [[ ! -f "$service/build.gradle" ]] || services+=("$service")
@@ -103,9 +103,10 @@ jobs:
           END $$;
           SQL
           for service in auth-service product-service order-service payment-service notification-service; do
-            bash infrastructure/scripts/apply-schema.sh "$service"
+            bash docs/infrastructure/scripts/apply-schema.sh "$service"
           done
-          OPENAPI_LIVE_TEST=true bash infrastructure/scripts/test-auth-live.sh
+          OPENAPI_LIVE_TEST=true bash docs/infrastructure/scripts/test-auth-live.sh
+          bash docs/infrastructure/scripts/verify-schema-checksum.sh
           if [[ -f api-gateway/build.gradle ]]; then
             (cd api-gateway && GATEWAY_FAILURE_TEST=true ./gradlew liveTest --no-daemon)
           fi
@@ -158,10 +159,10 @@ jobs:
           export LOAD_FIXTURE_FILE="$PWD/.verification/multi-fixture.json" FIXTURE_FILE="$PWD/.verification/multi-fixture.json"
           export LOAD_ACCOUNTS=2 LOAD_STOCK=50 RATE=1 DURATION=10s
           order-service/gradlew -p order-service multiUserLoadFixture -PfixtureAction=prepare --no-daemon
-          bash infrastructure/scripts/sample-resources.sh 300 > ci-diagnostics/load-resources.csv &
+          bash docs/infrastructure/scripts/sample-resources.sh 300 > ci-diagnostics/load-resources.csv &
           sampler=$!
           trap 'kill "$sampler" 2>/dev/null || true' EXIT
-          bash infrastructure/scripts/profile-snapshot.sh > ci-diagnostics/load-before.txt
+          bash docs/infrastructure/scripts/profile-snapshot.sh > ci-diagnostics/load-before.txt
           for phase in warmup catalog orders e2e; do
             (( $(awk '/^MemAvailable:/ {print $2}' /proc/meminfo) >= 524288 ))
             (( $(df -Pk . | awk 'NR==2 {print $4}') >= 4194304 ))
@@ -169,7 +170,7 @@ jobs:
             [[ "$phase" != warmup ]] || export PHASE=catalog
             export SUMMARY_FILE="$PWD/ci-diagnostics/$phase-load.json"
             .verification/k6-v2.3.0-linux-amd64/k6 run tests/k6/multi-user-load.js
-            bash infrastructure/scripts/profile-snapshot.sh > "ci-diagnostics/$phase-after.txt"
+            bash docs/infrastructure/scripts/profile-snapshot.sh > "ci-diagnostics/$phase-after.txt"
             export LOAD_RESULT_FILE="$PWD/ci-diagnostics/$phase-reconciliation.json"
             if [[ "$phase" == orders ]]; then order-service/gradlew -p order-service multiUserLoadFixture -PfixtureAction=finish --no-daemon; fi
             if [[ "$phase" == e2e ]]; then order-service/gradlew -p order-service multiUserLoadFixture -PfixtureAction=verify --no-daemon; fi
@@ -179,10 +180,10 @@ jobs:
           set -euo pipefail
           export MONITOR_DB_PASSWORD="$(sed -n 's/^MONITOR_DB_PASSWORD=//p' .env)"
           export GRAFANA_ADMIN_PASSWORD="$(sed -n 's/^GRAFANA_ADMIN_PASSWORD=//p' .env)"
-          bash infrastructure/scripts/provision-monitoring.sh
+          bash docs/infrastructure/scripts/provision-monitoring.sh
           docker compose -f docker-compose.yml -f docker-compose.local.yml -f docker-compose.monitoring.yml --profile monitoring up -d --no-deps --wait --wait-timeout 240 prometheus grafana node-exporter postgres-exporter redis-exporter
           mkdir -p .verification ci-diagnostics
-          pwsh -File infrastructure/scripts/verify-observability-live.ps1 -EvidenceFile ci-diagnostics/observability.json
+          pwsh -File docs/infrastructure/scripts/verify-observability-live.ps1 -EvidenceFile ci-diagnostics/observability.json
       - name: Verify trace privacy against persisted Tempo data
         run: |
           set -euo pipefail
@@ -190,7 +191,7 @@ jobs:
           for attempt in {1..60}; do
             curl -fsS --max-time 5 http://127.0.0.1:13200/ready >/dev/null && break || sleep 2
           done
-          pwsh -File infrastructure/scripts/verify-trace-privacy.ps1 -EvidenceFile ci-diagnostics/trace-privacy.json
+          pwsh -File docs/infrastructure/scripts/verify-trace-privacy.ps1 -EvidenceFile ci-diagnostics/trace-privacy.json
       - name: Verify instrumented business trace and exporter outage recovery
         run: |
           set -euo pipefail
@@ -209,7 +210,7 @@ jobs:
           .verification/k6-v2.3.0-linux-amd64/k6 run tests/k6/multi-user-load.js
           export LOAD_RESULT_FILE="$PWD/ci-diagnostics/trace-business-reconciliation.json"
           order-service/gradlew -p order-service multiUserLoadFixture -PfixtureAction=verify --no-daemon
-          pwsh -File infrastructure/scripts/verify-tracing-live.ps1 -TraceId "$trace_id" -EvidenceFile ci-diagnostics/tracing-business.json
+          pwsh -File docs/infrastructure/scripts/verify-tracing-live.ps1 -TraceId "$trace_id" -EvidenceFile ci-diagnostics/tracing-business.json
           collector="$(docker compose -f docker-compose.yml -f docker-compose.tracing.yml --profile tracing ps -q otel-collector)"
           test -n "$collector"
           trap 'docker start "$collector" >/dev/null' EXIT
@@ -224,7 +225,7 @@ jobs:
         run: |
           set -euo pipefail
           docker compose -f docker-compose.yml -f docker-compose.logging.yml --profile logging up -d --no-deps loki alloy
-          pwsh -File infrastructure/scripts/verify-logging-live.ps1 -EvidenceFile ci-diagnostics/logging.json
+          pwsh -File docs/infrastructure/scripts/verify-logging-live.ps1 -EvidenceFile ci-diagnostics/logging.json
       - name: Save bounded failure diagnostics
         if: failure()
         run: |
@@ -269,7 +270,7 @@ jobs:
             printf -- '- Commit tested: `%s`\n' "$GITHUB_SHA"
             printf -- '- Time (UTC): `%s`\n' "$(date -u +%FT%TZ)"
             printf -- '- Java tests/build: %s\n' "$JAVA_RESULT"
-            printf -- '- Real infrastructure/API/restart: %s\n' "$LIVE_RESULT"
+            printf -- '- Real docs/infrastructure/API/restart: %s\n' "$LIVE_RESULT"
             printf -- '- Reports: java-test-reports\n'
           } >> "$GITHUB_STEP_SUMMARY"
 
@@ -279,7 +280,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Validate collector, logging and alert configurations with pinned images
-        run: bash infrastructure/scripts/verify-observability-config.sh
+        run: bash docs/infrastructure/scripts/verify-observability-config.sh
 
   publish:
     needs: [changes, verify, observability-config]
@@ -367,14 +368,14 @@ jobs:
       - name: Transfer immutable release
         run: |
           set -euo pipefail
-          tar -czf release.tar.gz docker-compose.yml docker-compose.production.yml docker-compose.monitoring.yml docker-compose.smtp-test.yml infrastructure
+          tar -czf release.tar.gz docker-compose.yml docker-compose.production.yml docker-compose.monitoring.yml docker-compose.smtp-test.yml docs/infrastructure
           ssh -i ~/.ssh/id_deploy -o StrictHostKeyChecking=yes "$VPS_USER@$VPS_HOST" "mkdir -p '$DEPLOY_ROOT/releases/$IMAGE_TAG'"
           scp -i ~/.ssh/id_deploy -o StrictHostKeyChecking=yes release.tar.gz "$VPS_USER@$VPS_HOST:$DEPLOY_ROOT/releases/$IMAGE_TAG/"
           ssh -i ~/.ssh/id_deploy -o StrictHostKeyChecking=yes "$VPS_USER@$VPS_HOST" "cd '$DEPLOY_ROOT/releases/$IMAGE_TAG' && tar -xzf release.tar.gz && test -f '$DEPLOY_ROOT/.env' && ln -sfn '$DEPLOY_ROOT/.env' .env"
       - name: Provision configured SMTP sandbox and monitoring
         run: |
           set -euo pipefail
-          ssh -i ~/.ssh/id_deploy -o StrictHostKeyChecking=yes "$VPS_USER@$VPS_HOST" "cd '$DEPLOY_ROOT/releases/$IMAGE_TAG' && IMAGE_TAG='$IMAGE_TAG' bash infrastructure/scripts/provision-demo-profiles.sh"
+          ssh -i ~/.ssh/id_deploy -o StrictHostKeyChecking=yes "$VPS_USER@$VPS_HOST" "cd '$DEPLOY_ROOT/releases/$IMAGE_TAG' && IMAGE_TAG='$IMAGE_TAG' bash docs/infrastructure/scripts/provision-demo-profiles.sh"
       - name: Deploy changed services with individual image SHAs
         id: rollout
         env:
@@ -383,7 +384,7 @@ jobs:
           set -euo pipefail
           while IFS= read -r service; do
             [[ "$service" =~ ^(auth-service|api-gateway|product-service|order-service|payment-service|notification-service)$ ]]
-            remote="cd '$DEPLOY_ROOT/releases/$IMAGE_TAG' && export DOCKER_CONFIG=\$(mktemp -d) && trap 'rm -f \"\$DOCKER_CONFIG/config.json\"; rmdir \"\$DOCKER_CONFIG\"' EXIT && docker login ghcr.io --username '$REGISTRY_USER' --password-stdin && IMAGE_TAG='$IMAGE_TAG' DEPLOY_SERVICE='$service' DEPLOY_ROOT='$DEPLOY_ROOT' bash infrastructure/scripts/deploy.sh"
+            remote="cd '$DEPLOY_ROOT/releases/$IMAGE_TAG' && export DOCKER_CONFIG=\$(mktemp -d) && trap 'rm -f \"\$DOCKER_CONFIG/config.json\"; rmdir \"\$DOCKER_CONFIG\"' EXIT && docker login ghcr.io --username '$REGISTRY_USER' --password-stdin && IMAGE_TAG='$IMAGE_TAG' DEPLOY_SERVICE='$service' DEPLOY_ROOT='$DEPLOY_ROOT' bash docs/infrastructure/scripts/deploy.sh"
             printf '%s' "$REGISTRY_TOKEN" | ssh -i ~/.ssh/id_deploy -o StrictHostKeyChecking=yes "$VPS_USER@$VPS_HOST" "$remote"
           done < <(jq -r '.[]' <<< "$SERVICES")
       - name: Record actual deployment

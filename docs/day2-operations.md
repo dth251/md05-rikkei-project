@@ -14,7 +14,7 @@ foreach ($service in $services) {
 }
 docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --wait postgres rabbitmq redis
 docker compose run --rm --no-deps rabbitmq-topology
-powershell -ExecutionPolicy Bypass -File infrastructure/scripts/verify-infrastructure.ps1 -AllowLoopback
+powershell -ExecutionPolicy Bypass -File docs/infrastructure/scripts/verify-infrastructure.ps1 -AllowLoopback
 docker compose build $services
 docker compose up -d --no-deps --wait $services
 ```
@@ -37,7 +37,7 @@ try {
     $env:ORDER_SAGA_LIVE_TEST = 'true'
     $env:SAGA_RECOVERY_TEST = 'true'
     $env:NOTIFICATION_RECOVERY_TEST = 'true'
-    powershell -ExecutionPolicy Bypass -File infrastructure/scripts/test-auth-live.ps1
+    powershell -ExecutionPolicy Bypass -File docs/infrastructure/scripts/test-auth-live.ps1
     foreach ($service in 'api-gateway', 'product-service', 'order-service', 'payment-service', 'notification-service') {
         & ".\$service\gradlew.bat" -p $service liveTest --no-daemon
         if ($LASTEXITCODE -ne 0) { throw "Live test failed: $service" }

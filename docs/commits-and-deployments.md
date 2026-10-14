@@ -695,3 +695,124 @@ consumer, mọi queue ready/unacked/DLQ=0; Order/Payment pending Outbox=0.
 HTTPS `/gateway-status` trả 200 với `{"status":"UP"}` lúc 00:01:12 +07:00.
 Các ca VNPay signed callback/refund/restart được xác minh bằng fixture
 trong CI, không phải merchant sandbox hoặc giao dịch khách hàng thực tế.
+
+## Hết hạn 5 phút, SMTP và monitoring ngày 14/10/2026
+
+| Mốc | SHA | Thời gian +07:00 | Kiểm tra / deploy thực tế |
+|---|---|---|---|
+| 156-order-service | `ae134e8541aff254d8e3e6b7a87c560cfe4834e2` | 2026-10-14T00:40:37+07:00 | Order 60/60 và Notification 18/18 Java tests/bootJar đạt. Docker local hai service healthy; SMTP live 5/5 đạt và ca expiry qua queue riêng chạy lại 1/1 đạt. PR #34 CI 38440649153 đạt toàn bộ verify/observability; publish/deploy skip đúng trên PR. |
+| 157-order-service | `069ad87d0cdfd768f847dbd214d85095a693947e` | 2026-10-14T01:00:05+07:00 | Merge PR #34 sau CI đạt. Main 38443206215 verify/observability và sáu publish đạt. Deploy lần đầu dừng trước rollout do IMAGE_TAG chưa truyền vào SSH; lần chạy lại riêng job deploy đạt, rollout xong 01:30:20 +07:00. Sáu image/revision đúng SHA, healthy/restart=0. SMTP VPS 3/3 đạt, gồm chờ đủ 5 phút, và monitoring/load được kiểm chứng thực tế. |
+| 158-devops | `97be0ef1a059b02c0d4493342270267c2b981a5f` | 2026-10-14T01:20:29+07:00 | Truyền full SHA trực tiếp vào lệnh provision remote. Bash syntax/diff check đạt; cả hai production Compose overlays SMTP/monitoring config --quiet đạt trên VPS. PR #35 CI 38445960395 verify/observability success, publish/deploy skipped vì chỉ đổi workflow. |
+| 159-devops | `9643712b44429f01eab75b560d1d49d79706562c` | 2026-10-14T01:39:25+07:00 | Merge PR #35 sau CI đạt. Main 38448516283 verify/observability-config success; publish/deploy skipped đúng vì thay đổi chỉ ở workflow, không chọn service để recreate. VPS tiếp tục chạy bản ứng dụng 157 đã được kiểm thử và deploy thành công. |
+
+Main 159 kết thúc success lúc 01:57:06 +07:00, xác minh qua GitHub run
+status/conclusion và head SHA. Ứng dụng VPS giữ SHA 157 vì mốc 159 chỉ
+sửa bước provision trong workflow, không thay artifact ứng dụng.
+
+Deadline ONLINE PENDING_PAYMENT dùng cùng policy PT5M ở scheduler và
+payment consumer, dưới cùng pessimistic row lock/transaction. Consumer
+không xác nhận đơn sau hạn kể cả scheduler chưa quét; expiry hoàn kho
+một lần. Tiền đã capture đến muộn chuyển luồng refund REQUIRED/đối soát
+hiện có, không phục hồi đơn. COD không thuộc timeout ONLINE. Java tests
+phủ race, callback trước/sau hạn, scan trễ, replay và rollback tồn kho.
+
+Notification dùng Spring Mail và queue mới `notification.expiry.q` để
+event hết hạn chờ bền vững trong rollout từng service. Migration 004
+cho phép paymentId null đúng riêng stage expiry và thêm CHECK phù hợp;
+001–003 đã checksum được giữ nguyên. VPS có Notification 001–004,
+Order 001–006 và Payment 001–004. Bash/PowerShell topology verifier đạt;
+queue expiry có một consumer, DLQ/ready/unacked đều 0 sau live/load.
+
+VPS private config bật SMTP sandbox/monitoring, recipient token riêng và
+mật khẩu monitoring ngẫu nhiên; có backup private trước thay đổi. Lỗi
+deploy đầu 01:18:49 nằm ở interpolation IMAGE_TAG, chưa thay ứng dụng.
+Để rerun bản đã verify, ghi fallback full SHA 157 vào `.env` private rồi
+rerun riêng failed deploy job, không rebuild/publish lại image chưa thử.
+Mốc 158 sửa workflow để các lần sau truyền SHA từ runner một cách rõ
+ràng. Không commit hoặc in `.env`, credential, SSH key, fixture token.
+
+Monitoring role chỉ có pg_monitor/CONNECT, không cấp quyền dữ liệu ứng
+dụng. Preflight xác nhận đủ RAM/disk và UTC qua hai HTTPS Date; VPS NTP
+vẫn unsynchronized, không tuyên bố NTP đã đồng bộ. Mailpit và năm
+container monitoring đã provision lúc 01:20:52 +07:00, cổng UI chỉ bind
+loopback. Có volume history riêng, không xóa volume hoặc dữ liệu.
+
+Rollout thực tế +07:00: Auth 01:22:48, Gateway 01:24:06, Product
+01:25:42, Payment 01:27:16, Order 01:28:54, Notification 01:30:20.
+SSH xác nhận current/manifest/OCI revision của sáu service đều là SHA
+157. Kiểm tra monitoring sau rollout và sau tải đều đạt: sáu service và
+năm target hạ tầng UP; Grafana database/datasource OK, dashboard 22
+panel, HTTP/resource metrics và hai Outbox snapshot hợp lệ.
+
+Snapshot Prometheus lúc 01:55:34 +07:00 có một scheduler expiry, ba email
+SENT, các state email còn lại 0 và email snapshot valid=1; panel nghiệp
+vụ có dữ liệu từ các ca kiểm thử SMTP.
+
+Ba Java EmailLiveTests chạy qua HTTPS VPS, PostgreSQL/RabbitMQ/Mailpit
+private tunnel đạt 3/3, zero fail/error/skip, suite time 323,859 giây:
+expiry 311,852 giây, email hủy 5,850 giây, email xác nhận/replay 6,145
+giây. Gradle BUILD SUCCESSFUL in 5m45s. Đơn fixture 122 tạo lúc
+01:31:27.786439 +07:00, giữ PENDING_PAYMENT trước hạn, sau hạn EXPIRED;
+stock available=1/reserved=0. Email expiry SENT, một attempt, lúc
+01:36:34.851290 +07:00. Không sửa createdAt trong lần kiểm chứng VPS.
+Recipient là chủ đơn Auth thật, replay không thêm delivery hoặc SMTP
+message. Hai ca confirmation/cancellation dùng payment simulation của
+fixture, không phải giao dịch VNPay ngân hàng. Không dừng hoặc restart
+container trên VPS để kiểm thử SMTP. Tunnel được đóng sau chạy.
+
+Tải catalog với 50 token Auth mới còn hạn, 10 giây/mức và tối đa 200
+VUs: target 500 phát 800 request, 9 HTTP 200, 791 timeout, 4.201 dropped;
+target 1.000 phát 800 request, 800 timeout, 9.200 dropped. Cả hai exit99
+và threshold fail; CPU mẫu 2 giây đều 100%. Throughput thành công theo
+summary chỉ 0,71/s và 0/s, không tuyên bố đạt 500–1.000 requests/s.
+Lần đo trước dùng token hết hạn 15 phút bị loại, giữ evidence riêng;
+token cũ xác nhận HTTP 401, fixture mới kiểm tra 50 token và request200
+trước đo. Sau tải sáu health UP/restart0, Outbox/DLQ0 và toàn bộ scrape
+targets UP. JSON/CSV/XML giữ private trong .verification.
+
+Chi tiết thời gian, p95/p99, TLS, RAM/swap, cách diễn giải và cửa sổ
+Prometheus trong [báo cáo tải/monitoring](capacity-monitoring-report.md);
+luồng và cách truy cập UI trong [runbook](expiry-email-monitoring.md).
+[PR #34](https://github.com/dth251/md05-rikkei-project/pull/34),
+[main 157, attempt 2 success](https://github.com/dth251/md05-rikkei-project/actions/runs/38443206215),
+[PR #35](https://github.com/dth251/md05-rikkei-project/pull/35),
+[main 159](https://github.com/dth251/md05-rikkei-project/actions/runs/38448516283).
+
+Phát triển/kiểm thử trong worktree feature/expiry-email-monitoring để giữ
+thay đổi có sẵn ở workspace gốc: `.vscode/settings.json` và việc di
+chuyển infrastructure sang docs/infrastructure. Không stage/khôi phục
+những thay đổi đó. Không thêm frontend/shared/Maven hoặc Python source.
+
+## Tiếp nối ưu tiên expiry, SMTP và monitoring ngày 14/10/2026
+
+Nhánh `feature/expiry-150s-email-monitoring` tích hợp lịch sử worktree
+`feature/expiry-email-monitoring` mốc 160. Giữ nguyên thay đổi IDE của
+người dùng; hoàn tất chuyển thư mục hạ tầng sang `docs/infrastructure/`
+và cập nhật Compose/CI/scripts/release tương ứng. Không sửa checksum SQL
+đã áp dụng: Notification 004 giữ nguyên bytes; thêm 005 cho ràng buộc.
+
+| Mốc | SHA | Thời gian +07 | Kiểm tra / deploy thực tế |
+|---|---|---|---|
+| 161-order-service | `cbc38d6883ff19c552ef33666abb659fea94a056` | 2026-10-14T09:21:51+07:00 | Deadline mặc định 150 giây, consumer kiểm tra sau row lock; 60 Java tests và bootJar đạt. Chưa deploy VPS. |
+| 162-notification-service | `e42eb61914d29b65bbea0bf67ec2804bb7699321` | 2026-10-14T09:26:23+07:00 | Email expiry, nullable payment ID chỉ cho expiry, listener validation/SMTP UTF-8; 20 Java tests đạt trước tích hợp. |
+| 163-infrastructure | `f97c9fd34ccace99bf5f7d71e9f0efb3f934c8f3` | 2026-10-14T09:26:36+07:00 | Compose/Bash/PowerShell syntax, Prometheus 11 rules/fixtures, Collector/Alloy/Loki/Alertmanager config đạt. Runner checksum được thử trên schema PostgreSQL riêng: apply/replay đạt, mismatch trả nonzero trước DDL. |
+| 164-infrastructure | `1ccf6ebb0bdd2e2f55018b2d483d65e756055ad7` | 2026-10-14T09:38:18+07:00 | Tích hợp mốc 160, queue expiry riêng/DLQ và scripts VPS. Order 60 hồi quy + 1 policy test, Notification 21 Java tests và bootJar đạt; schema/topology/replay đạt local. |
+| 165-infrastructure | `341c17eb0e10855278d1ca0c24ec76281457bf83` | 2026-10-14T09:45:26+07:00 | SSH chạy verifier mới bằng stdin: sáu service/năm dependency UP, history hai phút, 22 panel/query/unit khớp file đang deploy, datasource/resource/business metrics đạt. Không đổi bản ứng dụng trên VPS. |
+| 166-infrastructure | `0b9f51e39c761b23bdb4cd2fab744ed791e3593b` | 2026-10-14T09:48:06+07:00 | CI đối chiếu projection dashboard trước/sau restart; syntax/projection 22 panel đạt. Live SMTP JVM giới hạn heap 128 MiB. |
+
+VPS kiểm tra lại 09:29–09:44 +07: sáu app mốc 157 healthy, monitoring/Mailpit
+healthy; khoảng 2.146 MiB RAM available và 14 GiB disk trống. Private
+`RESERVATION_TTL=PT5M` vẫn còn tại checkpoint; cần đổi PT150S khi rollout
+code mới. Không coi kiểm tra verifier bằng stdin là deploy bản 150 giây.
+
+Lần SMTP local đầu 5/5 thất bại với 503/504 và timeout khôi phục; Windows
+có lúc chỉ còn khoảng 15 MiB RAM available. Sau đó app và Mailpit được
+khôi phục healthy, test worker giảm heap 128 MiB; lần chạy lại đang chờ
+đủ 150 giây thực tế tại checkpoint. Không nâng timeout/threshold nghiệp vụ
+để biến kết quả thất bại thành đạt. Một ca boundary H2 ban đầu lệch do
+round nanosecond theo precision database; clock fixture đã chuẩn hóa
+millisecond và toàn bộ 60 ca hồi quy chạy lại đạt.
+
+CI/PR và deploy của nhánh mới chưa hoàn tất tại checkpoint này. Mức tải
+500/1.000 requests/s trước đó vẫn không đạt; không chạy tải lớn lại để
+khẳng định capacity. Xem báo cáo tải/monitoring và runbook tương ứng.

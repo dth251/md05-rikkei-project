@@ -39,9 +39,9 @@ chạy trên stack local/CI, không tự chạy khi app khởi động. CI có s
 và SMTP; fixture signing key là chuỗi công khai chỉ dùng test, không phải merchant secret.
 
 ```bash
-bash infrastructure/scripts/generate-env.sh # chỉ khi chưa có .env
+bash docs/infrastructure/scripts/generate-env.sh # chỉ khi chưa có .env
 docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --wait
-bash infrastructure/scripts/apply-schema.sh notification-service
+bash docs/infrastructure/scripts/apply-schema.sh notification-service
 docker compose -f docker-compose.yml -f docker-compose.local.yml -f docker-compose.smtp-test.yml --profile smtp-test up -d --wait mailpit
 docker compose -f docker-compose.yml -f docker-compose.local.yml -f docker-compose.smtp-test.yml --profile smtp-test up -d --no-deps --wait notification-service
 ```
@@ -54,10 +54,10 @@ collection hoặc báo cáo. Xem biến môi trường trong `.env.example` và 
 Monitoring:
 
 ```bash
-bash infrastructure/scripts/verify-observability-config.sh
-bash infrastructure/scripts/observability-preflight.sh
+bash docs/infrastructure/scripts/verify-observability-config.sh
+bash docs/infrastructure/scripts/observability-preflight.sh
 # MONITOR_DB_PASSWORD lấy từ .env private, không in ra terminal.
-bash infrastructure/scripts/provision-monitoring.sh
+bash docs/infrastructure/scripts/provision-monitoring.sh
 docker compose -f docker-compose.yml -f docker-compose.monitoring.yml --profile monitoring up -d --wait prometheus grafana node-exporter postgres-exporter redis-exporter
 ```
 
@@ -74,7 +74,7 @@ trong thư mục private `.verification`, không commit/upload.
 Tải trên Windows:
 
 ```powershell
-./infrastructure/scripts/run-multi-user-load.ps1 -K6Path 'C:/private/tools/k6.exe' -Accounts 10 -Rate 1 -Seconds 20
+./docs/infrastructure/scripts/run-multi-user-load.ps1 -K6Path 'C:/private/tools/k6.exe' -Accounts 10 -Rate 1 -Seconds 20
 ```
 
 Harness dừng các pha sau nếu threshold hoặc reconciliation thất bại; giữ nguyên dữ liệu
@@ -158,7 +158,7 @@ R11 (Elasticsearch/Mongo/SMS/HA) giữ ngoài phạm vi bốn nhóm đã thống
   Order/Payment/email, nghiệp vụ khi collector dừng và Docker audit privacy ở Loki.
   Các bài mới đã đạt tại head 140 nêu trên; chưa xác nhận deploy từ kết quả CI.
 - CI head `f457e4279175edba5722ba4eb895dbdd7dedfc39`, push run 38377774329:
-  unit/build, infrastructure/live, VNPay, SMTP và multi-account load/reconciliation đạt.
+  unit/build, docs/infrastructure/live, VNPay, SMTP và multi-account load/reconciliation đạt.
   Monitoring thất bại vì fresh TSDB chưa có đủ ba samples. Verifier đã thêm bounded wait
   qua scrape intervals và giữ cùng cửa sổ query để kiểm chứng retention sau restart.
   Tracing/logging stages chưa chạy trong lần CI này; cần CI head sửa.

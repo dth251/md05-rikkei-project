@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-release="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+release="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 cd "$release"
 : "${IMAGE_TAG:?Set tested commit SHA}"
 : "${DEPLOY_ROOT:?Set deployment root}"
@@ -33,17 +33,17 @@ elif [[ -f "$DEPLOY_ROOT/.current-image-tag" ]]; then
 fi
 previous="${!tag_variable:-}"
 export "$tag_variable=$IMAGE_TAG"
-mkdir -p "$DEPLOY_ROOT/infrastructure/postgres" "$DEPLOY_ROOT/infrastructure/rabbitmq"
-cp infrastructure/postgres/init-databases.sh "$DEPLOY_ROOT/infrastructure/postgres/"
-cp infrastructure/rabbitmq/definitions.json "$DEPLOY_ROOT/infrastructure/rabbitmq/"
-cp infrastructure/rabbitmq/enabled_plugins "$DEPLOY_ROOT/infrastructure/rabbitmq/"
+mkdir -p "$DEPLOY_ROOT/docs/infrastructure/postgres" "$DEPLOY_ROOT/docs/infrastructure/rabbitmq"
+cp docs/infrastructure/postgres/init-databases.sh "$DEPLOY_ROOT/docs/infrastructure/postgres/"
+cp docs/infrastructure/rabbitmq/definitions.json "$DEPLOY_ROOT/docs/infrastructure/rabbitmq/"
+cp docs/infrastructure/rabbitmq/enabled_plugins "$DEPLOY_ROOT/docs/infrastructure/rabbitmq/"
 compose=(docker compose --project-directory "$DEPLOY_ROOT" --env-file "$DEPLOY_ROOT/.env" -f "$release/docker-compose.yml" -f "$release/docker-compose.production.yml")
 "${compose[@]}" config --quiet
 "${compose[@]}" pull "$service"
 "${compose[@]}" up -d --wait --wait-timeout 180 postgres rabbitmq
 "${compose[@]}" run --rm --no-deps rabbitmq-topology
-bash infrastructure/scripts/verify-infrastructure.sh
-bash infrastructure/scripts/apply-schema.sh "$service"
+bash docs/infrastructure/scripts/verify-infrastructure.sh
+bash docs/infrastructure/scripts/apply-schema.sh "$service"
 if [[ "$service" == api-gateway ]]; then
     "${compose[@]}" up -d --wait --wait-timeout 120 redis
 fi
@@ -51,7 +51,7 @@ verify_service() {
     curl --fail --silent --show-error --max-time 15 "http://127.0.0.1:$port/actuator/health" \
         | jq -e '.status == "UP"' > /dev/null || return 1
     if [[ "$service" == auth-service || "$service" == api-gateway ]]; then
-        bash infrastructure/scripts/smoke-auth.sh "http://127.0.0.1:$port" || return 1
+        bash docs/infrastructure/scripts/smoke-auth.sh "http://127.0.0.1:$port" || return 1
     elif [[ "$service" == product-service ]]; then
         curl --fail --silent --show-error --max-time 15 "http://127.0.0.1:$port/api/products" \
             | jq -e '.success == true' > /dev/null || return 1

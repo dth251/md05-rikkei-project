@@ -6,7 +6,7 @@ services:
     mem_limit: 64m
     command: [--config.file=/etc/alertmanager/config.yml, --storage.path=/alertmanager, --data.retention=72h]
     volumes:
-      - ${ALERTMANAGER_CONFIG:-./infrastructure/monitoring/alertmanager.yml}:/etc/alertmanager/config.yml:ro
+      - ${ALERTMANAGER_CONFIG:-./docs/infrastructure/monitoring/alertmanager.yml}:/etc/alertmanager/config.yml:ro
       - alertmanager-data:/alertmanager
     ports: [127.0.0.1:19093:9093]
     healthcheck:

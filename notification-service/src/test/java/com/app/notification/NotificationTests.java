@@ -77,6 +77,20 @@ class NotificationTests {
     }
 
     @Test
+    void expirySnapshotAllowsNoPaymentButConfirmedSnapshotStillRequiresPayment() {
+        long orderId = ORDER_IDS.incrementAndGet();
+        var expired = new CommerceEvent(UUID.randomUUID().toString(), "order.expired", orderId,
+                1L, new BigDecimal("12.50"), null, Instant.now());
+        notifications.saveAndFlush(new NotificationLog(expired));
+        assertEquals("order.expired", mapper.toResponse(
+                notifications.findByOrderId(orderId).orElseThrow()).eventType());
+        var invalid = new CommerceEvent(UUID.randomUUID().toString(), "order.confirmed",
+                ORDER_IDS.incrementAndGet(), 1L, new BigDecimal("12.50"), null, Instant.now());
+        assertThrows(DataIntegrityViolationException.class,
+                () -> notifications.saveAndFlush(new NotificationLog(invalid)));
+    }
+
+    @Test
     void uniqueOrderConstraintRejectsSecondNotification() {
         long orderId = ORDER_IDS.incrementAndGet();
         notifications.saveAndFlush(new NotificationLog(event(orderId)));

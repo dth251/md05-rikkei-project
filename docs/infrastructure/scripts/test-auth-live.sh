@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-cd "$(dirname "${BASH_SOURCE[0]}")/../.."
+cd "$(dirname "${BASH_SOURCE[0]}")/../../.."
 while IFS='=' read -r name value; do
     if [[ "$name" == AUTH_DB_PASSWORD ]]; then
         export AUTH_SMOKE_DB_PASSWORD="$value"

@@ -2,6 +2,7 @@ package com.app.order.config;
 
 import com.app.order.service.ReservationExpiryService;
 import io.micrometer.core.instrument.MeterRegistry;
+import java.time.Clock;
 import java.time.Instant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,21 +19,24 @@ public class ReservationExpiryScheduler {
     private static final Logger LOGGER = LoggerFactory.getLogger(ReservationExpiryScheduler.class);
     private final ReservationExpiryService expiry;
     private final MeterRegistry registry;
-    private final ReservationPolicy policy;
+    private final ReservationDeadline deadline;
+    private final Clock clock;
 
     public ReservationExpiryScheduler(
         ReservationExpiryService expiry,
         MeterRegistry registry,
-        ReservationPolicy policy
+        ReservationDeadline deadline,
+        Clock clock
     ) {
         this.expiry = expiry;
         this.registry = registry;
-        this.policy = policy;
+        this.deadline = deadline;
+        this.clock = clock;
     }
 
     @Scheduled(fixedDelayString = "${commerce.reservation.scan-delay-ms:1000}")
     public void scan() {
-        Instant cutoff = policy.cutoff(Instant.now());
+        Instant cutoff = deadline.cutoff(clock);
         for (Long orderId : expiry.candidates(cutoff)) {
             try {
                 if (expiry.expire(orderId, cutoff)) {

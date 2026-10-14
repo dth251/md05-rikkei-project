@@ -45,22 +45,23 @@ class EmailTransportTests {
     }
 
     @Test
-    void smtpReceivesConfirmationCancellationAndUnpaidExpiryEmails() throws Exception {
+    void actualSmtpReceivesConfirmationCancellationAndExpiryEmails() throws Exception {
         var smtp = new GreenMail(new ServerSetup(0, "127.0.0.1", ServerSetup.PROTOCOL_SMTP));
         smtp.start();
         try {
             var transport = transport(smtp.getSmtp().getPort());
-            String[] events = {"order.confirmed", "order.cancelled", "order.expired"};
-            String[] subjects = {"đã xác nhận", "đã hủy", "đã hủy do quá hạn thanh toán"};
-            for (int index = 0; index < events.length; index++) {
-                transport.send(new EmailTask(UUID.randomUUID().toString(), 456L, 1L, events[index], 1),
+            var types = java.util.List.of("order.confirmed", "order.cancelled", "order.expired");
+            var statuses = java.util.List.of("đã xác nhận", "đã hủy", "đã hủy do quá hạn thanh toán");
+            for (String type : types) {
+                transport.send(new EmailTask(UUID.randomUUID().toString(), 123L, 1L, type, 1),
                         "recipient@example.com");
             }
             assertTrue(smtp.waitForIncomingEmail(5000, 3));
             var messages = smtp.getReceivedMessages();
-            for (int index = 0; index < subjects.length; index++) {
-                assertEquals("Đơn hàng #456 " + subjects[index], messages[index].getSubject());
+            for (int index = 0; index < types.size(); index++) {
+                assertEquals("Đơn hàng #123 " + statuses.get(index), messages[index].getSubject());
                 assertEquals("recipient@example.com", messages[index].getAllRecipients()[0].toString());
+                assertTrue(messages[index].getContent().toString().contains(statuses.get(index)));
             }
         } finally {
             smtp.stop();

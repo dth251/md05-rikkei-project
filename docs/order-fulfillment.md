@@ -60,7 +60,7 @@ thêm columns/constraint, schema runner checksum áp dụng một lần. Local
 PostgreSQL apply/replay giữ 63/63 đơn cũ. Image cũ không hiểu enum mới;
 khi đã có Shipping/Completed, rollback cần image tương thích hoặc fix forward.
 
-Local: `bash infrastructure/scripts/verify-infrastructure.sh --allow-loopback`
+Local: `bash docs/infrastructure/scripts/verify-infrastructure.sh --allow-loopback`
 chỉ chấp nhận `127.0.0.1`/`::1`. Mặc định vẫn cấm publish DB/MQ port cho CI/VPS;
 lần chạy default trên local có port test phải reject, không ghi thành pass.
 Java unit: Order 33, Notification 10 đạt (roles, validation, immutable snapshot,

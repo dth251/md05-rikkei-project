@@ -11,8 +11,8 @@ services:
       - --storage.tsdb.retention.time=7d
       - --storage.tsdb.retention.size=1GB
     volumes:
-      - ./infrastructure/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-      - ./infrastructure/monitoring/alerts.yml:/etc/prometheus/alerts.yml:ro
+      - ./docs/infrastructure/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./docs/infrastructure/monitoring/alerts.yml:/etc/prometheus/alerts.yml:ro
       - prometheus-data:/prometheus
     ports: [127.0.0.1:19090:9090]
     healthcheck:
@@ -38,8 +38,8 @@ services:
       GOMEMLIMIT: 384MiB
     volumes:
       - grafana-data:/var/lib/grafana
-      - ./infrastructure/monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
-      - ./infrastructure/monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - ./docs/infrastructure/monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./docs/infrastructure/monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
     ports: [127.0.0.1:13000:3000]
     healthcheck:
       test: [CMD, wget, -q, --spider, http://127.0.0.1:3000/api/health]

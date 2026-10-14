@@ -138,9 +138,18 @@ abstract class NotificationLiveFixture {
             String eventId,
             Fixture fixture
     ) throws Exception {
-        var event = Map.of("eventId", eventId, "type", "order.confirmed", "orderId", fixture.order().path("id").asLong(),
+        publish(eventId, fixture, "order.confirmed");
+    }
+
+    protected void publish(
+            String eventId,
+            Fixture fixture,
+            String type
+    ) throws Exception {
+        var event = new java.util.HashMap<String, Object>(Map.of("eventId", eventId, "type", type, "orderId", fixture.order().path("id").asLong(),
                 "userId", fixture.order().path("userId").asLong(), "amount", fixture.order().path("totalAmount").decimalValue(),
-                "paymentId", fixture.payment().path("id").asLong(), "occurredAt", Instant.now().toString());
+                "occurredAt", Instant.now().toString()));
+        event.put("paymentId", "order.expired".equals(type) ? null : fixture.payment().path("id").asLong());
         String user = System.getenv().getOrDefault("RABBITMQ_LIVE_USER", "commerce_app");
         String password = System.getenv("RABBITMQ_LIVE_PASSWORD");
         assertTrue(password != null && !password.isBlank());
@@ -148,7 +157,7 @@ abstract class NotificationLiveFixture {
         String base = System.getenv().getOrDefault("RABBITMQ_LIVE_URL", "http://127.0.0.1:15672");
         var request = HttpRequest.newBuilder(URI.create(base + "/api/exchanges/%2F/commerce.events/publish"))
                 .timeout(Duration.ofSeconds(10)).header("Authorization", authorization).header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(json.writeValueAsString(Map.of("routing_key", "order.confirmed",
+                .POST(HttpRequest.BodyPublishers.ofString(json.writeValueAsString(Map.of("routing_key", type,
                         "payload", json.writeValueAsString(event), "payload_encoding", "string",
                         "properties", Map.of("delivery_mode", 2, "content_type", "application/json"))))).build();
         var response = client.send(request, HttpResponse.BodyHandlers.ofString());

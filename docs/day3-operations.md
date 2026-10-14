@@ -4,7 +4,7 @@ Xem [API contract](api-contract.md), [kiến trúc](architecture.md), [kết qu�
 
 ## Metrics và vận hành VPS
 
-Qua SSH, chạy `bash /opt/omnichannel-ecommerce/current/infrastructure/scripts/observe-vps.sh`. Kết quả gồm RAM/CPU, health, pending Outbox, queue ready/unacked/consumer. Có thể curl `/actuator/prometheus` trên loopback 8080–8085; domain public phải trả 404. Không mở ports để scrape từ Internet. Health không kiểm tra RabbitMQ/Redis trong một số app để lỗi dependency không làm app mất liveness; kiểm tra workflow nghiệp vụ riêng.
+Qua SSH, chạy `bash /opt/omnichannel-ecommerce/current/docs/infrastructure/scripts/observe-vps.sh`. Kết quả gồm RAM/CPU, health, pending Outbox, queue ready/unacked/consumer. Có thể curl `/actuator/prometheus` trên loopback 8080–8085; domain public phải trả 404. Không mở ports để scrape từ Internet. Health không kiểm tra RabbitMQ/Redis trong một số app để lỗi dependency không làm app mất liveness; kiểm tra workflow nghiệp vụ riêng.
 
 `secure-vps-network.sh` chạy root sau audit listener, không reset rule. `verify-rollback.sh FULL_CACHED_CANDIDATE_SHA` chạy deploy trong thời điểm không có rollout: chọn SHA known-good khác Notification hiện tại. Harness chỉ recreate Notification, ép một health smoke failure, kiểm tra image trước/manifest/current và health. Không rollback schema/volume; không kiểm tra registry vì dùng candidate đã cache.
 
@@ -17,7 +17,7 @@ Theo [runbook ngày 2](day2-operations.md) để build sáu app và nạp secret
 Dùng k6 v2.3.0. Binary chính thức/checksum xác minh nằm ngoài source; không commit công cụ. Ví dụ PowerShell:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File infrastructure/scripts/run-catalog-load.ps1 `
+powershell -ExecutionPolicy Bypass -File docs/infrastructure/scripts/run-catalog-load.ps1 `
     -K6Path 'YOUR_PRIVATE_TOOLS/k6.exe' -SshKey 'YOUR_PRIVATE_SSH_KEY'
 ```
 
