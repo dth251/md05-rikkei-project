@@ -75,6 +75,34 @@ class EmailLiveTests extends NotificationLiveFixture {
         assertMailbox(fixture);
     }
 
+    @Test
+    void cancelledOrderSendsCancellationEmail() throws Exception {
+        var fixture = scenario("FAILED", "CANCELLED", "order.cancelled", "WEB");
+        awaitSent(fixture);
+        assertMailbox(fixture, "đã hủy");
+    }
+
+    @Test
+    void expiryAt150SecondsSendsOneEmailAndRejectsLatePayment() throws Exception {
+        var fixture = scenario("EXPIRED", "EXPIRED", "order.expired", "WEB");
+        long orderId = fixture.order().path("id").asLong();
+        awaitSent(fixture);
+        assertEquals(1, scalar("SELECT count(*) FROM notification_logs WHERE order_id=? AND payment_id IS NULL", orderId));
+        String replay = UUID.randomUUID().toString();
+        publish(replay, fixture, "order.expired");
+        publish(replay, fixture, "order.expired");
+        Instant deadline = Instant.now().plusSeconds(20);
+        while (Instant.now().isBefore(deadline)
+                && scalar("SELECT count(*) FROM processed_events WHERE event_id=?", replay) != 1) {
+            Thread.sleep(200);
+        }
+        assertEquals(1, scalar("SELECT count(*) FROM processed_events WHERE event_id=?", replay));
+        assertEquals(1, scalar("SELECT count(*) FROM email_deliveries WHERE order_id=?", orderId));
+        assertEquals(409, send("POST", "/api/payments/" + fixture.payment().path("id").asLong() + "/simulate",
+                java.util.Map.of("status", "SUCCESS"), adminToken()).statusCode());
+        assertMailbox(fixture, "đã hủy do quá hạn thanh toán");
+    }
+
     private void awaitSent(
             Fixture fixture
     ) throws Exception {
@@ -91,13 +119,20 @@ class EmailLiveTests extends NotificationLiveFixture {
     private void assertMailbox(
             Fixture fixture
     ) throws Exception {
+        assertMailbox(fixture, "đã xác nhận");
+    }
+
+    private void assertMailbox(
+            Fixture fixture,
+            String status
+    ) throws Exception {
         String base = System.getenv().getOrDefault("SMTP_INBOX_URL", "http://127.0.0.1:18025");
         var response = client.send(HttpRequest.newBuilder(URI.create(base + "/api/v1/messages"))
                 .timeout(Duration.ofSeconds(10)).GET().build(), HttpResponse.BodyHandlers.ofString());
         assertEquals(200, response.statusCode());
         int matching = 0;
         for (var message : json.readTree(response.body()).path("messages")) {
-            if (("Đơn hàng #" + fixture.order().path("id").asLong() + " đã xác nhận").equals(message.path("Subject").asText())) {
+            if (("Đơn hàng #" + fixture.order().path("id").asLong() + " " + status).equals(message.path("Subject").asText())) {
                 matching++;
                 assertEquals(fixture.email(), message.path("To").get(0).path("Address").asText());
             }

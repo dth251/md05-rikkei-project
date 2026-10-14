@@ -11,7 +11,9 @@ import org.hibernate.annotations.Check;
 
 @Entity
 @Table(name = "notification_logs")
-@Check(constraints = "order_id > 0 AND user_id > 0 AND amount > 0 AND payment_id > 0")
+@Check(name = "ck_notification_terminal_identity", constraints = "order_id > 0 AND user_id > 0 AND amount > 0 AND "
+        + "((event_type='order.expired' AND payment_id IS NULL) OR "
+        + "(event_type IN ('order.confirmed','order.cancelled') AND payment_id IS NOT NULL AND payment_id > 0))")
 public class NotificationLog {
 
     @Id
@@ -30,7 +32,7 @@ public class NotificationLog {
     @Column(nullable = false, precision = 18, scale = 2)
     private BigDecimal amount;
 
-    @Column(nullable = false)
+    @Column
     private Long paymentId;
 
     @Column(nullable = false)

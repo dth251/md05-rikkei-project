@@ -46,7 +46,8 @@ public class NotificationServiceImpl implements NotificationService {
                 event.eventId(), event.orderId(), event.userId(), event.type(), event.amount(), event.paymentId(), Timestamp.from(event.occurredAt()));
         var log = notificationRepository.findByOrderId(event.orderId()).orElseThrow();
         if (!log.getEventType().equals(event.type()) || !log.getUserId().equals(event.userId())
-                || log.getAmount().compareTo(event.amount()) != 0 || !log.getPaymentId().equals(event.paymentId())) {
+                || log.getAmount().compareTo(event.amount()) != 0
+                || !java.util.Objects.equals(log.getPaymentId(), event.paymentId())) {
             throw new IllegalArgumentException("Conflicting terminal order event");
         }
         emailDeliveries.enqueue(event);

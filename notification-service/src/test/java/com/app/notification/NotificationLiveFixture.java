@@ -75,8 +75,18 @@ abstract class NotificationLiveFixture {
         JsonNode order = json.readTree(created.body()).path("data");
         long orderId = order.path("id").asLong();
         JsonNode payment = awaitPayment(orderId, userToken);
-        assertEquals(200, send("POST", "/api/payments/" + payment.path("id").asLong() + "/simulate",
-                Map.of("status", outcome), adminToken()).statusCode());
+        if ("EXPIRED".equals(outcome)) {
+            try (var connection = DriverManager.getConnection(System.getenv().getOrDefault("ORDER_LIVE_DB_URL",
+                    "jdbc:postgresql://localhost:15432/order_db"), "order_user", System.getenv("ORDER_LIVE_DB_PASSWORD"));
+                 var statement = connection.prepareStatement(
+                         "UPDATE orders SET created_at=CURRENT_TIMESTAMP - INTERVAL '149 seconds' WHERE id=? AND status='PENDING_PAYMENT'")) {
+                statement.setLong(1, orderId);
+                assertEquals(1, statement.executeUpdate());
+            }
+        } else {
+            assertEquals(200, send("POST", "/api/payments/" + payment.path("id").asLong() + "/simulate",
+                    Map.of("status", outcome), adminToken()).statusCode());
+        }
         Instant deadline = Instant.now().plusSeconds(45);
         while (Instant.now().isBefore(deadline)) {
             var response = send("GET", "/api/orders/" + orderId, null, userToken);
@@ -86,7 +96,7 @@ abstract class NotificationLiveFixture {
                 var inventory = send("GET", "/api/inventory/" + productId, null, userToken);
                 assertEquals(200, inventory.statusCode());
                 JsonNode stock = json.readTree(inventory.body()).path("data");
-                assertEquals(outcome.equals("FAILED") ? 1 : 0, stock.path("available").asInt());
+                assertEquals(outcome.equals("SUCCESS") ? 0 : 1, stock.path("available").asInt());
                 assertEquals(0, stock.path("reserved").asInt());
                 return new Fixture(order, payment, email);
             }
@@ -126,9 +136,18 @@ abstract class NotificationLiveFixture {
             String eventId,
             Fixture fixture
     ) throws Exception {
-        var event = Map.of("eventId", eventId, "type", "order.confirmed", "orderId", fixture.order().path("id").asLong(),
+        publish(eventId, fixture, "order.confirmed");
+    }
+
+    protected void publish(
+            String eventId,
+            Fixture fixture,
+            String type
+    ) throws Exception {
+        var event = new java.util.HashMap<String, Object>(Map.of("eventId", eventId, "type", type, "orderId", fixture.order().path("id").asLong(),
                 "userId", fixture.order().path("userId").asLong(), "amount", fixture.order().path("totalAmount").decimalValue(),
-                "paymentId", fixture.payment().path("id").asLong(), "occurredAt", Instant.now().toString());
+                "occurredAt", Instant.now().toString()));
+        event.put("paymentId", "order.expired".equals(type) ? null : fixture.payment().path("id").asLong());
         String user = System.getenv().getOrDefault("RABBITMQ_LIVE_USER", "commerce_app");
         String password = System.getenv("RABBITMQ_LIVE_PASSWORD");
         assertTrue(password != null && !password.isBlank());
@@ -136,7 +155,7 @@ abstract class NotificationLiveFixture {
         String base = System.getenv().getOrDefault("RABBITMQ_LIVE_URL", "http://127.0.0.1:15672");
         var request = HttpRequest.newBuilder(URI.create(base + "/api/exchanges/%2F/commerce.events/publish"))
                 .timeout(Duration.ofSeconds(10)).header("Authorization", authorization).header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(json.writeValueAsString(Map.of("routing_key", "order.confirmed",
+                .POST(HttpRequest.BodyPublishers.ofString(json.writeValueAsString(Map.of("routing_key", type,
                         "payload", json.writeValueAsString(event), "payload_encoding", "string",
                         "properties", Map.of("delivery_mode", 2, "content_type", "application/json"))))).build();
         var response = client.send(request, HttpResponse.BodyHandlers.ofString());
