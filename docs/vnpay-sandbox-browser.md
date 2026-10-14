@@ -132,3 +132,9 @@ ghi runtime thực tế và giới hạn kiểm chứng.
 Nguồn protocol: [VNPay PAY/IPN/Return](https://sandbox.vnpayment.vn/apis/docs/thanh-toan-pay/pay.html).
 Discovery Orbit không tìm thấy endpoint VNPay phù hợp trong kết quả trả
 về; dùng tài liệu gốc VNPay và các contract/requests hiện có của dự án.
+
+## Kiểm chứng sau bản sửa PENDING và email HTML
+
+15/10/2026: PR #38 đã merge main 199 `8a909c9` sau CI đạt. Payment, Order và Notification đã triển khai từ source/image CI `a17fe9a` nằm trong main, cả ba healthy; runtime giữ đơn 200 giây. Đơn NCB sandbox #176 / Payment #107 đã CONFIRMED/SUCCESS, trang return thành công, kho giảm đúng một sản phẩm. Gmail inbox đã nhận thông báo HTML MD05. Đơn không thanh toán #177 vẫn chờ ở giây 155, sau 200 giây EXPIRED/FAILED và trả đủ kho; Gmail nhận thư HTML quá hạn. Xem [bằng chứng mới](evidence/vnpay-pending-recovery-2026-10-15.json).
+
+Main push CI/CD 38631145755 đang chạy tại checkpoint; ba app đã được deploy từ full-image CI 38628603909 success. Các checkpoint cũ bên trên là lịch sử trước bản sửa; không thay thành kết quả giao dịch mới.

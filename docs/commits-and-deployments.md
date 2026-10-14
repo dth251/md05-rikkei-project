@@ -1216,3 +1216,34 @@ commit credentials hoặc .verification. Thay đổi .vscode sẵn có giữ ngu
 Mốc 197-notification-service: `2f4109134b0caa64ee6b93c104bb6e86939c911d` tại 2026-10-15T03:01:37.7971181+07:00. Người dùng yêu cầu email Gmail có giao diện: Notification chuyển sang MIME multipart/alternative, text/plain dự phòng và text/html UTF-8 theo mẫu MD05 cho năm trạng thái đơn. Không đưa dữ liệu hóa đơn mẫu vào email thật. GreenMail kiểm tra SMTP thực, đúng recipient/subject/order/status, hai MIME parts và Message-ID ổn định; Notification 22/22 tests, bootJar đạt. Preview 820px/390px không tràn ngang; chưa xác nhận Gmail inbox hoặc deploy tại checkpoint.
 
 CI đầu 38625930469 và PR 38626143745 thất bại tại EmailLiveTests còn mốc 150 giây; đã sửa fixture già 201 giây và timeout/boundary theo TTL 200 giây. Chưa merge/deploy khi CI lỗi; CI mới cần xác nhận lại. Bổ sung kiểm tra Mailpit có cả HTML/Text cho replay, cancellation, expiry và restart.
+
+## VNPay thành công, kho 200 giây và email HTML trên VPS
+
+| Mốc | SHA | Thời gian +07 | Kiểm chứng / deploy thực tế |
+|---|---|---|---|
+| 199-payment-service | `8a909c99a3cf246d26da9148f5502b02f37bf8a0` | 2026-10-15T03:19:52+07:00 | PR #38 merge sau CI 38628605320 success toàn bộ. Full-image CI 38628603909 của source `a17fe9a681129c6501410a05e815f264e7ad7466` success; source đã nằm trong main. Triển khai riêng Notification, Payment, Order từ các image CI này, cả ba healthy và restart 0. Audit 03:32:22 +07: sáu app healthy/UP; TTL runtime PT200S, SMTP smtp.gmail.com. Main push 38631145755 vẫn đang chạy tại checkpoint; không ghi pipeline main đã hoàn tất. |
+
+Thanh toán NCB sandbox thực tế với thẻ test do người dùng cung cấp:
+đơn #176 / Payment #107 / sản phẩm #154, 125.000 đồng. Return HTTPS hiển
+thị “Thanh toán thành công”; API/DB CONFIRMED/SUCCESS, refund NONE,
+transaction VNPay 15704841. Kho baseline 20 → 19, reserved 0; refresh
+không tạo thêm payment.succeeded (count 1). Không tạo IPN giả để ép PASS.
+
+Đơn ONLINE không thanh toán #177 / Payment #108, hai sản phẩm: baseline
+19/0 → PENDING_PAYMENT với available 17/reserved 2. Giây 155 vẫn đang
+chờ, giữ nguyên kho. Sau 200 giây (đọc ở 202,94 giây), EXPIRED/FAILED,
+reservationExpired true, kho 19/0. Không sửa timestamp để vượt test.
+
+Gmail inbox đã đối chiếu thư #176 xác nhận và #177 quá hạn: cả hai MIME
+multipart/alternative, text/plain và text/html UTF-8, phần HTML có giao
+diện MD05/mã đơn/trạng thái đúng. Database mỗi đơn một delivery SENT,
+attempts 1, không error_code. Không sao chép email người nhận/credential
+vào báo cáo. GreenMail/local Java: Payment 70 + Order 61 + Notification 22
+= 153 tests, zero fail/error/skip; ba bootJar đạt. Preview desktop/mobile
+và ảnh return được kiểm tra; [bằng chứng](evidence/vnpay-pending-recovery-2026-10-15.json),
+[ảnh thành công](evidence/vnpay-fixed-success-2026-10-15.png).
+
+Các đơn cũ #174/#175 đã EXPIRED và trả kho trước bản sửa; không hồi sinh
+hoặc sửa dữ liệu của chúng. IPN registration/delivery và hoàn VNPay thực
+tế vẫn chưa kiểm chứng. Giao dịch mới và Gmail HTML đã kiểm chứng thật.
+Thay đổi .vscode có sẵn vẫn được giữ nguyên, không commit .verification.
