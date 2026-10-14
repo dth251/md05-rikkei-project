@@ -862,3 +862,20 @@ không đánh dấu ảnh/video hoặc visual QA hoàn tất từ API checks.
 [PR #36](https://github.com/dth251/md05-rikkei-project/pull/36),
 [PR CI đạt](https://github.com/dth251/md05-rikkei-project/actions/runs/38503120433),
 [main CI/CD và deploy đạt](https://github.com/dth251/md05-rikkei-project/actions/runs/38505256214).
+
+## Sửa 14 lỗi IDE và chuẩn bị demo ngày 14/10/2026
+
+| Mốc | SHA | Thời gian +07 | Kiểm tra / deploy thực tế |
+|---|---|---|---|
+| 169-docs | `4ec336976b192c22923d897dd2d25fa2b5ecf86b` | 2026-10-14T10:54:09+07:00 | Ghi checkpoint main 168/SMTP/monitoring và snapshot đã bỏ thông tin riêng tư; không rollout thêm. |
+| 170-notification-service | `7810bdefb18a5e020cc8f722cdc4e1311f733b6e` | 2026-10-14T16:53:30+07:00 | IDE có 14 errors trong NotificationTests do không nhận NotificationLog. Reload Gradle/full rebuild riêng Notification: toàn workspace 0 errors. Đọc lại 16:53:28 +07 vẫn 0 và đủ sáu projects. Wrapper compileJava/compileTestJava/test chạy lại đạt 21/21, zero fail/error/skip lúc 16:49:36. Sửa model IDE local, không thay Java source/settings người dùng và không deploy VPS. |
+
+[Kịch bản demo](demo-test-guide.md) gồm Auth/security, Product/Inventory,
+ONLINE SUCCESS/FAILED, deadline thật 150 giây, SMTP sandbox, COD/returns và
+monitoring/k6. Hướng dẫn Postman cập nhật runtime mốc 168 và đúng 38 requests
+trong 7 folders (19 requests ở ba folders đầu). Kịch bản mới chưa được chạy
+end-to-end trong lượt này; không dùng kết quả Java/CI trước đó để đánh PASS
+cho một phiên demo chưa chạy. Kiểm tra links, JSON mẫu và hợp đồng DTO/API
+trước commit tài liệu: 25 local links và 16 JSON examples hợp lệ; collection
+đúng 38 requests/19 core requests, `git diff --check` đạt. Không rollout hay
+chạy tải lớn lên VPS trong lượt này.
