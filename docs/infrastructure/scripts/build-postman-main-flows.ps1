@@ -70,9 +70,40 @@ Set-ManualLogin $adminLogin 'ADMIN'
 
 $stock = Copy-Request 4 5 'Xem tồn kho của sản phẩm'
 $stock.request.auth.bearer[0].value = '{{adminToken}}'
-$stock.request.description = 'ADMIN xem tồn kho sau khi nhập hàng. Dùng adminToken từ request Đăng nhập ADMIN trong cùng collection; không yêu cầu đăng nhập USER cho nhóm 02.'
+$stock.request.description = 'ADMIN xem tồn kho bằng adminToken. Có thể thay {{productId}} trên URL bằng ID thật, ví dụ /api/inventory/159; không cần có biến productId để đọc thủ công. Giữ {{productId}} để dùng ID tự lưu từ bước Tạo sản phẩm demo.'
 (Get-Hook $stock 'prerequest').script.exec = @((Get-Hook $stock 'prerequest').script.exec | ForEach-Object { $_.Replace('userToken', 'adminToken') })
-(Get-Hook $stock 'test').script.exec += "if (pm.response.code === 200) pm.environment.set('codBaseline', pm.response.json().data.available);"
+(Get-Hook $stock 'test').script.exec = @'
+function kiemTra(ten, ham) {
+    pm.test(ten, () => {
+        try { ham(); } catch (loi) { pm.execution.setNextRequest(null); throw loi; }
+    });
+}
+kiemTra('Mã HTTP đúng 200', () => pm.expect(pm.response.code).to.eql(200));
+kiemTra('Phản hồi đi qua API Gateway', () => pm.expect(pm.response.headers.get('X-Gateway')).to.eql('api-gateway'));
+if (pm.response.code === 200) {
+    const json = pm.response.json();
+    kiemTra('Cờ success đúng kết quả', () => pm.expect(json.success).to.eql(true));
+    const d = json.data;
+    const id = pm.variables.replaceIn(pm.request.url.toString()).match(/\/api\/inventory\/([1-9]\d*)\/?(?:[?#].*)?$/);
+    kiemTra('Tồn kho thuộc đúng sản phẩm trên URL', () => pm.expect(String(d.productId)).to.eql(id && id[1]));
+    kiemTra('Kho khả dụng và giữ chỗ là số nguyên không âm', () => {
+        pm.expect(Number.isInteger(d.available) && d.available >= 0).to.eql(true);
+        pm.expect(Number.isInteger(d.reserved) && d.reserved >= 0).to.eql(true);
+    });
+    if (String(d.productId) === String(pm.collectionVariables.get('productId'))) {
+        pm.collectionVariables.set('codBaseline', d.available);
+    }
+}
+'@ -split '\r?\n'
+
+$productDetail = Copy-Request 3 7 'Xem chi tiết sản phẩm'
+$productDetail.request.description = 'Thay {{productId}} trên URL bằng ID sản phẩm muốn xem, hoặc giữ biến để đọc sản phẩm vừa tạo. Không cần environment.'
+(Get-Hook $productDetail 'test').script.exec = @((Get-Hook $productDetail 'test').script.exec | ForEach-Object {
+    if ($_ -match 'SKU chuẩn hóa khớp lượt chạy') {
+        "const id = pm.variables.replaceIn(pm.request.url.toString()).match(/\/api\/products\/([1-9]\d*)\/?(?:[?#].*)?`$/);"
+        "kiemTra('Chi tiết thuộc đúng sản phẩm trên URL', () => pm.expect(String(d.id)).to.eql(id && id[1]));"
+    } else { $_ }
+})
 
 $cod = Copy-Request 7 1 'Khách hàng đặt đơn COD'
 $codInit = Get-Hook $cod 'prerequest'
@@ -95,7 +126,7 @@ $folders = @(
         $adminLogin
         (Copy-Request 3 3 'Tạo sản phẩm demo')
         (Copy-Request 3 2 'Xem danh sách sản phẩm')
-        (Copy-Request 3 7 'Xem chi tiết sản phẩm')
+        $productDetail
         (Copy-Request 4 0 'Nhập 20 sản phẩm vào kho')
         $stock
     ) }
@@ -157,20 +188,34 @@ if (thieu.length) {
         ? 'Mở 01 → Đăng nhập khách hàng trong CHÍNH collection này, nhập Body rồi Send. Đăng nhập ADMIN không tạo userToken.'
         : thieu.includes('adminToken')
             ? 'Mở 02 → Đăng nhập ADMIN trong CHÍNH collection này, nhập Body rồi Send.'
-            : 'Chạy request tạo dữ liệu trước; token và ID nằm ở collection → Variables.';
+            : thieu.includes('productId')
+                ? 'Nhập ID thật thay {{productId}} trên URL để xem sản phẩm/kho, hoặc chạy 02 → Tạo sản phẩm demo để tự lưu ID.'
+                : 'Chạy request tạo dữ liệu trước; token và ID nằm ở collection → Variables.';
     throw new Error('Thiếu biến tiền đề: '+thieu.join(', ')+'. '+huongDan);
 }
 '@
 foreach ($folder in $source.item) {
     foreach ($request in $folder.item) {
+        $manualProductRead = $request -eq $stock -or $request -eq $productDetail
         foreach ($hook in $request.event) {
             $hook.script.exec = @($hook.script.exec | ForEach-Object {
                 if ($_ -match '^if \(thieu.length\)') {
                     $missingVariables
                 } else {
-                    $_.Replace('pm.environment.', 'pm.collectionVariables.').Replace('pm.variables.get(', 'pm.collectionVariables.get(')
+                    $line = $_.Replace('pm.environment.', 'pm.collectionVariables.').Replace('pm.variables.get(', 'pm.collectionVariables.get(')
+                    if ($manualProductRead -and $hook.listen -eq 'prerequest' -and $line -match '^const thieu') {
+                        $line = $line.Replace('const value = pm.collectionVariables.get(key);', "const value = key === 'productId' ? productIdTrongUrl : pm.collectionVariables.get(key);")
+                    }
+                    $line
                 }
             })
+            if ($manualProductRead -and $hook.listen -eq 'prerequest') {
+                $hook.script.exec = @(
+                    "const urlSanPham = pm.variables.replaceIn(pm.request.url.toString());"
+                    "const idTrongUrl = urlSanPham.match(/\/api\/(?:inventory|products)\/([1-9]\d*)\/?(?:[?#].*)?`$/);"
+                    "const productIdTrongUrl = idTrongUrl ? idTrongUrl[1] : null;"
+                ) + @($hook.script.exec)
+            }
         }
     }
 }

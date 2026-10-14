@@ -53,6 +53,29 @@ chỉ với ADMIN. Các bước xem kho trong nhóm trả hàng/hết hạn vẫ
 lại request đăng nhập khách hàng rồi gửi lại request lỗi, không cần tạo
 lại sản phẩm hay nhập kho lần nữa.
 
+### Khi báo thiếu productId
+
+Để **xem kho của sản phẩm có sẵn**, sau khi đăng nhập ADMIN, mở
+**02 → Xem tồn kho**, thay `{{productId}}` trên thanh URL bằng ID thật:
+
+```text
+GET https://md05-rikkei-project.duckdns.org/api/inventory/159
+```
+
+Request này đọc ID trực tiếp từ URL, không cần nhập biến `productId`.
+Tương tự, xem chi tiết sản phẩm bằng `/api/products/159`. Chỉ nhập ID
+thật của sản phẩm muốn xem; request đọc kho không tự tạo hay nhập thêm hàng.
+Đọc một ID thủ công không ghi đè `productId` đang dùng trong luồng đặt đơn.
+
+Để chạy **trọn luồng demo**, giữ `{{productId}}` trên URL và chạy
+**02 → Tạo sản phẩm demo → Nhập 20 sản phẩm vào kho → Xem tồn kho**.
+Request tạo sản phẩm trả HTTP 201 sẽ tự lưu `data.id` thành `productId`
+trong chính collection. Đăng nhập chỉ lưu token, không tạo ID sản phẩm.
+
+Nếu đang dùng bản cũ và muốn tiếp tục ngay, mở **collection → Variables**,
+thêm `productId` bằng ID thật đang thử (ví dụ `159`), lưu rồi gửi lại
+request. Đây là biến của collection, không cần tạo/chọn environment.
+
 | Nhóm | Người thực hiện và luồng | Kết quả cần thấy |
 |---|---|---|
 | 01 | Khách đăng ký → đăng nhập → xem tài khoản | USER, có userToken |
@@ -143,6 +166,13 @@ Sau khi sửa quyền đọc kho ở nhóm 02, chạy riêng **Đăng nhập ADM
 tồn kho** trên production không environment và không có `userToken`:
 **2 requests / 12 assertions**, exit 0, **2,9 giây**. Không tạo sản phẩm,
 nhập thêm hàng hoặc đặt đơn trong lượt kiểm tra sửa lỗi này.
+
+Bản hỗ trợ ID trực tiếp trên URL đã chạy production **6 requests /
+31 assertions**, exit 0, **9,7 giây**: đăng nhập ADMIN; đọc kho/chi tiết
+#159 khi không có biến `productId`; đọc #158 bằng biến; đọc #159 khi biến
+vẫn là #158. ID và baseline của luồng #158 không bị ghi đè. Chỉ đăng nhập
+và GET, không tạo đơn hay thay đổi kho. Kiểm tra nhập kho 20 và các bài
+trả hàng/hết hạn vẫn giữ assertions riêng của luồng.
 
 Lượt kiểm tra trước khi chuyển sang nhập Body trực tiếp đã chạy nhóm 01–06
 trên production: **31 request lưu sẵn**, thực thi
