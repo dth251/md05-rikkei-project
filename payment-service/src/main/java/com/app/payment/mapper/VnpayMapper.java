@@ -14,7 +14,7 @@ public class VnpayMapper {
 
     public VnpayReturnResponse toReturn(Payment payment, VnpayCallback callback) {
         return new VnpayReturnResponse(callback.reference(), callback.successful() ? "SUCCESS" : "FAILED",
-                "IPN determines persisted payment state; order confirmation is asynchronous",
+                "Verified IPN or provider query determines persisted payment state; order confirmation is asynchronous",
                 payment.getId(), payment.getOrderId(), payment.getAmount(), payment.getStatus(),
                 payment.isReservationExpired(), payment.getRefundStatus());
     }

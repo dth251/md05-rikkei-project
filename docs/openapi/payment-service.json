@@ -834,7 +834,7 @@
     "/api/payments/vnpay/return" : {
       "get" : {
         "tags" : [ "vnpay-controller" ],
-        "description" : "Signed sandbox return, read-only. Accept text/html for the browser result page; application/json or default for ApiResponse. Persisted payment status comes from IPN, not the return outcome. Browser polls for up to 24 attempts; order confirmation is asynchronous.",
+        "description" : "Signed sandbox return. Accept text/html for the browser result page; application/json or default for ApiResponse. A successful return triggers a server-side querydr fallback when IPN has not recorded the capture. Only a matching signed provider query can update payment, using the idempotent IPN capture transaction. Queries are limited to one per reference per minute per instance. Browser polls for up to 24 attempts; order confirmation is asynchronous.",
         "operationId" : "returnResult",
         "parameters" : [ {
           "name" : "parameters",

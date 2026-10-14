@@ -4,6 +4,7 @@ import com.app.payment.config.VnpaySettings;
 import com.app.payment.config.exception.ApiException;
 import com.app.payment.dto.event.CommerceEvent;
 import com.app.payment.dto.request.VnpayCallback;
+import com.app.payment.dto.request.VnpayLedgerRequest;
 import com.app.payment.dto.response.VnpayCheckoutResponse;
 import com.app.payment.dto.response.VnpayIpnResponse;
 import com.app.payment.dto.response.VnpayReturnResponse;
@@ -25,6 +26,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,6 +41,7 @@ public class VnpayTransactionServiceImpl implements VnpayTransactionService {
     private final VnpayMapper mapper;
     private final PaymentExpiryService expiry;
     private final OutboxService outbox;
+    private final String serverIp;
 
     public VnpayTransactionServiceImpl(
             PaymentRepository payments,
@@ -46,7 +49,8 @@ public class VnpayTransactionServiceImpl implements VnpayTransactionService {
             VnpaySettings settings,
             VnpayMapper mapper,
             PaymentExpiryService expiry,
-            OutboxService outbox
+            OutboxService outbox,
+            @Value("${payment.vnpay.server-ip:}") String serverIp
     ) {
         this.payments = payments;
         this.attempts = attempts;
@@ -54,6 +58,7 @@ public class VnpayTransactionServiceImpl implements VnpayTransactionService {
         this.mapper = mapper;
         this.expiry = expiry;
         this.outbox = outbox;
+        this.serverIp = serverIp;
     }
 
     @Override
@@ -119,6 +124,30 @@ public class VnpayTransactionServiceImpl implements VnpayTransactionService {
         }
         var payment = payments.findById(attempt.getPaymentId()).orElseThrow();
         return mapper.toReturn(payment, callback);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public VnpayLedgerRequest preparePaymentQuery(VnpayCallback callback) {
+        // Validate the signed return against stored checkout before any provider request.
+        returnResult(callback);
+        var attempt = attempts.findByReference(callback.reference()).orElseThrow();
+        String requestId = UUID.randomUUID().toString().replace("-", "");
+        if (!callback.successful() || attempt.getTransactionNumber() != null) {
+            return new VnpayLedgerRequest(attempt.getPaymentId(), requestId, false, Map.of());
+        }
+        Map<String, String> parameters = new TreeMap<>();
+        parameters.put("vnp_RequestId", requestId);
+        parameters.put("vnp_Version", "2.1.0");
+        parameters.put("vnp_Command", "querydr");
+        parameters.put("vnp_TmnCode", attempt.getTerminal());
+        parameters.put("vnp_TxnRef", attempt.getReference());
+        parameters.put("vnp_TransactionNo", callback.transactionNumber());
+        parameters.put("vnp_TransactionDate", PROVIDER_TIME.format(attempt.getCreatedAt()));
+        parameters.put("vnp_CreateDate", PROVIDER_TIME.format(Instant.now()));
+        parameters.put("vnp_IpAddr", numericIp(serverIp));
+        parameters.put("vnp_OrderInfo", "Kiem tra thanh toan " + attempt.getReference());
+        return new VnpayLedgerRequest(attempt.getPaymentId(), requestId, true, parameters);
     }
 
     @Override

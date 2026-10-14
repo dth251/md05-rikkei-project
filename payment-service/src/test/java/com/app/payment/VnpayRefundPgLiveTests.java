@@ -114,7 +114,7 @@ class VnpayRefundPgLiveTests extends VnpayRefundTests {
                 .POST(HttpRequest.BodyPublishers.noBody()).build(), HttpResponse.BodyHandlers.ofString());
         assertEquals(200, response.statusCode());
         var data = new com.fasterxml.jackson.databind.ObjectMapper().readTree(response.body()).path("data");
-        assertEquals(claim.refundRequestId(), data.path("requestId").asText());
+        assertEquals(claim.requestId(), data.path("requestId").asText());
         assertEquals("UNKNOWN", data.path("state").asText());
         assertEquals(0, REQUESTS.get());
     }

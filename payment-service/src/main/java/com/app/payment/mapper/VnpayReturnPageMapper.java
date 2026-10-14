@@ -49,7 +49,7 @@ public class VnpayReturnPageMapper {
             tone = "warning";
         } else {
             title = "Đang chờ xác nhận thanh toán";
-            message = "Bạn đã quay về từ VNPay. Hệ thống đang chờ thông báo IPN được xác thực; kết quả trên trang này sẽ tự cập nhật."
+            message = "Bạn đã quay về từ VNPay. Hệ thống đang đối chiếu kết quả thanh toán với VNPay; trang này sẽ tự cập nhật."
                     + ("FAILED".equals(result.providerOutcome()) ? " VNPay báo giao dịch chưa thành công hoặc đã hủy." : "");
             tone = "pending";
         }

@@ -17,7 +17,7 @@ hướng dẫn trình duyệt.
   kiểm tra merchant, amount, capture number và thời gian. Trả JSON `RspCode`/
   `Message` theo protocol VNPay. Callback trùng trả `02`, capture lần đầu `00`.
 - `GET /api/payments/vnpay/return`: xác minh chữ ký, hiển thị kết quả provider;
-  không cập nhật payment. IPN mới quyết định trạng thái lưu trữ.
+  tự đối soát querydr khi IPN chưa ghi capture. Chỉ IPN hoặc querydr đã xác minh mới cập nhật trạng thái lưu trữ.
 - `POST /api/payments/{id}/vnpay/refund`: ADMIN, chỉ hoàn toàn phần đối với capture
   thật đã được xác minh và có `refundStatus=REQUIRED`.
 - `POST /api/payments/{id}/vnpay/reconcile`: ADMIN, truy vấn `querydr` cho yêu cầu
