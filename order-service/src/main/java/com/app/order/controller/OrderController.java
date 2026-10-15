@@ -1,14 +1,18 @@
 package com.app.order.controller;
 
 import com.app.order.dto.request.CreateOrderRequest;
+import com.app.order.dto.request.OrderSearchRequest;
 import com.app.order.dto.response.ApiResponse;
 import com.app.order.dto.response.OrderResponse;
+import com.app.order.dto.response.OrderPageResponse;
 import com.app.order.service.OrderService;
+import com.app.order.service.OrderQueryService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -20,9 +24,23 @@ import org.springframework.web.bind.annotation.RestController;
 public class OrderController {
 
     private final OrderService orderService;
+    private final OrderQueryService queries;
 
-    public OrderController(OrderService orderService) {
+    public OrderController(OrderService orderService, OrderQueryService queries) {
         this.orderService = orderService;
+        this.queries = queries;
+    }
+
+    @GetMapping
+    public ResponseEntity<ApiResponse<OrderPageResponse>> list(
+            @org.springdoc.core.annotations.ParameterObject
+            @Valid @ModelAttribute OrderSearchRequest request,
+            Authentication authentication
+    ) {
+        boolean administrator = authentication.getAuthorities().stream()
+                .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));
+        return ResponseEntity.ok(ApiResponse.success(queries.list(
+                Long.valueOf(authentication.getName()), administrator, request), "Orders retrieved"));
     }
 
     @PostMapping
