@@ -1292,3 +1292,27 @@ chưa push/PR/merge các commit tài liệu tại checkpoint. Các thay đổi c
 của người dùng được giữ nguyên, gồm collection luồng chính đang test.
 [Hướng dẫn](swagger-ui.md),
 [bằng chứng](evidence/swagger-ui-main-api-2026-10-15.json).
+
+## Dọn thư mục phát sinh trong workspace ngày 15/10/2026
+
+Mốc 206-docs, đối chiếu source baseline
+`cd31d91cca9a1baf7caff043a508551f94495aea` (full SHA lưu trong bằng chứng); hoàn thành lúc
+2026-10-15T19:46:20+07:00. Xóa 25 thư mục phát sinh không chứa file tracked:
+build/bin/cache .gradle của sáu service, hai browser profile sandbox cũ,
+cache Swagger assets, ba checksum probe và cây thư mục rỗng docs/docs.
+Gỡ worktree nội bộ expiry-email-monitoring bằng git worktree remove,
+không force, sau khi xác nhận clean và commit 36bb14f nằm trong lịch sử
+hiện tại. Parent .worktrees rỗng cũng đã gỡ. Không xóa các worktree ngoài
+workspace. Thu hồi khoảng 642,97 MiB sau khi trừ dung lượng archive.
+
+Trước khi dọn đã nén 68 XML báo cáo Java và cấu hình private của worktree
+vào archive chỉ tài khoản hiện tại được truy cập trong .verification;
+kiểm tra số XML và hash cấu hình backup đạt. Không commit archive/secret.
+Hash trước/sau của collection luồng chính, collection API chính, báo cáo
+root và settings IDE khớp. Chín thư mục source/test/infrastructure và đủ
+sáu Gradle Wrapper còn nguyên; không chạy lại build để tránh tạo lại cache.
+Git diff check đạt. Không thay Docker, volume, database, VPS hoặc image
+đang chạy; không xóa source tracked. Các thay đổi có sẵn của người dùng
+được giữ nguyên. Build/JAR sẽ được tạo lại khi chạy Gradle lần sau.
+
+[Danh sách và kết quả kiểm tra](evidence/workspace-cleanup-2026-10-15.json).
