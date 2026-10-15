@@ -1338,3 +1338,39 @@ build, CI, database, Docker hoặc VPS; không chạy lại Java tests cho phầ
 chỉ thay tài liệu này. Các thay đổi có sẵn của người dùng được giữ nguyên.
 
 Baseline: `3ee2776c66ff0a5cbf1817585680293810f97208`; kiểm tra hoàn tất: 2026-10-15T20:26:17.8053077+07:00.
+
+## Frontend USER/ADMIN và danh sách đơn ngày 15/10/2026
+
+| Mốc | SHA | Kiểm chứng / triển khai thực tế |
+|---|---|---|
+| 208-order-service | `20f9ee77c33007b93cd25a0bf292f402c5a6e477` | Thêm GET /api/orders có phân trang/status/channel, USER chỉ thấy đơn mình, ADMIN xem tất cả; DTO/service interface/impl/mapper riêng. 64 Java tests và bootJar đạt, zero failure/error. Services CI 38750654419 success, publish Order image đạt. Đã rollout riêng Order từ image CI này, health đạt; giữ DB/schema/volume và image service khác. |
+| 209-frontend | `31964b98bab0a5bc31c15b2bd184ecb20edabd73` | React/TypeScript/Vite trong frontend riêng theo yêu cầu mới. Cửa hàng, tài khoản/địa chỉ, giỏ/checkout, đơn/giữ hàng/VNPay; ADMIN catalog/variants/kho/orders/COD/trả-hoàn/POS/tra khách-thanh toán. Build, 8 logic tests, 20 browser cases và Frontend CI 38769524936 đạt. Sau đó bổ sung sáu ca address/variant/POS; tổng local 26 browser tests đạt. |
+
+Core UI đã triển khai tại https://md05-rikkei-project.duckdns.org/ và
+/admin bằng Nginx static release 209. SPA route trực tiếp, assets, API,
+Swagger/health đạt; anonymous me 401, Actuator/v3 docs/internal public vẫn
+404. Không đưa Node dev server ra Internet, không thay Postman đang test.
+Nginx được backup và nginx -t đạt trước reload. Giao diện desktop/mobile
+đã kiểm tra hình ảnh; API thật không dùng fixture của browser test.
+
+Lượt browser sạch qua backend VPS: sản phẩm fixture #165, nhập 20; COD
+#187 giao → thu đủ → acknowledgement → hoàn tất → khách yêu cầu trả →
+duyệt → nhận/restock → chi hoàn COD → REFUNDED. ONLINE #188 simulate
+FAILED → CANCELLED, trả kho. ONLINE #189 chờ đủ 200 giây thực tế → EXPIRED,
+cuối cùng available=20/reserved=0. Live run 3,9 phút đạt, credentials/
+trace private không commit. Lượt này không lặp lại nhập thẻ/OTP hoặc hoàn
+VNPay provider thực tế; không ghi những bước đó là PASS mới.
+
+Lượt live đầu chọn nhầm dòng kho còn hiển thị khi search đang debounce,
+cộng 20 vào product #3 thay vì fixture. Đã dừng lượt lỗi, đối chiếu chính
+xác receipt e33e8288-c5c3-43bc-a4c1-7106b32e311f/time/version và transaction
+bù trừ riêng cập nhật đó: available 70 → 50, reserved 0; giữ receipt audit.
+UI nay ẩn dòng cũ ngay khi đổi query; regression desktop/mobile đạt.
+Bổ sung poll các bước trả hàng trung gian và phục hồi đọc trạng thái sau
+mutation đã thành công. Các lượt browser dùng chung output/server đồng
+thời từng lỗi; lượt cuối chạy tuần tự, kết quả riêng và đạt.
+
+Giữ nguyên các thay đổi có sẵn của người dùng trong settings, báo cáo root
+và file kế hoạch đã xóa trước task. Không commit secrets/.verification.
+Nguồn/bằng chứng: [frontend](../frontend/README.md),
+[kết quả](evidence/frontend-2026-10-15.json).

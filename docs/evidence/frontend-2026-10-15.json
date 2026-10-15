@@ -1,0 +1,82 @@
+{
+    "checkedAt":  "2026-10-15T23:40:25.1122612+07:00",
+    "frontendRevision":  "31964b98bab0a5bc31c15b2bd184ecb20edabd73",
+    "orderRevision":  "20f9ee77c33007b93cd25a0bf292f402c5a6e477",
+    "urls":  {
+                 "admin":  "https://md05-rikkei-project.duckdns.org/admin",
+                 "store":  "https://md05-rikkei-project.duckdns.org/"
+             },
+    "local":  {
+                  "orderBootJar":  "PASS",
+                  "orderJavaTests":  64,
+                  "frontendLogicTests":  8,
+                  "productionBuild":  "PASS",
+                  "browserFixtureFailures":  0,
+                  "frontendLogicFailures":  0,
+                  "browserFixtureTests":  26,
+                  "orderFailures":  0,
+                  "viewports":  [
+                                    "1440x1000 desktop",
+                                    "390x664 mobile"
+                                ]
+              },
+    "ci":  {
+               "servicesConclusion":  "success",
+               "frontendConclusion":  "success",
+               "servicesRun":  38750654419,
+               "note":  "Frontend CI of core UI revision had 20 browser tests; six additional address/variant/POS cases passed locally and will run at the next feature head.",
+               "frontendRun":  38769524936
+           },
+    "live":  {
+                 "checkedAt":  "2026-10-15T16:29:08.534Z",
+                 "scope":  "Browser UI through Vite proxy to deployed API; isolated fixture data",
+                 "steps":  [
+                               "Admin UI product creation and stock receipt 20",
+                               "COD: CONFIRMED -\u003e SHIPPING -\u003e collect acknowledgement -\u003e COMPLETED",
+                               "Full COD return: REQUESTED -\u003e APPROVED -\u003e receive/restock -\u003e REFUND_PENDING -\u003e REFUNDED",
+                               "ONLINE simulated FAILED -\u003e CANCELLED, stock released",
+                               "ONLINE actual 200-second wait -\u003e EXPIRED, available 20 / reserved 0"
+                           ],
+                 "productId":  165,
+                 "codOrderId":  187,
+                 "failedOrderId":  188,
+                 "expiredOrderId":  189,
+                 "finalStock":  {
+                                    "productId":  165,
+                                    "available":  20,
+                                    "reserved":  0
+                                },
+                 "success":  true,
+                 "finishedAt":  "2026-10-15T16:32:59.592Z"
+             },
+    "deployment":  {
+                       "storeHttp":  200,
+                       "volumesDeleted":  false,
+                       "actuatorHttp":  404,
+                       "order":  "CI-built image, healthy",
+                       "internalHttp":  404,
+                       "catalogHttp":  200,
+                       "apiHealthHttp":  200,
+                       "anonymousMeHttp":  401,
+                       "frontend":  "Nginx static release",
+                       "adminSpaHttp":  200,
+                       "dynamicDocsHttp":  404,
+                       "swaggerHttp":  200
+                   },
+    "correctedTestIncident":  {
+                                  "productId":  3,
+                                  "correction":  "Guarded transaction verified receipt, timestamp, available, reserved and version; retained receipt for audit; stale search rows are now hidden before actions.",
+                                  "afterCorrectionAvailable":  50,
+                                  "beforeCorrectionAvailable":  70,
+                                  "mistakenReceiptKey":  "e33e8288-c5c3-43bc-a4c1-7106b32e311f",
+                                  "reserved":  0,
+                                  "addedQuantity":  20
+                              },
+    "protectedPostmanCollectionsUnchanged":  true,
+    "limitations":  [
+                        "Provider card/OTP capture and real VNPay refund were not repeated in this frontend run; checkout/callback/refund backend already existed, UI state cases use fixtures.",
+                        "Notification UI describes event rules; no public SMTP delivery-log API exists.",
+                        "Product API has no image field; frontend uses vector illustrations.",
+                        "No claims of production load capacity or exactly-once SMTP delivery."
+                    ]
+}

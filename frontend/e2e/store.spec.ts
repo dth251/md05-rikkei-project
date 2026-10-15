@@ -1,5 +1,119 @@
 import { test, expect, type Page } from "@playwright/test";
 
+test("account address form supports creation, default selection, edit and deletion", async ({
+  page,
+}) => {
+  const app = await fixture(page);
+  let addresses: any[] = [];
+  await page.route(/\/api\/auth\/addresses(?:\/\d+)?$/, async (route) => {
+    const method = route.request().method();
+    const path = new URL(route.request().url()).pathname;
+    if (method === "POST")
+      addresses.push({ ...route.request().postDataJSON(), id: 2 });
+    if (method === "PUT")
+      addresses = [{ ...route.request().postDataJSON(), id: 2 }];
+    if (method === "DELETE") {
+      addresses = [];
+      await route.fulfill({ status: 204 });
+      return;
+    }
+    await route.fulfill({
+      json: {
+        success: true,
+        data:
+          path.endsWith("/addresses") && method === "GET"
+            ? addresses
+            : addresses[0],
+      },
+    });
+  });
+  await app.login();
+  await page.goto("/account");
+  await page.getByRole("button", { name: "Thêm địa chỉ" }).click();
+  await page.getByLabel("Người nhận", { exact: true }).fill("Người nhận mới");
+  await page.getByLabel("Số điện thoại", { exact: true }).fill("0901234567");
+  await page.getByLabel("Địa chỉ cụ thể", { exact: true }).fill("12 Demo");
+  await page.getByLabel("Phường / xã", { exact: true }).fill("Phường 1");
+  await page.getByLabel("Quận / huyện", { exact: true }).fill("Quận 1");
+  await page.getByLabel("Tỉnh / thành phố", { exact: true }).fill("TP HCM");
+  await page.getByRole("button", { name: "Lưu địa chỉ" }).click();
+  await expect(page.getByText("Người nhận mới", { exact: true })).toBeVisible();
+  expect(addresses[0].defaultAddress).toBe(true);
+  await page.getByRole("button", { name: "Sửa", exact: true }).click();
+  await page.getByLabel("Địa chỉ cụ thể", { exact: true }).fill("34 Demo");
+  await page.getByRole("button", { name: "Lưu địa chỉ" }).click();
+  await expect(page.getByText(/34 Demo, Phường 1/)).toBeVisible();
+  page.once("dialog", (dialog) => dialog.accept());
+  await page.getByRole("button", { name: "Xóa địa chỉ 34 Demo" }).click();
+  await expect(
+    page.getByRole("heading", { name: "Chưa có địa chỉ" }),
+  ).toBeVisible();
+});
+
+test("administrator can create a variant and retire a product explicitly", async ({
+  page,
+}) => {
+  const app = await fixture(page, { role: "ADMIN" });
+  await app.login();
+  await page.goto("/admin/products");
+  await page
+    .getByRole("button", { name: "Biến thể sản phẩm 10", exact: true })
+    .click();
+  await page
+    .getByLabel("Tên sản phẩm", { exact: true })
+    .fill("Áo cotton size L");
+  await page.getByRole("button", { name: "Tạo biến thể", exact: true }).click();
+  await expect
+    .poll(
+      () =>
+        app.calls.filter(
+          (c) => c.path === "/api/products/10/variants" && c.method === "POST",
+        ).length,
+    )
+    .toBe(1);
+  const request = app.calls.find(
+    (c) => c.path === "/api/products/10/variants" && c.method === "POST",
+  );
+  expect(request?.body.attributes).toMatchObject({ color: "Black", size: "M" });
+  await page.getByRole("button", { name: "Đóng", exact: true }).click();
+  page.once("dialog", (dialog) => dialog.accept());
+  await page
+    .getByRole("button", { name: "Ngừng bán sản phẩm 10", exact: true })
+    .click();
+  await expect
+    .poll(
+      () =>
+        app.calls.filter(
+          (c) => c.path === "/api/products/10" && c.method === "DELETE",
+        ).length,
+    )
+    .toBe(1);
+});
+
+test("POS checkout writes channel POS using the same products and inventory contract", async ({
+  page,
+}) => {
+  const app = await fixture(page, { role: "ADMIN" });
+  await app.login();
+  await page.goto("/admin/pos");
+  await page
+    .getByRole("button", { name: /Áo cotton thiết yếu.*Thêm vào đơn/ })
+    .click();
+  await page.getByRole("button", { name: "Tiếp tục", exact: true }).click();
+  await expect(page.getByLabel("Người nhận", { exact: true })).toHaveValue(
+    address.recipientName,
+  );
+  await page.getByRole("radio", { name: /Thanh toán khi nhận hàng/ }).check();
+  await page
+    .getByRole("button", { name: "Xác nhận đặt hàng", exact: true })
+    .click();
+  await expect(page).toHaveURL(/\/admin\/orders\/100$/);
+  expect(
+    app.calls.find((c) => c.path === "/api/orders" && c.method === "POST")?.body
+      .channel,
+  ).toBe("POS");
+});
+
 test("inventory search hides stale rows before accepting a stock receipt", async ({
   page,
 }) => {
