@@ -1,82 +1,168 @@
 {
-    "checkedAt":  "2026-10-15T23:40:25.1122612+07:00",
-    "frontendRevision":  "31964b98bab0a5bc31c15b2bd184ecb20edabd73",
-    "orderRevision":  "20f9ee77c33007b93cd25a0bf292f402c5a6e477",
-    "urls":  {
-                 "admin":  "https://md05-rikkei-project.duckdns.org/admin",
-                 "store":  "https://md05-rikkei-project.duckdns.org/"
-             },
-    "local":  {
-                  "orderBootJar":  "PASS",
-                  "orderJavaTests":  64,
-                  "frontendLogicTests":  8,
-                  "productionBuild":  "PASS",
-                  "browserFixtureFailures":  0,
-                  "frontendLogicFailures":  0,
-                  "browserFixtureTests":  26,
-                  "orderFailures":  0,
-                  "viewports":  [
-                                    "1440x1000 desktop",
-                                    "390x664 mobile"
-                                ]
-              },
-    "ci":  {
-               "servicesConclusion":  "success",
-               "frontendConclusion":  "success",
-               "servicesRun":  38750654419,
-               "note":  "Frontend CI of core UI revision had 20 browser tests; six additional address/variant/POS cases passed locally and will run at the next feature head.",
-               "frontendRun":  38769524936
-           },
-    "live":  {
-                 "checkedAt":  "2026-10-15T16:29:08.534Z",
-                 "scope":  "Browser UI through Vite proxy to deployed API; isolated fixture data",
-                 "steps":  [
-                               "Admin UI product creation and stock receipt 20",
-                               "COD: CONFIRMED -\u003e SHIPPING -\u003e collect acknowledgement -\u003e COMPLETED",
-                               "Full COD return: REQUESTED -\u003e APPROVED -\u003e receive/restock -\u003e REFUND_PENDING -\u003e REFUNDED",
-                               "ONLINE simulated FAILED -\u003e CANCELLED, stock released",
-                               "ONLINE actual 200-second wait -\u003e EXPIRED, available 20 / reserved 0"
-                           ],
-                 "productId":  165,
-                 "codOrderId":  187,
-                 "failedOrderId":  188,
-                 "expiredOrderId":  189,
-                 "finalStock":  {
-                                    "productId":  165,
-                                    "available":  20,
-                                    "reserved":  0
-                                },
-                 "success":  true,
-                 "finishedAt":  "2026-10-15T16:32:59.592Z"
-             },
-    "deployment":  {
-                       "storeHttp":  200,
-                       "volumesDeleted":  false,
-                       "actuatorHttp":  404,
-                       "order":  "CI-built image, healthy",
-                       "internalHttp":  404,
-                       "catalogHttp":  200,
-                       "apiHealthHttp":  200,
-                       "anonymousMeHttp":  401,
-                       "frontend":  "Nginx static release",
-                       "adminSpaHttp":  200,
-                       "dynamicDocsHttp":  404,
-                       "swaggerHttp":  200
-                   },
-    "correctedTestIncident":  {
-                                  "productId":  3,
-                                  "correction":  "Guarded transaction verified receipt, timestamp, available, reserved and version; retained receipt for audit; stale search rows are now hidden before actions.",
-                                  "afterCorrectionAvailable":  50,
-                                  "beforeCorrectionAvailable":  70,
-                                  "mistakenReceiptKey":  "e33e8288-c5c3-43bc-a4c1-7106b32e311f",
-                                  "reserved":  0,
-                                  "addedQuantity":  20
-                              },
-    "protectedPostmanCollectionsUnchanged":  true,
-    "limitations":  [
-                        "Provider card/OTP capture and real VNPay refund were not repeated in this frontend run; checkout/callback/refund backend already existed, UI state cases use fixtures.",
-                        "Notification UI describes event rules; no public SMTP delivery-log API exists.",
-                        "Product API has no image field; frontend uses vector illustrations.",
-                        "No claims of production load capacity or exactly-once SMTP delivery."
-                    ]
+  "checkedAt": "2026-10-15T17:01:14.951Z",
+  "frontendRevision": "751c1c214d6dfcc33b799d81c544ebff46f7dab2",
+  "orderRevision": "20f9ee77c33007b93cd25a0bf292f402c5a6e477",
+  "urls": {
+    "admin": "https://md05-rikkei-project.duckdns.org/admin",
+    "store": "https://md05-rikkei-project.duckdns.org/"
+  },
+  "local": {
+    "orderBootJar": "PASS",
+    "orderJavaTests": 64,
+    "frontendLogicTests": 8,
+    "productionBuild": "PASS",
+    "browserFixtureFailures": 0,
+    "frontendLogicFailures": 0,
+    "browserFixtureTests": 32,
+    "orderFailures": 0,
+    "viewports": [
+      "1440x1000 desktop",
+      "390x664 mobile"
+    ],
+    "browserFixtureNote": "26 existing workflow cases passed with the new images; six image cases passed separately after fixing image-failure routing in the test harness. Full 32-case CI also passed."
+  },
+  "ci": {
+    "servicesRun": 38750654419,
+    "servicesConclusion": "success",
+    "servicesRevision": "20f9ee77c33007b93cd25a0bf292f402c5a6e477",
+    "frontendRun": 38773049448,
+    "frontendPrRun": 38773141203,
+    "frontendConclusion": "success",
+    "frontendRevision": "751c1c214d6dfcc33b799d81c544ebff46f7dab2",
+    "frontendBrowserTests": 32,
+    "note": "All backend, infrastructure, integration-test and Services CI workflow files at frontend revision exactly match the passed Services CI baseline. Repeated full Services CI for PR 39 is still in progress at this record time; no claim that it has completed."
+  },
+  "live": {
+    "checkedAt": "2026-10-15T16:29:08.534Z",
+    "scope": "Browser UI through Vite proxy to deployed API; isolated fixture data",
+    "steps": [
+      "Admin UI product creation and stock receipt 20",
+      "COD: CONFIRMED -> SHIPPING -> collect acknowledgement -> COMPLETED",
+      "Full COD return: REQUESTED -> APPROVED -> receive/restock -> REFUND_PENDING -> REFUNDED",
+      "ONLINE simulated FAILED -> CANCELLED, stock released",
+      "ONLINE actual 200-second wait -> EXPIRED, available 20 / reserved 0"
+    ],
+    "productId": 165,
+    "codOrderId": 187,
+    "failedOrderId": 188,
+    "expiredOrderId": 189,
+    "finalStock": {
+      "productId": 165,
+      "available": 20,
+      "reserved": 0
+    },
+    "success": true,
+    "finishedAt": "2026-10-15T16:32:59.592Z"
+  },
+  "deployment": {
+    "storeHttp": 200,
+    "volumesDeleted": false,
+    "actuatorHttp": 404,
+    "order": "CI-built image, healthy",
+    "internalHttp": 404,
+    "catalogHttp": 200,
+    "apiHealthHttp": 200,
+    "anonymousMeHttp": 401,
+    "frontend": "Nginx static release",
+    "adminSpaHttp": 200,
+    "dynamicDocsHttp": 404,
+    "swaggerHttp": 200,
+    "frontendActivatedAt": "2026-10-15T23:56:16+07:00",
+    "publicIndexSha256MatchesTestedBuild": true,
+    "publicProductImageSha256MatchesTestedBuild": true,
+    "healthyApplications": 6
+  },
+  "correctedTestIncident": {
+    "productId": 3,
+    "correction": "Guarded transaction verified receipt, timestamp, available, reserved and version; retained receipt for audit; stale search rows are now hidden before actions.",
+    "afterCorrectionAvailable": 50,
+    "beforeCorrectionAvailable": 70,
+    "mistakenReceiptKey": "e33e8288-c5c3-43bc-a4c1-7106b32e311f",
+    "reserved": 0,
+    "addedQuantity": 20
+  },
+  "protectedPostmanCollectionsUnchanged": true,
+  "limitations": [
+    "Provider card/OTP capture and real VNPay refund were not repeated in this frontend run; checkout/callback/refund backend already existed, UI state cases use fixtures.",
+    "Notification UI describes event rules; no public SMTP delivery-log API exists.",
+    "Product API has no image field; frontend uses generated illustrative images selected by product type and variant color. Image upload and actual brand photography are outside this change.",
+    "No claims of production load capacity or exactly-once SMTP delivery."
+  ],
+  "integration": {
+    "pr": 39,
+    "url": "https://github.com/dth251/md05-rikkei-project/pull/39",
+    "merged": true,
+    "mergeRevision": "7ed8b8eb515da016b81e7dd11a5747d5496c6f54"
+  },
+  "illustrations": {
+    "generator": "Built-in image_gen",
+    "count": 10,
+    "path": "frontend/src/assets/products",
+    "prompts": "frontend/src/assets/products/prompts.json",
+    "assets": [
+      {
+        "name": "ao-dai.jpg",
+        "bytes": 80373,
+        "sha256": "413160de7dca008bebbb023dcc213c9d94f87c55dc2f5f31e16d2bfdfa129ec0"
+      },
+      {
+        "name": "backpack.jpg",
+        "bytes": 220581,
+        "sha256": "5def8fd461819facd1c54f2c5025c344aa1c949498f8abe8b33ab27ca150a540"
+      },
+      {
+        "name": "hoodie.jpg",
+        "bytes": 126256,
+        "sha256": "d261560d886ea9dcbf6c61ca7674cb4c13bd4b5cbe3f457bbdcb90b678d3293a"
+      },
+      {
+        "name": "mug.jpg",
+        "bytes": 72809,
+        "sha256": "aaf409da450bf109eabe4879292350992982799889ddfcdc7dc5b1c2c9b350b3"
+      },
+      {
+        "name": "parcel.jpg",
+        "bytes": 181989,
+        "sha256": "ce0e1fecd74a4f7bde7bbe4606b2d564e047fdd36e44c5cd2609e21ced47da3e"
+      },
+      {
+        "name": "phone.jpg",
+        "bytes": 89714,
+        "sha256": "4d0350aa74961b536b08f660d9a396bcb66364e6b4c5707ab8962f1f80a871b2"
+      },
+      {
+        "name": "shirt-black.jpg",
+        "bytes": 126549,
+        "sha256": "b284662a093eb507a7d2dd22678837234ccf85f6ed970c0658bcad62c47ebebe"
+      },
+      {
+        "name": "shirt-blue.jpg",
+        "bytes": 139135,
+        "sha256": "d60c19a450368b330761824c96a79e02a73aab3fb991687f0080ad872a926a82"
+      },
+      {
+        "name": "shirt-red.jpg",
+        "bytes": 131675,
+        "sha256": "1211e97fb401fd9f57a32927da72ad436ffbb7d6952117358a712659b9f9653f"
+      },
+      {
+        "name": "shirt.jpg",
+        "bytes": 104254,
+        "sha256": "bc0e9ee6edcbe9c44b515e81524c5ad2685e64415b6990a428c2fc34628b1d05"
+      }
+    ],
+    "publicHttp": 200,
+    "viewportsVerified": [
+      "desktop",
+      "mobile"
+    ],
+    "scopes": [
+      "catalog",
+      "product details",
+      "color variants",
+      "cart",
+      "shared POS component"
+    ],
+    "fallback": "Unknown physical item uses parcel; failed primary image uses parcel; failed parcel uses accessible package icon."
+  }
 }
