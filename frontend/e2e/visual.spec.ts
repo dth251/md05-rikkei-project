@@ -2,9 +2,9 @@ import { test, expect } from "@playwright/test";
 
 const products = [
   "Áo cotton thiết yếu",
-  "Túi canvas hằng ngày",
-  "Đồng hồ tối giản",
-  "Tai nghe không dây",
+  "Balô hằng ngày",
+  "Cốc gốm tối giản",
+  "Áo hoodie zip",
 ].map((name, i) => ({
   id: i + 1,
   name,
@@ -43,6 +43,19 @@ test("visual storefront, loading contract and responsive viewport", async ({
       () => document.documentElement.scrollWidth <= innerWidth + 1,
     ),
   ).toBe(true);
+  await expect
+    .poll(() =>
+      page
+        .locator(".product-art img")
+        .evaluateAll((images) =>
+          images.every(
+            (image) =>
+              (image as HTMLImageElement).complete &&
+              (image as HTMLImageElement).naturalWidth > 0,
+          ),
+        ),
+    )
+    .toBe(true);
   await page.screenshot({
     path: info.outputPath("storefront.png"),
     fullPage: true,

@@ -1374,3 +1374,19 @@ Giữ nguyên các thay đổi có sẵn của người dùng trong settings, b�
 và file kế hoạch đã xóa trước task. Không commit secrets/.verification.
 Nguồn/bằng chứng: [frontend](../frontend/README.md),
 [kết quả](evidence/frontend-2026-10-15.json).
+
+## 211-frontend — ảnh minh họa sản phẩm ngày 15/10/2026
+
+Theo yêu cầu bổ sung, tạo 10 ảnh bằng built-in image_gen, lưu JPEG trong
+frontend/src/assets/products cùng prompt chính xác. Có áo trắng/xanh/đỏ/
+đen, hoodie, áo dài, balô, cốc, điện thoại và hộp hàng cho fixture chưa có
+mô tả vật phẩm. Chọn theo tên/danh mục/thuộc tính màu, dùng chung cửa hàng,
+chi tiết, giỏ và POS. Ghi rõ ảnh minh họa, lazy load ở danh sách, ảnh dự
+phòng và SVG có tên truy cập khi cả hai ảnh tải lỗi. Vite hash asset;
+không thay API/schema, dữ liệu catalog/kho hoặc collection Postman.
+
+Build và 8 unit tests đạt. 26 browser cases nghiệp vụ hiện có đạt với ảnh
+mới; sáu ca ảnh trên desktop/mobile đạt sau khi sửa test chặn cả module
+import thay vì chỉ chặn request image. Đã kiểm tra ảnh catalog/biến thể/
+giỏ, tải ảnh thật, dự phòng và không tràn ngang. CI head 210
+38770971794 success; source 211 sẽ đi qua Frontend CI và PR trước tích hợp.

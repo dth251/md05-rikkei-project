@@ -2,11 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import {
   ArrowRight,
-  ShoppingBag,
   Package,
-  Shirt,
-  Headphones,
-  Watch,
   X,
   Minus,
   Plus,
@@ -15,6 +11,10 @@ import {
 } from "lucide-react";
 import type { Product, Address } from "./types";
 import { money, orderLabels, returnLabels } from "./lib/workflow";
+import {
+  fallbackProductImage,
+  productIllustration,
+} from "./lib/product-images";
 
 export function ErrorBox({ message }: { message: string }) {
   return message ? (
@@ -74,30 +74,43 @@ export function ProductArt({
   product?: Partial<Product>;
   large?: boolean;
 }) {
-  const label =
-    `${product?.name || ""} ${product?.category || ""}`.toLowerCase();
-  const Icon = /áo|shirt|fashion|thời trang|thoitrang/.test(label)
-    ? Shirt
-    : /tai nghe|headphone/.test(label)
-      ? Headphones
-      : /đồng hồ|watch/.test(label)
-        ? Watch
-        : /túi|bag/.test(label)
-          ? ShoppingBag
-          : Package;
+  const source = productIllustration(product);
+  const [failed, setFailed] = useState<string[]>([]);
+  const image = failed.includes(source) ? fallbackProductImage : source;
+  const alt = `Ảnh minh họa ${product?.name || "sản phẩm"}`;
   return (
-    <div className={`product-art ${large ? "large" : ""}`} aria-hidden="true">
-      <div className="art-circle" />
-      <Icon size={large ? 180 : 100} strokeWidth={0.7} />
-      <span className="art-label">
-        MONO / {product?.category || "ESSENTIALS"}
+    <div className={`product-art ${large ? "large" : ""}`}>
+      {failed.includes(image) ? (
+        <Package
+          role="img"
+          aria-label={alt}
+          size={large ? 180 : 100}
+          strokeWidth={0.7}
+        />
+      ) : (
+        <img
+          src={image}
+          alt={alt}
+          width={1024}
+          height={1024}
+          loading={large ? "eager" : "lazy"}
+          decoding="async"
+          onError={() => setFailed((previous) => [...previous, image])}
+        />
+      )}
+      <span className="art-label" aria-hidden="true">
+        Ảnh minh họa
       </span>
     </div>
   );
 }
 export function ProductCard({ product }: { product: Product }) {
   return (
-    <Link className="product-card" to={`/products/${product.id}`}>
+    <Link
+      className="product-card"
+      to={`/products/${product.id}`}
+      aria-label={product.name}
+    >
       <ProductArt product={product} />
       <div className="product-card-meta">
         <span className="eyebrow">

@@ -43,7 +43,12 @@ config dùng chung server/output directory đồng thời.
 
 Notification được kích hoạt qua nghiệp vụ hiện có. Màn hình thông báo
 trình bày thời điểm gửi, không giả trạng thái thư đã tới inbox. Hình sản
-phẩm là minh họa vector vì API hiện chưa có trường ảnh. Không bổ sung
+phẩm là bộ ảnh minh họa AI lưu tại `src/assets/products/`, được chọn theo
+tên/danh mục/màu biến thể vì API hiện chưa có trường ảnh. Có áo trắng,
+xanh, đỏ, đen, hoodie, áo dài, balô, cốc và điện thoại; fixture chưa mô tả
+vật phẩm dùng ảnh hộp hàng. Ảnh tải lỗi có dự phòng, ảnh danh sách tải lazy;
+Vite tạo tên file theo nội dung để cache đúng giữa các release. Prompt
+tạo ảnh được lưu tại `src/assets/products/prompts.json`. Không bổ sung
 khuyến mãi, phí giao hàng, vận chuyển tự động hoặc đổi role khi backend
 chưa có nghiệp vụ tương ứng.
 
