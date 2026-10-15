@@ -1390,3 +1390,21 @@ mới; sáu ca ảnh trên desktop/mobile đạt sau khi sửa test chặn cả 
 import thay vì chỉ chặn request image. Đã kiểm tra ảnh catalog/biến thể/
 giỏ, tải ảnh thật, dự phòng và không tràn ngang. CI head 210
 38770971794 success; source 211 sẽ đi qua Frontend CI và PR trước tích hợp.
+
+Kết quả cuối: source ảnh `751c1c214d6dfcc33b799d81c544ebff46f7dab2`
+đã activate lúc 2026-10-15T23:56:16+07:00. Public index và cả 10 JPEG
+HTTP 200, SHA-256 trùng artifact đã kiểm thử; /admin, /products/162,
+catalog, Swagger và Gateway health 200; sáu ứng dụng healthy/restart=0.
+Frontend CI push 38773049448 và PR 38773141203 success với 8 logic tests,
+32 browser cases. PR [#39](https://github.com/dth251/md05-rikkei-project/pull/39)
+đã merge lúc 2026-10-16T00:00:29+07:00 thành mốc 212
+`7ed8b8eb515da016b81e7dd11a5747d5496c6f54`.
+
+Backend/infrastructure/tests/Services workflow đối chiếu không có diff
+so với baseline `20f9ee7` đã pass toàn bộ Services CI 38750654419; frontend
+dùng kết quả CI mới riêng. Lượt Services CI lặp lại của PR #39 còn chạy
+tại thời điểm ghi nhận, chưa ghi là success; pipeline main sẽ ghi kết quả
+riêng. Nguồn frontend static đang phục vụ vẫn là release 211 đã kiểm chứng,
+Order đang chạy image CI 208 healthy; không khẳng định pipeline main đã
+rollout image mới. Thay đổi chứng cứ này chỉ là tài liệu/JSON, kiểm tra
+parse và git diff check, không chạy lại Java/browser cho phần tài liệu.
