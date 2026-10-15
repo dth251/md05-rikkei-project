@@ -4,7 +4,7 @@ Các ảnh/sơ đồ/video trong bảng dưới là checkpoint ngày 3, chưa ph
 observability bổ sung ngày 13/10. Sơ đồ nguồn hiện tại nằm ở `docs/architecture.md`.
 Bằng chứng mới: [CI head 140](remaining-ci-140/README.md); không thay thế số đo VPS cũ.
 
-Đọc [báo cáo đầy đủ](../day3-test-results.md) trước khi diễn giải các số đo. Timestamp UTC; commit/deploy dùng SHA thực, không suy ra image từ HEAD.
+Đọc [báo cáo đầy đủ](https://github.com/dth251/md05-rikkei-project/blob/8a909c99a3cf246d26da9148f5502b02f37bf8a0/docs/day3-test-results.md) trước khi diễn giải các số đo. Timestamp UTC; commit/deploy dùng SHA thực, không suy ra image từ HEAD.
 
 | File | Nguồn / phạm vi |
 |---|---|

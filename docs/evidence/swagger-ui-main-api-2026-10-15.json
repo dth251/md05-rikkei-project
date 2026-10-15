@@ -1,0 +1,35 @@
+{
+    "checkedAt":  "2026-10-15T18:59:51.4071778+07:00",
+    "url":  "https://md05-rikkei-project.duckdns.org/swagger-ui/",
+    "uiRevision":  "c71815f24f3c59040b99fb2d36146f779cc96c76",
+    "nginxPathRevision":  "60c547b",
+    "httpStatus":  {
+                       "/swagger-ui/swagger-ui-bundle.js":  200,
+                       "/api/products":  200,
+                       "/swagger-ui/api-chinh.json":  200,
+                       "/swagger-ui/":  200,
+                       "/gateway-status":  200,
+                       "/swagger-ui/swagger-ui.css":  200,
+                       "/swagger-ui/swagger-initializer.js":  200
+                   },
+    "publicOperations":  35,
+    "protectedMainCollectionUnchanged":  true,
+    "newCollection":  "tests/postman/md05-api-chinh.postman_collection.json",
+    "checks":  [
+                   "35 unique method/path operations",
+                   "JSON bodies parse after variable resolution",
+                   "All referenced collection variables defined",
+                   "Schema references resolve",
+                   "PowerShell generator rerun",
+                   "Bash and initializer JavaScript syntax",
+                   "Swagger bundle and CSS SHA256 pinned",
+                   "Nginx configuration test",
+                   "Public HTTPS docs, assets, health and catalog"
+               ],
+    "limitations":  [
+                        "No authenticated business mutations performed during docs verification",
+                        "Rendered browser UI and authenticated Try it out not verified",
+                        "No application rollout; docs and Nginx only",
+                        "Feature commits local, not pushed or merged at this checkpoint"
+                    ]
+}

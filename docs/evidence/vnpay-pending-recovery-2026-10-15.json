@@ -1,6 +1,6 @@
 {
-    "checkedAt":  "2026-10-15T03:01:37.7971181+07:00",
-    "stage":  "local-tests-passed-awaiting-ci-deploy",
+    "checkedAt":  "2026-10-15T03:36:56.8703599+07:00",
+    "stage":  "deployed-real-sandbox-gmail-and-200-second-stock-verified",
     "paymentCommit":  "4bfed7a32c34e47b03a61f6b55f967066f14352e",
     "orderCommit":  "e6d269196ed805fd89bfece1e49666901e10368c",
     "paymentTests":  70,
@@ -33,12 +33,11 @@
                       ],
     "fix":  "Signed browser return triggers bounded server querydr; verified payment capture uses the existing idempotent transaction and outbox",
     "reservationTtlSeconds":  200,
-    "inventory":  "Pending order atomically moves available to reserved; payment success consumes reserved without subtracting available again; expiry/failure releases reservation once",
     "limitations":  [
-                        "No new browser sandbox transaction verified after fix yet",
-                        "VPS still runs previous image and 150-second policy at this checkpoint",
-                        "Previously expired orders cannot be revived because stock was released",
-                        "IPN registration/delivery remains unverified"
+                        "IPN registration and delivery not verified independently; signed provider query fallback implemented",
+                        "Old expired orders 174/175 are not revived; verified captures require refund handling",
+                        "Real VNPay refunds not exercised",
+                        "Main push CI/CD still running at final checkpoint; three app images already deployed from passing CI and integrated source"
                     ],
     "notification":  {
                          "bootJar":  "PASS",
@@ -50,7 +49,7 @@
                                         "completed"
                                     ],
                          "failures":  0,
-                         "liveInboxVerified":  false,
+                         "liveInboxVerified":  true,
                          "errors":  0,
                          "commit":  "2f4109134b0caa64ee6b93c104bb6e86939c911d",
                          "previewDesktop":  {
@@ -70,5 +69,106 @@
                              "prRun":  38626143745,
                              "pushRun":  38625930469,
                              "cause":  "EmailLiveTests still aged fixture to 151 seconds and waited against 150-second policy"
-                         }
+                         },
+    "ci":  {
+               "prConclusion":  "success",
+               "prRun":  38628605320,
+               "mainStatus":  "in_progress_at_checkpoint",
+               "imageConclusion":  "success",
+               "imageRun":  38628603909,
+               "mainRun":  38631145755,
+               "pr":  38,
+               "mergedMain":  "8a909c99a3cf246d26da9148f5502b02f37bf8a0"
+           },
+    "sandbox":  {
+                    "available":  19,
+                    "orderStatus":  "CONFIRMED",
+                    "paymentStatus":  "SUCCESS",
+                    "reserved":  0,
+                    "checkedAt":  "2026-10-15T03:29:57.1585320+07:00",
+                    "productId":  154,
+                    "refundStatus":  "NONE",
+                    "baselineAvailable":  20,
+                    "paymentId":  107,
+                    "orderId":  176
+                },
+    "inventory":  {
+                      "orderId":  177,
+                      "productId":  154,
+                      "createdAt":  "2026-10-14T20:29:57.852113098Z",
+                      "baseline":  {
+                                       "available":  19,
+                                       "reserved":  0
+                                   },
+                      "pending":  {
+                                      "reserved":  2,
+                                      "orderStatus":  "PENDING_PAYMENT",
+                                      "available":  17
+                                  },
+                      "ttlSeconds":  200,
+                      "at155Seconds":  {
+                                           "reserved":  2,
+                                           "orderStatus":  "PENDING_PAYMENT",
+                                           "available":  17
+                                       },
+                      "after200Seconds":  {
+                                              "reservationExpired":  true,
+                                              "orderStatus":  "EXPIRED",
+                                              "elapsedSeconds":  202.94,
+                                              "available":  19,
+                                              "paymentId":  108,
+                                              "reserved":  0,
+                                              "paymentStatus":  "FAILED"
+                                          }
+                  },
+    "deployment":  {
+                       "verifiedAt":  "2026-10-15T03:36:56.8859004+07:00",
+                       "source":  "a17fe9a681129c6501410a05e815f264e7ad7466",
+                       "ttl":  "PT200S",
+                       "volumesDeleted":  false,
+                       "smtpHost":  "smtp.gmail.com",
+                       "applicationTargetsUp":  6,
+                       "sourceIntegratedIntoMain":  true,
+                       "health":  "healthy",
+                       "imageIds":  {
+                                        "notification":  "sha256:eb479a6acd5dd227f1606f018d075226d6f2b36f2f3fabfb4db8c0070f5b010a",
+                                        "payment":  "sha256:d521bceca6b7471e4943b978c2fb9f8e2aaa0f1f8e946b82b3d96c083c87eb2c",
+                                        "order":  "sha256:84aa22d7e2d2f3a8292ee6592731a1c6c0b71437a5141c4352aa2fbbc83991db"
+                                    },
+                       "previousCustomerOrdersChanged":  false,
+                       "services":  [
+                                        "payment-service",
+                                        "order-service",
+                                        "notification-service"
+                                    ]
+                   },
+    "gmail":  {
+                  "expiry":  {
+                                 "messageId":  "1a13c1eafcf9f187",
+                                 "orderId":  177,
+                                 "state":  "SENT",
+                                 "inboxVerified":  true,
+                                 "inlineStylesVerified":  true,
+                                 "parts":  [
+                                               "text/plain",
+                                               "text/html"
+                                           ],
+                                 "attempts":  1,
+                                 "mime":  "multipart/alternative"
+                             },
+                  "confirmation":  {
+                                       "messageId":  "1a13c1ac255da6d1",
+                                       "orderId":  176,
+                                       "state":  "SENT",
+                                       "inboxVerified":  true,
+                                       "inlineStylesVerified":  true,
+                                       "parts":  [
+                                                     "text/plain",
+                                                     "text/html"
+                                                 ],
+                                       "attempts":  1,
+                                       "mime":  "multipart/alternative"
+                                   },
+                  "recipients":  "Private registered fixture alias; no email addresses or credentials in evidence"
+              }
 }

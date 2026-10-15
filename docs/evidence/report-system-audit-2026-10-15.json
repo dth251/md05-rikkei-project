@@ -1,0 +1,40 @@
+{
+  "checkedAt": "2026-10-15T17:23:36+07:00",
+  "purpose": "Read-only deployment audit for the project report",
+  "sourceBaseline": "43848df",
+  "deploymentRevision": "8a909c99a3cf246d26da9148f5502b02f37bf8a0",
+  "applicationServices": [
+    "auth-service",
+    "product-service",
+    "order-service",
+    "payment-service",
+    "notification-service",
+    "api-gateway"
+  ],
+  "allApplicationImageTagsMatchDeploymentRevision": true,
+  "allApplicationHealth": "healthy",
+  "allApplicationRestartCounts": 0,
+  "reservationTtl": "PT200S",
+  "host": {
+    "cpuCount": 1,
+    "memoryTotalMiB": 4926,
+    "memoryAvailableMiB": 2188,
+    "swapUsedMiB": 77
+  },
+  "runningInfrastructure": [
+    "postgres", "rabbitmq", "redis", "mailpit", "prometheus", "grafana",
+    "node-exporter", "postgres-exporter", "redis-exporter"
+  ],
+  "notObservedInDeploymentContainerList": [
+    "otel-collector", "tempo", "loki", "alloy", "alertmanager"
+  ],
+  "mainWorkflow": {
+    "id": 38631145755,
+    "status": "completed",
+    "conclusion": "success",
+    "headSha": "8a909c99a3cf246d26da9148f5502b02f37bf8a0",
+    "updatedAt": "2026-10-14T20:53:24Z",
+    "url": "https://github.com/dth251/md05-rikkei-project/actions/runs/38631145755"
+  },
+  "verificationScope": "SSH date, host resource summary, compose-project container list, selected image/health/restart fields, order TTL; GitHub workflow metadata. No business writes, SMTP sends, provider requests, deployment changes or secret exports. Historical test and transaction evidence is linked separately in the report."
+}

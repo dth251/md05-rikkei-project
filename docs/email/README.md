@@ -60,8 +60,7 @@ Thông báo tự động đã có template HTML riêng theo giao diện MD05:
 Notification gửi `multipart/alternative`: HTML cho Gmail và text dự phòng,
 cho confirmed/cancelled/expired/shipped/completed. Mã đơn và trạng thái
 lấy từ đúng EmailTask; không chèn sản phẩm/tổng tiền/người nhận cố định
-của mẫu hóa đơn vào thông báo thật. Bộ Java/SMTP đã đạt, CI và rollout
-đang chờ xác nhận tại checkpoint 15/10/2026.
+của mẫu hóa đơn vào thông báo thật. Notification đã deploy từ image CI `a17fe9a` ngày 15/10/2026. Gmail inbox đã nhận đúng HTML/text cho đơn #176 xác nhận và #177 quá hạn; mỗi delivery SENT một lần.
 
 Template hóa đơn chi tiết và công cụ gửi mẫu phía trên vẫn là luồng riêng.
 Thông báo tự động hiện là phiếu cập nhật trạng thái đơn; không phát hành

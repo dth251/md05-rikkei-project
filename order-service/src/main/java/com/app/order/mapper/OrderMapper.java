@@ -2,6 +2,7 @@ package com.app.order.mapper;
 
 import com.app.order.dto.response.OrderItemResponse;
 import com.app.order.dto.response.OrderResponse;
+import com.app.order.dto.response.OrderSummaryResponse;
 import com.app.order.dto.response.ShipmentResponse;
 import com.app.order.entity.PurchaseOrder;
 import org.springframework.stereotype.Component;
@@ -35,5 +36,10 @@ public class OrderMapper {
                 order.getCodPaymentId(),
                 order.getCodPaidAt()
         );
+    }
+
+    public OrderSummaryResponse toSummary(PurchaseOrder order) {
+        return new OrderSummaryResponse(order.getId(), order.getUserId(), order.getChannel(),
+                order.getStatus(), order.getTotalAmount(), order.getCreatedAt(), order.getPaymentMethod());
     }
 }

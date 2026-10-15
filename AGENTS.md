@@ -6,7 +6,8 @@
 - Commit sau khi hoàn thành và kiểm thử một phần công việc; không giới hạn số lần commit theo bảng kế hoạch. Cấp số từ lịch sử Git thực tế.
 - Commit, tiêu đề PR và ghi chú CI/CD tuân format NN-ten-service: noi dung thay doi; summary/nhật ký ghi SHA, thời gian, kết quả kiểm tra và trạng thái deploy thực tế.
 - Tích hợp bằng Pull Request sau khi build và kiểm thử đạt; không force-push.
-- Không tạo shared, bootstrap, Maven, Flyway, Liquibase hoặc frontend.
+- Không tạo shared, bootstrap, Maven, Flyway hoặc Liquibase.
+- Theo yêu cầu ngày 15/10/2026, frontend được phát triển riêng trong `frontend/`, gồm cửa hàng USER và trang quản trị ADMIN; nghiệp vụ và phân quyền thực thi tại backend.
 - Mỗi service tự sở hữu DTO, security và error handlers; định dạng code xuống dòng rõ ràng.
 - Không commit secret, .env, private key hoặc .verification; không ghi secret vào logs.
 - Không xóa volume, dữ liệu hoặc ứng dụng ngoài phạm vi dự án.

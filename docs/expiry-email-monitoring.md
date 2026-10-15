@@ -2,7 +2,7 @@
 
 Cập nhật cuối ngày 14/10/2026: VPS đã chuyển Notification sang Gmail SMTP
 lúc 23:02:42 +07; binary vẫn mốc 168, local giữ Mailpit. Phần sandbox bên
-dưới mô tả checkpoint trước thay đổi. Xem [cấu hình SMTP thật](email-thuc.md)
+dưới mô tả checkpoint trước thay đổi. Xem [cấu hình SMTP thật](https://github.com/dth251/md05-rikkei-project/blob/8a909c99a3cf246d26da9148f5502b02f37bf8a0/docs/email-thuc.md)
 và [bằng chứng mới](evidence/gmail-smtp-2026-10-14.json).
 
 Ngày 14/10/2026, nhánh `feature/expiry-150s-email-monitoring` tiếp nối

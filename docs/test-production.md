@@ -144,7 +144,7 @@ ssh -i '<private-key-path>' -o StrictHostKeyChecking=yes -N `
 Grafana `http://127.0.0.1:13001`, Prometheus `http://127.0.0.1:19091`.
 Địa chỉ localhost ở đây là đầu tunnel tới **VPS**, không phải ứng dụng
 local. Chọn đúng cửa sổ demo và chờ vài lần scrape. Kết quả hiện tại và
-giới hạn xác minh nằm trong [báo cáo production](postman-production-results.md).
+giới hạn xác minh nằm trong [báo cáo production](https://github.com/dth251/md05-rikkei-project/blob/8a909c99a3cf246d26da9148f5502b02f37bf8a0/docs/postman-production-results.md).
 
 ## 5. CLI và chuẩn bị một lượt private mới
 

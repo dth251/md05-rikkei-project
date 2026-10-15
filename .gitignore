@@ -9,5 +9,9 @@
 .idea/
 *.iml
 *.log
+frontend/node_modules/
+frontend/dist/
+frontend/test-results/
+frontend/playwright-report/
 .vscode/*
 !.vscode/settings.json
