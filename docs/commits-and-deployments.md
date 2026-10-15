@@ -1270,3 +1270,25 @@ capacity tối đa chưa xác định. Không đưa credential vào tài liệu;
 
 [Báo cáo](bao-cao-bai-tap-lon.md),
 [snapshot đối chiếu](evidence/report-system-audit-2026-10-15.json).
+
+## Swagger UI và file Postman API chính ngày 15/10/2026
+
+| Mốc | SHA | Thời gian +07 | Kiểm chứng / deploy thực tế |
+|---|---|---|---|
+| 203-docs | `c71815f24f3c59040b99fb2d36146f779cc96c76` | 2026-10-15T18:33:17+07:00 | Tạo collection mới 35 request/8 nhóm và OpenAPI bản gọn từ hợp đồng đã export. Không sửa collection luồng chính theo yêu cầu người dùng. JSON/biến/request trùng/schema refs, chạy lại generator và cú pháp Bash/JS đạt. Swagger UI 5.33.2 pin commit và hai SHA-256 assets. |
+| 204-docs | `60c547b5ff8fe102af67691c5800c1c4730f0a26` | 2026-10-15T18:35:21+07:00 | Chuyển web root tài liệu sang `/var/www/md05-api-docs`, không nới quyền deployment private. Site Nginx được backup, kiểm tra cấu hình đạt rồi reload. UI/spec/bundle/CSS public HTTPS 200; contract public có 35 operations. Không thay image/restart các app hoặc dữ liệu nghiệp vụ. |
+
+Link **https://md05-rikkei-project.duckdns.org/swagger-ui/**; alias
+`/swagger-ui.html` chuyển hướng tới trang này. UI đọc artifact của mốc 203;
+Nginx sử dụng web root sửa tại mốc 204. `/gateway-status` và catalog vẫn 200,
+anonymous `/api/auth/me` vẫn 401, `/actuator/health` public vẫn 404.
+Lần trỏ alias ban đầu vào deployment root 750 trả 403; đã sửa bằng web root
+riêng, không đổi quyền đọc cấu hình private hoặc chứng chỉ.
+
+Kiểm chứng HTTP và contract đạt; chưa kiểm chứng render trình duyệt hoặc
+Try it out có JWT. Không gọi API ghi, gửi email hoặc giao dịch provider trong
+bước kiểm tra tài liệu. Chưa chạy lại Java tests vì không sửa backend;
+chưa push/PR/merge các commit tài liệu tại checkpoint. Các thay đổi có sẵn
+của người dùng được giữ nguyên, gồm collection luồng chính đang test.
+[Hướng dẫn](swagger-ui.md),
+[bằng chứng](evidence/swagger-ui-main-api-2026-10-15.json).
