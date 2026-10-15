@@ -1,5 +1,18 @@
 # OpenAPI của các API nghiệp vụ
 
+## Swagger UI cho API chính — cập nhật 15/10/2026
+
+Xem **https://md05-rikkei-project.duckdns.org/swagger-ui/** hoặc
+`/swagger-ui.html`. Bản gọn có 35 thao tác nghiệp vụ, mỗi method/path một
+lần, có Authorize JWT và Try it out. [Cách dùng](swagger-ui.md).
+File Postman tương ứng là
+[md05-api-chinh.postman_collection.json](../tests/postman/md05-api-chinh.postman_collection.json).
+Collection luồng chính đang dùng để kiểm thử được giữ nguyên.
+
+Swagger UI đọc bản tĩnh chọn từ hợp đồng đã export; endpoint tài liệu
+động `/v3/api-docs` của từng service vẫn chỉ dành cho ADMIN qua loopback.
+Các phần dưới mô tả cơ chế export và checkpoint ban đầu.
+
 Hợp đồng đã export từ controller thực và kiểm thử nằm trong `docs/openapi/`:
 Auth, Product, Order, Payment và bản gộp API Gateway. Bản gộp hiện có
 32 paths, 41 operations, operation IDs duy nhất và `x-service` chỉ service
@@ -9,7 +22,8 @@ chịu trách nhiệm. Notification nhận event, hợp đồng event được m
 Mỗi service tự sở hữu cấu hình/schema; không tạo shared module. Dùng
 [springdoc 2.8.17](https://github.com/springdoc/springdoc-openapi/releases/tag/v2.8.17)
 với Spring Boot 3.5.6, theo [compatibility matrix](https://springdoc.org/v2/).
-Chỉ dùng starter API, không tạo frontend hay Swagger UI.
+Các service dùng starter API; Swagger UI được phục vụ riêng bằng Nginx
+theo phần cập nhật ở trên, không thêm giao diện cửa hàng vào service.
 
 ## Truy cập và xác thực
 

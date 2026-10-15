@@ -1,0 +1,1119 @@
+{
+    "info":  {
+                 "description":  "35 API nghiệp vụ, không có test âm, polling hoặc callback kỹ thuật. Chọn No environment. Nhập tài khoản trực tiếp trong Body đăng nhập; đăng nhập lại khi đổi USER/ADMIN. Đây là danh mục thao tác thủ công, không Run toàn bộ vì có các bước xóa/hủy/hoàn tiền và nhiều nhánh nghiệp vụ.",
+                 "name":  "MD05 - API chính - mỗi thao tác một request",
+                 "schema":  "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+                 "_postman_id":  "69f408aa-a11e-4df6-b6e6-a4a1b7c75035"
+             },
+    "variable":  [
+                     {
+                         "key":  "baseUrl",
+                         "value":  "https://md05-rikkei-project.duckdns.org"
+                     },
+                     {
+                         "key":  "token",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "refreshToken",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "productId",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "parentId",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "productSku",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "orderId",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "paymentId",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "addressId",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "amount",
+                         "value":  ""
+                     }
+                 ],
+    "event":  [
+                  {
+                      "script":  {
+                                     "exec":  [
+                                                  "if (pm.response.code \u003e= 200 \u0026\u0026 pm.response.code \u003c 300 \u0026\u0026 pm.response.code !== 204) {",
+                                                  "  const data = pm.response.json().data;",
+                                                  "  const url = pm.request.url.toString().split(\u0027?\u0027)[0];",
+                                                  "  if (data) {",
+                                                  "    if (data.accessToken) pm.collectionVariables.set(\u0027token\u0027, data.accessToken);",
+                                                  "    if (data.refreshToken) pm.collectionVariables.set(\u0027refreshToken\u0027, data.refreshToken);",
+                                                  "    if (data.id \u0026\u0026 pm.request.method === \u0027POST\u0027) {",
+                                                  "      if (/\\/api\\/products$/.test(url)) {",
+                                                  "        pm.collectionVariables.set(\u0027productId\u0027, data.id);",
+                                                  "        pm.collectionVariables.set(\u0027parentId\u0027, data.id);",
+                                                  "        pm.collectionVariables.set(\u0027productSku\u0027, data.sku);",
+                                                  "      }",
+                                                  "      if (/\\/api\\/orders$/.test(url)) pm.collectionVariables.set(\u0027orderId\u0027, data.id);",
+                                                  "      if (/\\/api\\/auth\\/addresses$/.test(url)) pm.collectionVariables.set(\u0027addressId\u0027, data.id);",
+                                                  "    }",
+                                                  "    if (data.id \u0026\u0026 /\\/api\\/payments\\/by-order\\//.test(url)) {",
+                                                  "      pm.collectionVariables.set(\u0027paymentId\u0027, data.id);",
+                                                  "      pm.collectionVariables.set(\u0027amount\u0027, data.amount);",
+                                                  "    }",
+                                                  "    if (data.checkoutUrl) pm.collectionVariables.set(\u0027checkoutUrl\u0027, data.checkoutUrl);",
+                                                  "  }",
+                                                  "}"
+                                              ],
+                                     "type":  "text/javascript"
+                                 },
+                      "listen":  "test"
+                  }
+              ],
+    "item":  [
+                 {
+                     "name":  "01 - Tài khoản",
+                     "item":  [
+                                  {
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/auth/register",
+                                                      "auth":  {
+                                                                   "type":  "noauth"
+                                                               },
+                                                      "description":  "Quyền: PUBLIC. Nhập ID thực tế ở collection Variables. Đăng nhập bằng tài khoản phù hợp trước khi Send; token của collection này được thay sau mỗi lần đăng nhập.",
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\"fullName\":\"Khách hàng demo\",\"email\":\"\",\"password\":\"\"}",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               }
+                                                               }
+                                                  },
+                                      "name":  "POST - Đăng ký tài khoản",
+                                      "response":  [
+
+                                                   ]
+                                  },
+                                  {
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/auth/login",
+                                                      "auth":  {
+                                                                   "type":  "noauth"
+                                                               },
+                                                      "description":  "Quyền: PUBLIC. Nhập ID thực tế ở collection Variables. Đăng nhập bằng tài khoản phù hợp trước khi Send; token của collection này được thay sau mỗi lần đăng nhập.",
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\"email\":\"\",\"password\":\"\"}",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               }
+                                                               }
+                                                  },
+                                      "name":  "POST - Đăng nhập USER hoặc ADMIN",
+                                      "response":  [
+
+                                                   ]
+                                  },
+                                  {
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/auth/me",
+                                                      "auth":  {
+                                                                   "bearer":  [
+                                                                                  {
+                                                                                      "key":  "token",
+                                                                                      "type":  "string",
+                                                                                      "value":  "{{token}}"
+                                                                                  }
+                                                                              ],
+                                                                   "type":  "bearer"
+                                                               },
+                                                      "description":  "Quyền: USER. Nhập ID thực tế ở collection Variables. Đăng nhập bằng tài khoản phù hợp trước khi Send; token của collection này được thay sau mỗi lần đăng nhập."
+                                                  },
+                                      "name":  "GET - Xem tài khoản hiện tại",
+                                      "response":  [
+
+                                                   ]
+                                  },
+                                  {
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/auth/refresh",
+                                                      "auth":  {
+                                                                   "type":  "noauth"
+                                                               },
+                                                      "description":  "Quyền: PUBLIC. Nhập ID thực tế ở collection Variables. Đăng nhập bằng tài khoản phù hợp trước khi Send; token của collection này được thay sau mỗi lần đăng nhập.",
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\r\n    \"refreshToken\":  \"{{refreshToken}}\"\r\n}",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               }
+                                                               }
+                                                  },
+                                      "name":  "POST - Làm mới token",
+                                      "response":  [
+
+                                                   ]
+                                  },
+                                  {
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/auth/logout",
+                                                      "auth":  {
+                                                                   "type":  "noauth"
+                                                               },
+                                                      "description":  "Quyền: PUBLIC. Nhập ID thực tế ở collection Variables. Đăng nhập bằng tài khoản phù hợp trước khi Send; token của collection này được thay sau mỗi lần đăng nhập.",
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\r\n    \"refreshToken\":  \"{{refreshToken}}\"\r\n}",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               }
+                                                               }
+                                                  },
+                                      "name":  "POST - Đăng xuất phiên",
+                                      "response":  [
+
+                                                   ]
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "02 - Địa chỉ",
+                     "item":  [
+                                  {
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/auth/addresses",
+                                                      "auth":  {
+                                                                   "bearer":  [
+                                                                                  {
+                                                                                      "key":  "token",
+                                                                                      "type":  "string",
+                                                                                      "value":  "{{token}}"
+                                                                                  }
+                                                                              ],
+                                                                   "type":  "bearer"
+                                                               },
+                                                      "description":  "Quyền: USER. Nhập ID thực tế ở collection Variables. Đăng nhập bằng tài khoản phù hợp trước khi Send; token của collection này được thay sau mỗi lần đăng nhập."
+                                                  },
+                                      "name":  "GET - Danh sách địa chỉ",
+                                      "response":  [
+
+                                                   ]
+                                  },
+                                  {
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/auth/addresses",
+                                                      "auth":  {
+                                                                   "bearer":  [
+                                                                                  {
+                                                                                      "key":  "token",
+                                                                                      "type":  "string",
+                                                                                      "value":  "{{token}}"
+                                                                                  }
+                                                                              ],
+                                                                   "type":  "bearer"
+                                                               },
+                                                      "description":  "Quyền: USER. Nhập ID thực tế ở collection Variables. Đăng nhập bằng tài khoản phù hợp trước khi Send; token của collection này được thay sau mỗi lần đăng nhập.",
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\r\n    \"recipientName\":  \"Khách hàng demo A\",\r\n    \"phone\":  \"0901234567\",\r\n    \"street\":  \"123 Nguyễn Trãi\",\r\n    \"ward\":  \"Phường Bến Thành\",\r\n    \"district\":  \"Quận 1\",\r\n    \"province\":  \"Thành phố Hồ Chí Minh\",\r\n    \"postalCode\":  \"70000\",\r\n    \"defaultAddress\":  false\r\n}",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               }
+                                                               }
+                                                  },
+                                      "name":  "POST - Thêm địa chỉ",
+                                      "response":  [
+
+                                                   ]
+                                  },
+                                  {
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/auth/addresses/{{addressId}}",
+                                                      "auth":  {
+                                                                   "bearer":  [
+                                                                                  {
+                                                                                      "key":  "token",
+                                                                                      "type":  "string",
+                                                                                      "value":  "{{token}}"
+                                                                                  }
+                                                                              ],
+                                                                   "type":  "bearer"
+                                                               },
+                                                      "description":  "Quyền: USER. Nhập ID thực tế ở collection Variables. Đăng nhập bằng tài khoản phù hợp trước khi Send; token của collection này được thay sau mỗi lần đăng nhập."
+                                                  },
+                                      "name":  "GET - Chi tiết địa chỉ",
+                                      "response":  [
+
+                                                   ]
+                                  },
+                                  {
+                                      "request":  {
+                                                      "method":  "PUT",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/auth/addresses/{{addressId}}",
+                                                      "auth":  {
+                                                                   "bearer":  [
+                                                                                  {
+                                                                                      "key":  "token",
+                                                                                      "type":  "string",
+                                                                                      "value":  "{{token}}"
+                                                                                  }
+                                                                              ],
+                                                                   "type":  "bearer"
+                                                               },
+                                                      "description":  "Quyền: USER. Nhập ID thực tế ở collection Variables. Đăng nhập bằng tài khoản phù hợp trước khi Send; token của collection này được thay sau mỗi lần đăng nhập.",
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\r\n    \"recipientName\":  \"Khách hàng demo A\",\r\n    \"phone\":  \"0901234567\",\r\n    \"street\":  \"789 Nguyễn Trãi\",\r\n    \"ward\":  \"Phường Bến Thành\",\r\n    \"district\":  \"Quận 1\",\r\n    \"province\":  \"Thành phố Hồ Chí Minh\",\r\n    \"postalCode\":  \"70000\",\r\n    \"defaultAddress\":  false\r\n}",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               }
+                                                               }
+                                                  },
+                                      "name":  "PUT - Cập nhật địa chỉ",
+                                      "response":  [
+
+                                                   ]
+                                  },
+                                  {
+                                      "request":  {
+                                                      "method":  "DELETE",
+                                                      "header":  [
+
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/auth/addresses/{{addressId}}",
+                                                      "auth":  {
+                                                                   "bearer":  [
+                                                                                  {
+                                                                                      "key":  "token",
+                                                                                      "type":  "string",
+                                                                                      "value":  "{{token}}"
+                                                                                  }
+                                                                              ],
+                                                                   "type":  "bearer"
+                                                               },
+                                                      "description":  "Quyền: USER. Nhập ID thực tế ở collection Variables. Đăng nhập bằng tài khoản phù hợp trước khi Send; token của collection này được thay sau mỗi lần đăng nhập."
+                                                  },
+                                      "name":  "DELETE - Xóa địa chỉ",
+                                      "response":  [
+
+                                                   ]
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "03 - Sản phẩm",
+                     "item":  [
+                                  {
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/products",
+                                                      "auth":  {
+                                                                   "type":  "noauth"
+                                                               },
+                                                      "description":  "Quyền: PUBLIC. Nhập ID thực tế ở collection Variables. Đăng nhập bằng tài khoản phù hợp trước khi Send; token của collection này được thay sau mỗi lần đăng nhập."
+                                                  },
+                                      "name":  "GET - Danh sách và tìm kiếm sản phẩm",
+                                      "response":  [
+
+                                                   ]
+                                  },
+                                  {
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/products",
+                                                      "auth":  {
+                                                                   "bearer":  [
+                                                                                  {
+                                                                                      "key":  "token",
+                                                                                      "type":  "string",
+                                                                                      "value":  "{{token}}"
+                                                                                  }
+                                                                              ],
+                                                                   "type":  "bearer"
+                                                               },
+                                                      "description":  "Quyền: ADMIN. Nhập ID thực tế ở collection Variables. Đăng nhập bằng tài khoản phù hợp trước khi Send; token của collection này được thay sau mỗi lần đăng nhập.",
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\r\n    \"sku\":  \"SKU-{{$guid}}\",\r\n    \"name\":  \"Áo demo tiếng Việt\",\r\n    \"description\":  \"Sản phẩm riêng cho kiểm thử, ký tự % và _\",\r\n    \"unitPrice\":  125000,\r\n    \"category\":  \"ThoiTrangDemo\",\r\n    \"brand\":  \"PostmanVI\"\r\n}",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               }
+                                                               }
+                                                  },
+                                      "name":  "POST - Tạo sản phẩm",
+                                      "response":  [
+
+                                                   ]
+                                  },
+                                  {
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/products/{{productId}}",
+                                                      "auth":  {
+                                                                   "type":  "noauth"
+                                                               },
+                                                      "description":  "Quyền: PUBLIC. Nhập ID thực tế ở collection Variables. Đăng nhập bằng tài khoản phù hợp trước khi Send; token của collection này được thay sau mỗi lần đăng nhập."
+                                                  },
+                                      "name":  "GET - Chi tiết sản phẩm",
+                                      "response":  [
+
+                                                   ]
+                                  },
+                                  {
+                                      "request":  {
+                                                      "method":  "PUT",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/products/{{productId}}",
+                                                      "auth":  {
+                                                                   "bearer":  [
+                                                                                  {
+                                                                                      "key":  "token",
+                                                                                      "type":  "string",
+                                                                                      "value":  "{{token}}"
+                                                                                  }
+                                                                              ],
+                                                                   "type":  "bearer"
+                                                               },
+                                                      "description":  "Quyền: ADMIN. Nhập ID thực tế ở collection Variables. Đăng nhập bằng tài khoản phù hợp trước khi Send; token của collection này được thay sau mỗi lần đăng nhập.",
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\r\n    \"sku\":  \"{{productSku}}\",\r\n    \"name\":  \"Áo demo tiếng Việt\",\r\n    \"description\":  \"Mô tả đã cập nhật, có ký tự % và _\",\r\n    \"unitPrice\":  125000,\r\n    \"category\":  \"ThoiTrangDemo\",\r\n    \"brand\":  \"PostmanVI\"\r\n}",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               }
+                                                               }
+                                                  },
+                                      "name":  "PUT - Cập nhật sản phẩm",
+                                      "response":  [
+
+                                                   ]
+                                  },
+                                  {
+                                      "request":  {
+                                                      "method":  "DELETE",
+                                                      "header":  [
+
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/products/{{productId}}",
+                                                      "auth":  {
+                                                                   "bearer":  [
+                                                                                  {
+                                                                                      "key":  "token",
+                                                                                      "type":  "string",
+                                                                                      "value":  "{{token}}"
+                                                                                  }
+                                                                              ],
+                                                                   "type":  "bearer"
+                                                               },
+                                                      "description":  "Quyền: ADMIN. Nhập ID thực tế ở collection Variables. Đăng nhập bằng tài khoản phù hợp trước khi Send; token của collection này được thay sau mỗi lần đăng nhập."
+                                                  },
+                                      "name":  "DELETE - Ngừng bán sản phẩm",
+                                      "response":  [
+
+                                                   ]
+                                  },
+                                  {
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/products/{{parentId}}/variants",
+                                                      "auth":  {
+                                                                   "type":  "noauth"
+                                                               },
+                                                      "description":  "Quyền: PUBLIC. Nhập ID thực tế ở collection Variables. Đăng nhập bằng tài khoản phù hợp trước khi Send; token của collection này được thay sau mỗi lần đăng nhập."
+                                                  },
+                                      "name":  "GET - Danh sách biến thể",
+                                      "response":  [
+
+                                                   ]
+                                  },
+                                  {
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/products/{{parentId}}/variants",
+                                                      "auth":  {
+                                                                   "bearer":  [
+                                                                                  {
+                                                                                      "key":  "token",
+                                                                                      "type":  "string",
+                                                                                      "value":  "{{token}}"
+                                                                                  }
+                                                                              ],
+                                                                   "type":  "bearer"
+                                                               },
+                                                      "description":  "Quyền: ADMIN. Nhập ID thực tế ở collection Variables. Đăng nhập bằng tài khoản phù hợp trước khi Send; token của collection này được thay sau mỗi lần đăng nhập.",
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\r\n    \"product\":  {\r\n                    \"sku\":  \"VARIANT-{{$guid}}\",\r\n                    \"name\":  \"Áo demo xanh cỡ M\",\r\n                    \"description\":  \"Sản phẩm riêng cho kiểm thử, ký tự % và _\",\r\n                    \"unitPrice\":  130000,\r\n                    \"category\":  \"ThoiTrangDemo\",\r\n                    \"brand\":  \"PostmanVI\"\r\n                },\r\n    \"attributes\":  {\r\n                       \"color\":  \"Blue\",\r\n                       \"size\":  \"M\"\r\n                   }\r\n}",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               }
+                                                               }
+                                                  },
+                                      "name":  "POST - Tạo biến thể",
+                                      "response":  [
+
+                                                   ]
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "04 - Kho",
+                     "item":  [
+                                  {
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/inventory/stocks",
+                                                      "auth":  {
+                                                                   "bearer":  [
+                                                                                  {
+                                                                                      "key":  "token",
+                                                                                      "type":  "string",
+                                                                                      "value":  "{{token}}"
+                                                                                  }
+                                                                              ],
+                                                                   "type":  "bearer"
+                                                               },
+                                                      "description":  "Quyền: ADMIN. Nhập ID thực tế ở collection Variables. Đăng nhập bằng tài khoản phù hợp trước khi Send; token của collection này được thay sau mỗi lần đăng nhập.",
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\r\n    \"productId\":  {{productId}},\r\n    \"quantity\":  20,\r\n    \"idempotencyKey\":  \"{{$guid}}\"\r\n}",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               }
+                                                               }
+                                                  },
+                                      "name":  "POST - Nhập kho",
+                                      "response":  [
+
+                                                   ]
+                                  },
+                                  {
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/inventory/{{productId}}",
+                                                      "auth":  {
+                                                                   "bearer":  [
+                                                                                  {
+                                                                                      "key":  "token",
+                                                                                      "type":  "string",
+                                                                                      "value":  "{{token}}"
+                                                                                  }
+                                                                              ],
+                                                                   "type":  "bearer"
+                                                               },
+                                                      "description":  "Quyền: USER. Nhập ID thực tế ở collection Variables. Đăng nhập bằng tài khoản phù hợp trước khi Send; token của collection này được thay sau mỗi lần đăng nhập."
+                                                  },
+                                      "name":  "GET - Xem tồn kho",
+                                      "response":  [
+
+                                                   ]
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "05 - Đơn hàng",
+                     "item":  [
+                                  {
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/orders",
+                                                      "auth":  {
+                                                                   "bearer":  [
+                                                                                  {
+                                                                                      "key":  "token",
+                                                                                      "type":  "string",
+                                                                                      "value":  "{{token}}"
+                                                                                  }
+                                                                              ],
+                                                                   "type":  "bearer"
+                                                               },
+                                                      "description":  "Quyền: USER. Nhập ID thực tế ở collection Variables. Đăng nhập bằng tài khoản phù hợp trước khi Send; token của collection này được thay sau mỗi lần đăng nhập. ONLINE giữ hàng 200 giây. Đổi paymentMethod thành COD để thử COD; COD cần địa chỉ giao hàng đầy đủ.",
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\r\n    \"channel\":  \"WEB\",\r\n    \"paymentMethod\":  \"ONLINE\",\r\n    \"idempotencyKey\":  \"{{$guid}}\",\r\n    \"items\":  [\r\n                  {\r\n                      \"productId\":  {{productId}},\r\n                      \"quantity\":  1\r\n                  }\r\n              ],\r\n    \"shippingAddress\":  {\r\n                            \"recipientName\":  \"Khách hàng demo A\",\r\n                            \"phone\":  \"0901234567\",\r\n                            \"street\":  \"123 Nguyễn Trãi\",\r\n                            \"ward\":  \"Phường Bến Thành\",\r\n                            \"district\":  \"Quận 1\",\r\n                            \"province\":  \"Thành phố Hồ Chí Minh\",\r\n                            \"postalCode\":  \"70000\"\r\n                        }\r\n}",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               }
+                                                               }
+                                                  },
+                                      "name":  "POST - Tạo đơn ONLINE hoặc COD - WEB hoặc POS",
+                                      "response":  [
+
+                                                   ]
+                                  },
+                                  {
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/orders/{{orderId}}",
+                                                      "auth":  {
+                                                                   "bearer":  [
+                                                                                  {
+                                                                                      "key":  "token",
+                                                                                      "type":  "string",
+                                                                                      "value":  "{{token}}"
+                                                                                  }
+                                                                              ],
+                                                                   "type":  "bearer"
+                                                               },
+                                                      "description":  "Quyền: USER. Nhập ID thực tế ở collection Variables. Đăng nhập bằng tài khoản phù hợp trước khi Send; token của collection này được thay sau mỗi lần đăng nhập."
+                                                  },
+                                      "name":  "GET - Chi tiết đơn hàng",
+                                      "response":  [
+
+                                                   ]
+                                  },
+                                  {
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/orders/{{orderId}}/ship",
+                                                      "auth":  {
+                                                                   "bearer":  [
+                                                                                  {
+                                                                                      "key":  "token",
+                                                                                      "type":  "string",
+                                                                                      "value":  "{{token}}"
+                                                                                  }
+                                                                              ],
+                                                                   "type":  "bearer"
+                                                               },
+                                                      "description":  "Quyền: ADMIN. Nhập ID thực tế ở collection Variables. Đăng nhập bằng tài khoản phù hợp trước khi Send; token của collection này được thay sau mỗi lần đăng nhập.",
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\r\n    \"carrier\":  \"Đơn vị vận chuyển demo\",\r\n    \"trackingNumber\":  \"VI-{{orderId}}\"\r\n}",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               }
+                                                               }
+                                                  },
+                                      "name":  "POST - Giao hàng",
+                                      "response":  [
+
+                                                   ]
+                                  },
+                                  {
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/orders/{{orderId}}/complete",
+                                                      "auth":  {
+                                                                   "bearer":  [
+                                                                                  {
+                                                                                      "key":  "token",
+                                                                                      "type":  "string",
+                                                                                      "value":  "{{token}}"
+                                                                                  }
+                                                                              ],
+                                                                   "type":  "bearer"
+                                                               },
+                                                      "description":  "Quyền: ADMIN. Nhập ID thực tế ở collection Variables. Đăng nhập bằng tài khoản phù hợp trước khi Send; token của collection này được thay sau mỗi lần đăng nhập."
+                                                  },
+                                      "name":  "POST - Hoàn tất đơn",
+                                      "response":  [
+
+                                                   ]
+                                  },
+                                  {
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/orders/{{orderId}}/cod/cancel",
+                                                      "auth":  {
+                                                                   "bearer":  [
+                                                                                  {
+                                                                                      "key":  "token",
+                                                                                      "type":  "string",
+                                                                                      "value":  "{{token}}"
+                                                                                  }
+                                                                              ],
+                                                                   "type":  "bearer"
+                                                               },
+                                                      "description":  "Quyền: ADMIN. Nhập ID thực tế ở collection Variables. Đăng nhập bằng tài khoản phù hợp trước khi Send; token của collection này được thay sau mỗi lần đăng nhập."
+                                                  },
+                                      "name":  "POST - Hủy COD trước giao",
+                                      "response":  [
+
+                                                   ]
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "06 - Thanh toán",
+                     "item":  [
+                                  {
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/payments/by-order/{{orderId}}",
+                                                      "auth":  {
+                                                                   "bearer":  [
+                                                                                  {
+                                                                                      "key":  "token",
+                                                                                      "type":  "string",
+                                                                                      "value":  "{{token}}"
+                                                                                  }
+                                                                              ],
+                                                                   "type":  "bearer"
+                                                               },
+                                                      "description":  "Quyền: USER. Nhập ID thực tế ở collection Variables. Đăng nhập bằng tài khoản phù hợp trước khi Send; token của collection này được thay sau mỗi lần đăng nhập."
+                                                  },
+                                      "name":  "GET - Tra thanh toán theo đơn",
+                                      "response":  [
+
+                                                   ]
+                                  },
+                                  {
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/payments/{{paymentId}}/vnpay/checkout",
+                                                      "auth":  {
+                                                                   "bearer":  [
+                                                                                  {
+                                                                                      "key":  "token",
+                                                                                      "type":  "string",
+                                                                                      "value":  "{{token}}"
+                                                                                  }
+                                                                              ],
+                                                                   "type":  "bearer"
+                                                               },
+                                                      "description":  "Quyền: USER. Nhập ID thực tế ở collection Variables. Đăng nhập bằng tài khoản phù hợp trước khi Send; token của collection này được thay sau mỗi lần đăng nhập."
+                                                  },
+                                      "name":  "POST - Tạo link VNPay sandbox",
+                                      "response":  [
+
+                                                   ]
+                                  },
+                                  {
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/payments/{{paymentId}}/cod/collect",
+                                                      "auth":  {
+                                                                   "bearer":  [
+                                                                                  {
+                                                                                      "key":  "token",
+                                                                                      "type":  "string",
+                                                                                      "value":  "{{token}}"
+                                                                                  }
+                                                                              ],
+                                                                   "type":  "bearer"
+                                                               },
+                                                      "description":  "Quyền: ADMIN. Nhập ID thực tế ở collection Variables. Đăng nhập bằng tài khoản phù hợp trước khi Send; token của collection này được thay sau mỗi lần đăng nhập.",
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\r\n    \"amount\":  {{amount}},\r\n    \"idempotencyKey\":  \"{{$guid}}\",\r\n    \"receiptNumber\":  \"DEMO-{{$guid}}\"\r\n}",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               }
+                                                               }
+                                                  },
+                                      "name":  "POST - Ghi nhận đã thu tiền COD",
+                                      "response":  [
+
+                                                   ]
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "07 - Trả hàng",
+                     "item":  [
+                                  {
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/orders/{{orderId}}/return",
+                                                      "auth":  {
+                                                                   "bearer":  [
+                                                                                  {
+                                                                                      "key":  "token",
+                                                                                      "type":  "string",
+                                                                                      "value":  "{{token}}"
+                                                                                  }
+                                                                              ],
+                                                                   "type":  "bearer"
+                                                               },
+                                                      "description":  "Quyền: USER. Nhập ID thực tế ở collection Variables. Đăng nhập bằng tài khoản phù hợp trước khi Send; token của collection này được thay sau mỗi lần đăng nhập.",
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\r\n    \"idempotencyKey\":  \"{{$guid}}\",\r\n    \"reason\":  \"Khách đề nghị trả toàn bộ đơn demo\"\r\n}",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               }
+                                                               }
+                                                  },
+                                      "name":  "POST - Yêu cầu trả toàn bộ đơn",
+                                      "response":  [
+
+                                                   ]
+                                  },
+                                  {
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/orders/{{orderId}}/return",
+                                                      "auth":  {
+                                                                   "bearer":  [
+                                                                                  {
+                                                                                      "key":  "token",
+                                                                                      "type":  "string",
+                                                                                      "value":  "{{token}}"
+                                                                                  }
+                                                                              ],
+                                                                   "type":  "bearer"
+                                                               },
+                                                      "description":  "Quyền: USER. Nhập ID thực tế ở collection Variables. Đăng nhập bằng tài khoản phù hợp trước khi Send; token của collection này được thay sau mỗi lần đăng nhập."
+                                                  },
+                                      "name":  "GET - Xem hồ sơ trả hàng",
+                                      "response":  [
+
+                                                   ]
+                                  },
+                                  {
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/orders/{{orderId}}/return/decision",
+                                                      "auth":  {
+                                                                   "bearer":  [
+                                                                                  {
+                                                                                      "key":  "token",
+                                                                                      "type":  "string",
+                                                                                      "value":  "{{token}}"
+                                                                                  }
+                                                                              ],
+                                                                   "type":  "bearer"
+                                                               },
+                                                      "description":  "Quyền: ADMIN. Nhập ID thực tế ở collection Variables. Đăng nhập bằng tài khoản phù hợp trước khi Send; token của collection này được thay sau mỗi lần đăng nhập.",
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\r\n    \"approved\":  true,\r\n    \"note\":  \"Đồng ý trả toàn bộ\"\r\n}",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               }
+                                                               }
+                                                  },
+                                      "name":  "POST - Duyệt hoặc từ chối trả hàng",
+                                      "response":  [
+
+                                                   ]
+                                  },
+                                  {
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/orders/{{orderId}}/return/receive",
+                                                      "auth":  {
+                                                                   "bearer":  [
+                                                                                  {
+                                                                                      "key":  "token",
+                                                                                      "type":  "string",
+                                                                                      "value":  "{{token}}"
+                                                                                  }
+                                                                              ],
+                                                                   "type":  "bearer"
+                                                               },
+                                                      "description":  "Quyền: ADMIN. Nhập ID thực tế ở collection Variables. Đăng nhập bằng tài khoản phù hợp trước khi Send; token của collection này được thay sau mỗi lần đăng nhập.",
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\r\n    \"warehouseReceipt\":  \"RETURN-{{$guid}}\",\r\n    \"restock\":  true\r\n}",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               }
+                                                               }
+                                                  },
+                                      "name":  "POST - Nhận hàng trả và nhập lại kho",
+                                      "response":  [
+
+                                                   ]
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "08 - Hoàn tiền",
+                     "item":  [
+                                  {
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/payments/{{paymentId}}/cod/refund",
+                                                      "auth":  {
+                                                                   "bearer":  [
+                                                                                  {
+                                                                                      "key":  "token",
+                                                                                      "type":  "string",
+                                                                                      "value":  "{{token}}"
+                                                                                  }
+                                                                              ],
+                                                                   "type":  "bearer"
+                                                               },
+                                                      "description":  "Quyền: ADMIN. Nhập ID thực tế ở collection Variables. Đăng nhập bằng tài khoản phù hợp trước khi Send; token của collection này được thay sau mỗi lần đăng nhập.",
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\r\n    \"amount\":  {{amount}},\r\n    \"idempotencyKey\":  \"{{$guid}}\",\r\n    \"receiptNumber\":  \"DEMO-{{$guid}}\"\r\n}",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               }
+                                                               }
+                                                  },
+                                      "name":  "POST - Ghi nhận hoàn tiền COD",
+                                      "response":  [
+
+                                                   ]
+                                  },
+                                  {
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/payments/{{paymentId}}/cod/refund",
+                                                      "auth":  {
+                                                                   "bearer":  [
+                                                                                  {
+                                                                                      "key":  "token",
+                                                                                      "type":  "string",
+                                                                                      "value":  "{{token}}"
+                                                                                  }
+                                                                              ],
+                                                                   "type":  "bearer"
+                                                               },
+                                                      "description":  "Quyền: USER. Nhập ID thực tế ở collection Variables. Đăng nhập bằng tài khoản phù hợp trước khi Send; token của collection này được thay sau mỗi lần đăng nhập."
+                                                  },
+                                      "name":  "GET - Xem biên nhận hoàn COD",
+                                      "response":  [
+
+                                                   ]
+                                  },
+                                  {
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/payments/{{paymentId}}/vnpay/refund",
+                                                      "auth":  {
+                                                                   "bearer":  [
+                                                                                  {
+                                                                                      "key":  "token",
+                                                                                      "type":  "string",
+                                                                                      "value":  "{{token}}"
+                                                                                  }
+                                                                              ],
+                                                                   "type":  "bearer"
+                                                               },
+                                                      "description":  "Quyền: ADMIN. Nhập ID thực tế ở collection Variables. Đăng nhập bằng tài khoản phù hợp trước khi Send; token của collection này được thay sau mỗi lần đăng nhập. Chỉ gọi khi đủ điều kiện hoàn. Nếu kết quả chưa rõ, dùng reconcile; không liên tục gửi lại yêu cầu refund."
+                                                  },
+                                      "name":  "POST - Yêu cầu hoàn VNPay",
+                                      "response":  [
+
+                                                   ]
+                                  },
+                                  {
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/payments/{{paymentId}}/vnpay/reconcile",
+                                                      "auth":  {
+                                                                   "bearer":  [
+                                                                                  {
+                                                                                      "key":  "token",
+                                                                                      "type":  "string",
+                                                                                      "value":  "{{token}}"
+                                                                                  }
+                                                                              ],
+                                                                   "type":  "bearer"
+                                                               },
+                                                      "description":  "Quyền: ADMIN. Nhập ID thực tế ở collection Variables. Đăng nhập bằng tài khoản phù hợp trước khi Send; token của collection này được thay sau mỗi lần đăng nhập."
+                                                  },
+                                      "name":  "POST - Đối soát kết quả hoàn VNPay",
+                                      "response":  [
+
+                                                   ]
+                                  }
+                              ]
+                 }
+             ]
+}
