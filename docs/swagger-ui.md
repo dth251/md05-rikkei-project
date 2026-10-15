@@ -56,11 +56,19 @@ tĩnh tại `/swagger-ui/`; API dùng cùng origin nên không cần mở thêm 
 Không thay đổi service hoặc mở public `/v3/api-docs`.
 
 ```bash
-DEPLOY_ROOT=/opt/omnichannel-ecommerce DOCS_REVISION=<full-tested-git-sha> \
+DOCS_ROOT=/var/www/md05-api-docs DOCS_REVISION=<full-tested-git-sha> \
   bash docs/infrastructure/scripts/install-api-docs.sh
 ```
 
-Lần đầu cần thêm các location Swagger trong template Nginx vào site dự án,
+Lần đầu root tạo thư mục tài liệu riêng, sau đó tài khoản deploy cập nhật:
+
+```bash
+install -d -o deploy -g deploy -m 755 /var/www/md05-api-docs
+```
+
+Thư mục web này chỉ chứa tài liệu và Swagger assets. Không nới quyền thư
+mục deployment có cấu hình private để Nginx đọc. Cần thêm các location
+Swagger trong template Nginx vào site dự án,
 kiểm tra `nginx -t` rồi reload. Chỉ cập nhật tài liệu ở các lần sau thì
 không cần restart ứng dụng. Chứng chỉ và cấu hình API hiện có được giữ.
 

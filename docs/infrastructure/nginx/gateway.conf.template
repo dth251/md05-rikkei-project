@@ -29,7 +29,7 @@ server {
     }
 
     location /swagger-ui/ {
-        alias /opt/omnichannel-ecommerce/api-docs/current/;
+        alias /var/www/md05-api-docs/current/;
         index index.html;
         autoindex off;
         add_header Cache-Control "no-cache";
