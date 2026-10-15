@@ -1408,3 +1408,20 @@ riêng. Nguồn frontend static đang phục vụ vẫn là release 211 đã ki�
 Order đang chạy image CI 208 healthy; không khẳng định pipeline main đã
 rollout image mới. Thay đổi chứng cứ này chỉ là tài liệu/JSON, kiểm tra
 parse và git diff check, không chạy lại Java/browser cho phần tài liệu.
+
+## 215-docs — đồng bộ thay đổi local ngày 16/10/2026
+
+Theo yêu cầu push toàn bộ thay đổi hiện tại và cập nhật các file người
+dùng đã xóa, phát triển từ main `b1625ca3ed22d8de0021372808e64113b636b651`
+trên feature/sync-project-cleanup. Ghi nhận xóa file kế hoạch cũ
+Ke_hoach_Omnichannel_3_ngay_6_ung_dung_Co_API_Gateway.md và hai thiết lập
+Java trong .vscode/settings.json đang có ở workspace. Không khôi phục
+file người dùng đã xóa; giữ báo cáo chính tại docs/bao-cao-bai-tap-lon.md.
+
+Kiểm tra lúc 2026-10-16T00:07:02+07:00: settings parse JSON đạt,
+git diff check đạt, không có tham chiếu Markdown còn dùng tên file kế
+hoạch đã xóa và không có file untracked chưa được phân loại. Chỉ thay
+tài liệu/cấu hình editor nên không chạy lại Java/frontend tests. Không
+thay runtime, không deploy lại VPS; release frontend 211 vẫn là bản đã
+triển khai. Secret, .env, .verification, dependency và build output tiếp
+tục được gitignore loại trừ; không sửa collection Postman.
