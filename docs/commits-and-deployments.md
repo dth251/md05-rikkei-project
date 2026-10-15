@@ -139,7 +139,7 @@ Thời gian commit 2026-10-11, Asia/Bangkok (+07:00). Các mốc develop và mer
 | [Docs PR head 35](https://github.com/dth251/md05-rikkei-project/actions/runs/38144830568) | `06973be`, 35 | 13:51:17–13:57:38 | Verify success với sáu app; publish/deploy skipped |
 | [Sáu app main](https://github.com/dth251/md05-rikkei-project/actions/runs/38144528920) | `2f8bb94`, 34 | 13:46:41–14:10:54 | Verify/publish/deploy success; gồm thời gian chờ main 33; cả sáu app được chọn |
 
-Chi tiết các test, lỗi hostname đã phát hiện/sửa và giới hạn: [ngày 2](day2-test-results.md). Runbook/API: [operations](day2-operations.md), [contract](api-contract.md). Không ghi secret/fixture JWT vào nhật ký; SSH/DB kiểm chứng không mở public ports.
+Chi tiết các test, lỗi hostname đã phát hiện/sửa và giới hạn: [ngày 2](https://github.com/dth251/md05-rikkei-project/blob/8a909c99a3cf246d26da9148f5502b02f37bf8a0/docs/day2-test-results.md). Runbook/API: [operations](https://github.com/dth251/md05-rikkei-project/blob/8a909c99a3cf246d26da9148f5502b02f37bf8a0/docs/day2-operations.md), [contract](api-contract.md). Không ghi secret/fixture JWT vào nhật ký; SSH/DB kiểm chứng không mở public ports.
 
 ## Checkpoint VPS ngày 2, trước merge PR tài liệu/fixture #12
 
@@ -166,7 +166,7 @@ SHA/time của mốc tài liệu cuối và merge, CI head cuối và rollout ph
 
 ## Ngày 3: mốc đã kiểm chứng
 
-Ngày bắt đầu 2026-10-11, tiếp tục sau 00:00 ngày 2026-10-12 (+07:00). Số tiếp tục từ Git thật. Kết quả và giới hạn tải: [day3-test-results.md](day3-test-results.md).
+Ngày bắt đầu 2026-10-11, tiếp tục sau 00:00 ngày 2026-10-12 (+07:00). Số tiếp tục từ Git thật. Kết quả và giới hạn tải: [day3-test-results.md](https://github.com/dth251/md05-rikkei-project/blob/8a909c99a3cf246d26da9148f5502b02f37bf8a0/docs/day3-test-results.md).
 
 | Mốc | SHA | Thời gian +07:00 | Kiểm chứng / deploy tại checkpoint |
 |---|---|---|---|
@@ -196,7 +196,7 @@ Những mục “chưa/đang chờ” là trạng thái tại mốc, không ph�
 
 Main metrics 49 hoàn tất deploy sáu app 17:08:44 UTC. [Audit cuối](evidence/vps-final-audit.txt) 17:41:02–17:41:28 UTC xác nhận Gateway image 54, Order 53, Auth/Product/Payment/Notification 49; current release 54. Sáu health UP, metrics private có JVM/application tag, public metrics 404. Ba queue ready/unacked=0/consumer=1, hai pending Outbox=0; 46 fixture orders CONFIRMED/reserved=0 và 46 notification logs (mỗi order một).
 
-[PR #14](https://github.com/dth251/md05-rikkei-project/pull/14), [#15](https://github.com/dth251/md05-rikkei-project/pull/15), [#16](https://github.com/dth251/md05-rikkei-project/pull/16) có SHA/time/CI/deploy thực tế cập nhật. Head/merge tài liệu và CI cuối ghi trong PR hoàn tất để tránh cần commit chỉ để ghi SHA của chính commit. Kết quả tải lỗi/stop/throttle được lưu nguyên trong [báo cáo](day3-test-results.md); không dùng trạng thái CI đạt làm bằng chứng đạt capacity.
+[PR #14](https://github.com/dth251/md05-rikkei-project/pull/14), [#15](https://github.com/dth251/md05-rikkei-project/pull/15), [#16](https://github.com/dth251/md05-rikkei-project/pull/16) có SHA/time/CI/deploy thực tế cập nhật. Head/merge tài liệu và CI cuối ghi trong PR hoàn tất để tránh cần commit chỉ để ghi SHA của chính commit. Kết quả tải lỗi/stop/throttle được lưu nguyên trong [báo cáo](https://github.com/dth251/md05-rikkei-project/blob/8a909c99a3cf246d26da9148f5502b02f37bf8a0/docs/day3-test-results.md); không dùng trạng thái CI đạt làm bằng chứng đạt capacity.
 
 ## Khắc phục sau rà soát: Outbox
 
@@ -231,7 +231,7 @@ thành success và không suy ra capacity từ CI.
 
 Checkpoint IDE: sáu service biên dịch source/test đạt; nhập lại Gradle sau
 backup cache riêng của workspace, loại project tạm và classpath cũ. Chi tiết
-trong [java-ide.md](java-ide.md). SHA/time của commit cấu hình IDE và kết quả
+trong [java-ide.md](https://github.com/dth251/md05-rikkei-project/blob/8a909c99a3cf246d26da9148f5502b02f37bf8a0/docs/java-ide.md). SHA/time của commit cấu hình IDE và kết quả
 CI sau commit được ghi trong PR #20; chưa có deploy mới tại checkpoint này.
 
 | Mốc | SHA | Thời gian +07:00 | Kiểm chứng / deploy tại checkpoint |
@@ -551,7 +551,7 @@ extension và đối chiếu diagnostics. Cuối phiên kiểm tra chỉ còn m�
 server của workspace. Không tắt cảnh báo/null analysis, không sửa source/routes/
 JWT/rate limit, không thay đổi dữ liệu hoặc recreate container. Thay đổi
 `.vscode/settings.json` có sẵn vẫn giữ nguyên ngoài commit. Hướng xử lý trong
-[tài liệu IDE](java-ide.md), kết quả trong [Gateway tests](gateway-test-results.md).
+[tài liệu IDE](https://github.com/dth251/md05-rikkei-project/blob/8a909c99a3cf246d26da9148f5502b02f37bf8a0/docs/java-ide.md), kết quả trong [Gateway tests](https://github.com/dth251/md05-rikkei-project/blob/8a909c99a3cf246d26da9148f5502b02f37bf8a0/docs/gateway-test-results.md).
 
 ## Phát triển COD ngày 13/10/2026
 
@@ -654,7 +654,7 @@ còn 82 lỗi generated gRPC của Order; reload cấu hình Gradle để nhận
 source roots `build/generated/sources/proto/main/java` và `main/grpc` giảm
 còn 0. Restart Java server và đọc diagnostics lại vẫn 0; lần kiểm tra
 cuối 2026-10-13T17:01:12.276Z (00:01:12 +07:00 ngày 14/10) xác nhận 0. Không tắt diagnostics hoặc thay mã
-nghiệp vụ để che lỗi. Chi tiết trong [runbook IDE](java-ide.md).
+nghiệp vụ để che lỗi. Chi tiết trong [runbook IDE](https://github.com/dth251/md05-rikkei-project/blob/8a909c99a3cf246d26da9148f5502b02f37bf8a0/docs/java-ide.md).
 
 CI database mới cần Hibernate tạo base tables trước migration; VPS có dữ
 liệu giữ thứ tự schema trước recreate service. Không sửa SQL đã checksum.
@@ -870,7 +870,7 @@ không đánh dấu ảnh/video hoặc visual QA hoàn tất từ API checks.
 | 169-docs | `4ec336976b192c22923d897dd2d25fa2b5ecf86b` | 2026-10-14T10:54:09+07:00 | Ghi checkpoint main 168/SMTP/monitoring và snapshot đã bỏ thông tin riêng tư; không rollout thêm. |
 | 170-notification-service | `7810bdefb18a5e020cc8f722cdc4e1311f733b6e` | 2026-10-14T16:53:30+07:00 | IDE có 14 errors trong NotificationTests do không nhận NotificationLog. Reload Gradle/full rebuild riêng Notification: toàn workspace 0 errors. Đọc lại 16:53:28 +07 vẫn 0 và đủ sáu projects. Wrapper compileJava/compileTestJava/test chạy lại đạt 21/21, zero fail/error/skip lúc 16:49:36. Sửa model IDE local, không thay Java source/settings người dùng và không deploy VPS. |
 
-[Kịch bản demo](demo-test-guide.md) gồm Auth/security, Product/Inventory,
+[Kịch bản demo](https://github.com/dth251/md05-rikkei-project/blob/8a909c99a3cf246d26da9148f5502b02f37bf8a0/docs/demo-test-guide.md) gồm Auth/security, Product/Inventory,
 ONLINE SUCCESS/FAILED, deadline thật 150 giây, SMTP sandbox, COD/returns và
 monitoring/k6. Hướng dẫn Postman cập nhật runtime mốc 168 và đúng 38 requests
 trong 7 folders (19 requests ở ba folders đầu). Kịch bản mới chưa được chạy
@@ -906,7 +906,7 @@ shipped=10, completed=7, expired=1; không có FAILED/UNKNOWN trong dataset.
 Verifier monitoring đạt sáu app/năm dependency UP, history, datasource,
 22 panel/query/unit. Không recreate container hoặc xóa volume/dữ liệu.
 
-[Hướng dẫn dữ liệu](production-demo-data.md), [manifest đã bỏ credentials](evidence/production-demo-data-2026-10-14.json)
+[Hướng dẫn dữ liệu](https://github.com/dth251/md05-rikkei-project/blob/8a909c99a3cf246d26da9148f5502b02f37bf8a0/docs/production-demo-data.md), [manifest đã bỏ credentials](evidence/production-demo-data-2026-10-14.json)
 và [collection Postman](../tests/postman/md05-production-fixtures.postman_collection.json)
 có 99 requests/102 scripts: JSON bodies, cú pháp scripts, references tới
 environment và 50 capacity users duy nhất được kiểm tra. Chưa chạy cả
@@ -936,12 +936,12 @@ không coi HEAD tài liệu là runtime SHA. Không stage thay đổi settings I
 có sẵn của người dùng hoặc `.verification` chứa environment private.
 
 [Hướng dẫn Postman](../tests/postman/README.md),
-[kịch bản demo](demo-luong-hoat-dong.md),
-[kết quả chi tiết](postman-tieng-viet-results.md) và
+[kịch bản demo](https://github.com/dth251/md05-rikkei-project/blob/8a909c99a3cf246d26da9148f5502b02f37bf8a0/docs/demo-luong-hoat-dong.md),
+[kết quả chi tiết](https://github.com/dth251/md05-rikkei-project/blob/8a909c99a3cf246d26da9148f5502b02f37bf8a0/docs/postman-tieng-viet-results.md) và
 [JSON bằng chứng](evidence/postman-tieng-viet-2026-10-14.json).
 Notification local vẫn gửi vào Mailpit, chưa xác minh email Internet.
 Mã nguồn lấy recipient từ email tài khoản Auth đã đăng ký; đã thêm
-[hướng dẫn SMTP thật](email-thuc.md). Chờ người dùng chọn môi trường/dịch
+[hướng dẫn SMTP thật](https://github.com/dth251/md05-rikkei-project/blob/8a909c99a3cf246d26da9148f5502b02f37bf8a0/docs/email-thuc.md). Chờ người dùng chọn môi trường/dịch
 vụ SMTP và cấu hình private trước khi bật gửi tới hộp thư thật.
 
 ## Gmail SMTP VPS và mẫu hóa đơn HTML ngày 14/10/2026
@@ -1008,8 +1008,8 @@ artifact đã chạy và hash hiện tại. Không sửa Java, không chạy t�
 Settings IDE thay đổi sẵn của người dùng giữ nguyên ngoài commit.
 
 [Hướng dẫn production](test-production.md),
-[kịch bản demo](demo-luong-hoat-dong.md),
-[kết quả chi tiết](postman-production-results.md),
+[kịch bản demo](https://github.com/dth251/md05-rikkei-project/blob/8a909c99a3cf246d26da9148f5502b02f37bf8a0/docs/demo-luong-hoat-dong.md),
+[kết quả chi tiết](https://github.com/dth251/md05-rikkei-project/blob/8a909c99a3cf246d26da9148f5502b02f37bf8a0/docs/postman-production-results.md),
 [JSON bằng chứng](evidence/postman-production-2026-10-14.json).
 
 ## VNPay sandbox trên trình duyệt và collection gộp ngày 15/10/2026
@@ -1316,3 +1316,25 @@ Git diff check đạt. Không thay Docker, volume, database, VPS hoặc image
 được giữ nguyên. Build/JAR sẽ được tạo lại khi chạy Gradle lần sau.
 
 [Danh sách và kết quả kiểm tra](evidence/workspace-cleanup-2026-10-15.json).
+
+## Rút gọn tài liệu Markdown ngày 15/10/2026
+
+Mốc 207-docs. Xóa 19 file Markdown lịch sử/trùng: kiến trúc cũ, runbook
+ngày 2/3, kết quả kiểm thử từng service/đợt, hướng dẫn demo lặp, hướng dẫn
+IDE, fixture production và checklist đã lỗi thời. Mỗi file đã được đối
+chiếu giống hệt snapshot main công khai
+`8a909c99a3cf246d26da9148f5502b02f37bf8a0`; có thể tra lại bằng lịch sử Git.
+Chuyển 21 liên kết lịch sử ở các tài liệu còn giữ sang snapshot này.
+README Postman rút gọn để chỉ rõ bản 35 API chính, 42 request luồng chính
+và bộ 181 request đầy đủ.
+
+Giữ AGENTS, coding conventions, remediation plan đang được quy ước tham
+chiếu, nhật ký, báo cáo bài tập lớn và các hợp đồng/runbook nghiệp vụ
+hiện tại. Không sửa JSON Postman hoặc file báo cáo root của người dùng.
+Hash của hai collection đang dùng, báo cáo root và settings IDE giữ
+nguyên. Kiểm tra 148 liên kết local trong 27 file Markdown tracked còn
+lại không có link hỏng; UTF-8 và git diff check đạt. Không thay source,
+build, CI, database, Docker hoặc VPS; không chạy lại Java tests cho phần
+chỉ thay tài liệu này. Các thay đổi có sẵn của người dùng được giữ nguyên.
+
+Baseline: `3ee2776c66ff0a5cbf1817585680293810f97208`; kiểm tra hoàn tất: 2026-10-15T20:26:17.8053077+07:00.

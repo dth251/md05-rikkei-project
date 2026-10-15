@@ -21,4 +21,4 @@ Threshold giữ nguyên, dữ liệu fixture được giữ để đối chiếu
 
 Raw JVM/SQL/MQ/resource snapshots có trong artifact gốc. Không xác nhận JFR,
 capacity 500–1.000 RPS, deploy monitoring VPS, merchant/SMTP ngoài, alert channel
-hoặc video demo từ các file này. Xem [runbook](../../remaining-implementation.md).
+hoặc video demo từ các file này. Xem [runbook](https://github.com/dth251/md05-rikkei-project/blob/8a909c99a3cf246d26da9148f5502b02f37bf8a0/docs/remaining-implementation.md).

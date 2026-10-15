@@ -329,7 +329,7 @@ Giới hạn lớn nhất ở giai đoạn này là năng lực chịu tải ch�
 - [VNPay sandbox](vnpay-sandbox.md), [demo trên trình duyệt](vnpay-sandbox-browser.md).
 - [COD](cod-payment.md), [giao hàng/hoàn tất](order-fulfillment.md), [trả hàng/hoàn tiền](returns-refunds.md).
 - [Email và monitoring hết hạn](expiry-email-monitoring.md), [mẫu email thật](email/order-notification-preview.html).
-- [Kết quả monitoring/tải](capacity-monitoring-report.md), [triển khai bổ sung và giới hạn kiểm chứng](remaining-implementation.md).
+- [Kết quả monitoring/tải](capacity-monitoring-report.md), [triển khai bổ sung và giới hạn kiểm chứng](https://github.com/dth251/md05-rikkei-project/blob/8a909c99a3cf246d26da9148f5502b02f37bf8a0/docs/remaining-implementation.md).
 - [Workflow CI/CD](../.github/workflows/ci.yml), [Compose nền tảng](../docker-compose.yml), [nhật ký SHA/kiểm thử/deploy](commits-and-deployments.md).
 
 Một số tài liệu đối chiếu lưu checkpoint lịch sử, có thể còn nhắc TTL 150 giây hoặc trạng thái triển khai cũ. Báo cáo này dùng TTL 200 giây và snapshot ngày 15/10/2026; khi cần kiểm tra một kết quả phải đối chiếu đúng ngày và SHA.
