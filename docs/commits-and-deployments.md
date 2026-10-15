@@ -1247,3 +1247,26 @@ Các đơn cũ #174/#175 đã EXPIRED và trả kho trước bản sửa; không
 hoặc sửa dữ liệu của chúng. IPN registration/delivery và hoàn VNPay thực
 tế vẫn chưa kiểm chứng. Giao dịch mới và Gmail HTML đã kiểm chứng thật.
 Thay đổi .vscode có sẵn vẫn được giữ nguyên, không commit .verification.
+
+## Báo cáo bài tập lớn và đối chiếu hệ thống ngày 15/10/2026
+
+| Mốc | SHA | Thời gian +07 | Kiểm chứng / deploy thực tế |
+|---|---|---|---|
+| 201-docs | `7d10355f3df7cc4d958b1cff5d733df3eab2eb3d` | 2026-10-15T17:27:57+07:00 | Tạo báo cáo Markdown tiếng Việt về kiến trúc sáu service, công nghệ, nghiệp vụ, kết quả và phần chưa hoàn thành. Kiểm tra UTF-8, 27 liên kết, bốn code fences, số cột bảng và JSON evidence đạt; staged diff check đạt. Chỉ thay tài liệu, không chạy lại Java tests hoặc rollout ứng dụng. Commit local trên feature, chưa push/PR ở checkpoint này. |
+
+Kiểm tra read-only VPS lúc 17:23:36 +07: cả sáu app cùng image tag
+`8a909c99a3cf246d26da9148f5502b02f37bf8a0`, healthy, restart=0; Order
+TTL PT200S. PostgreSQL/RabbitMQ/Redis, Mailpit, Prometheus/Grafana và ba
+exporter đang chạy. Chưa thấy Collector/Tempo/Loki/Alloy/Alertmanager trong
+deployment này. Không thay đổi cấu hình, dữ liệu, volume hoặc gửi email.
+
+GitHub API xác nhận main run 38631145755 completed/success, head
+`8a909c99a3cf246d26da9148f5502b02f37bf8a0`, updated_at
+2026-10-14T20:53:24Z. Đây là cập nhật cho checkpoint cũ còn ghi đang chạy.
+Báo cáo phân biệt payment sandbox thành công với refund chưa kiểm chứng,
+trace/log mới có CI với metrics đã deploy, và tải 500/1.000 không đạt với
+capacity tối đa chưa xác định. Không đưa credential vào tài liệu; thay đổi
+`.vscode/settings.json` có sẵn được giữ nguyên.
+
+[Báo cáo](bao-cao-bai-tap-lon.md),
+[snapshot đối chiếu](evidence/report-system-audit-2026-10-15.json).
